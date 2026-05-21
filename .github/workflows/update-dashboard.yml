@@ -1,0 +1,47 @@
+name: Update Dashboard
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every 15 minutes (UTC); GitHub may delay a few min under load
+  workflow_dispatch:          # adds a manual "Run workflow" button
+
+permissions:
+  contents: write             # allow the job to commit the updated HTML
+
+concurrency:
+  group: update-dashboard
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download data + build dashboard
+        env:
+          GOOGLE_OAUTH_TOKEN: ${{ secrets.GOOGLE_OAUTH_TOKEN }}
+          DRIVE_FILE_ID: '1CMNGU9T2pae0rv4dXf3XDXGGqJXWy19O'
+        run: python cloud_build.py
+
+      - name: Commit & push if the dashboard changed
+        run: |
+          git config user.name  "enicar-dashboard-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html Enicar_Dashboard.html 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No dashboard changes — nothing to commit."
+          else
+            git commit -m "Auto-update dashboard (cloud) — $(date -u '+%d %b %Y %H:%M UTC')"
+            git push
+          fi
