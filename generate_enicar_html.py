@@ -791,10 +791,11 @@ def _push_to_github(html_text):
 
     if not (_token and _user and _repo):
         print('⚠️  GitHub upload skipped: token/username/repo not set in email_config.py.')
-        return
+        return False
 
     _content_b64 = _b64.b64encode(html_text.encode('utf-8')).decode('ascii')
     _stamp = datetime.now().strftime('%d %b %Y %H:%M')
+    _all_ok = True
 
     for _path in ('index.html', 'Enicar_Dashboard.html'):
         _api = f'https://api.github.com/repos/{_user}/{_repo}/contents/{_path}'
@@ -813,6 +814,7 @@ def _push_to_github(html_text):
         except _urlerr.HTTPError as _e:
             if _e.code != 404:   # 404 = file doesn't exist yet, that's fine
                 print(f'⚠️  GitHub read failed for {_path}: {_e}')
+                _all_ok = False
                 continue
 
         _body = {
@@ -832,8 +834,10 @@ def _push_to_github(html_text):
             print(f'🌐  GitHub updated — {_path}')
         except _urlerr.HTTPError as _e:
             print(f'⚠️  GitHub upload failed for {_path}: {_e} — {_e.read().decode("utf-8", "ignore")[:200]}')
+            _all_ok = False
 
     print(f'    Live: https://{_user.lower()}.github.io/{_repo}/')
+    return _all_ok
 
 if os.environ.get('GITHUB_ACTIONS'):
     # Running in the cloud — the workflow itself commits the files,
@@ -841,6 +845,12 @@ if os.environ.get('GITHUB_ACTIONS'):
     print('   (GitHub Actions detected — workflow will commit; skipping API push)')
 else:
     try:
-        _push_to_github(html)
+        _push_ok = _push_to_github(html)
     except Exception as _e:
         print(f'⚠️  GitHub upload skipped: {_e}')
+        _push_ok = False
+    # Signal failure to the caller (check_email_and_refresh.py) so it does
+    # NOT save the data hash — that way a failed push is retried next run
+    # instead of being silently marked as already published.
+    if not _push_ok:
+        sys.exit(1)
