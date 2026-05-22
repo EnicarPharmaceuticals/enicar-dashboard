@@ -10,7 +10,7 @@ Usage:
 Double-click Refresh_Dashboard.command to run from Finder.
 """
 
-import os, sys, calendar, base64, warnings
+import os, sys, calendar, base64, warnings, re
 from datetime import date, datetime
 
 warnings.filterwarnings('ignore', category=UserWarning, module='pandas')
@@ -90,10 +90,27 @@ pack_df['TotalPacked'] = pack_df['TotalPacked'].apply(parse_packed_total)
 mask = pack_df['TotalPacked'] == 0
 pack_df.loc[mask, 'TotalPacked'] = pack_df.loc[mask, ['AutoCarton','ManualCarton','Sleeve','Naked']].sum(axis=1)
 
-# Normalise line names to Title Case so "Line no 3" and "Line No 3" match
+# Canonicalise line names so typo variants collapse onto one clean label.
+#   "line no1", "Line No.4", "LINE NO 03", "lineno5" → "Line No 1/4/3/5"
+#   sachet / stick pack / tube / ointment / external variants → canonical
+_LINE_NUM_RE = re.compile(r'^line\s*no\.?\s*0*(\d+)$', re.IGNORECASE)
+_LINE_SPECIAL = {
+    'flat sachet': 'Flat Sachet', 'flat sachets': 'Flat Sachet',
+    'stick pack sachet': 'Stick Pack Sachet', 'stick pack': 'Stick Pack Sachet',
+    'stick-pack': 'Stick Pack Sachet', 'stickpack': 'Stick Pack Sachet',
+    'stick pack line': 'Stick Pack Sachet',
+    'sachet': 'Sachet', 'sachets': 'Sachet', 'pouch': 'Sachet', 'sachet line': 'Sachet',
+    'ointment': 'Ointment', 'ointments': 'Ointment', 'ointment line': 'Ointment',
+    'tube': 'Ointment', 'tubes': 'Ointment',
+    'external': 'External', 'external line': 'External',
+}
 def normalise_line(s):
     if pd.isna(s): return s
-    return str(s).strip().title()
+    raw = ' '.join(str(s).strip().split())   # collapse double spaces
+    m = _LINE_NUM_RE.match(raw)
+    if m:
+        return f'Line No {int(m.group(1))}'
+    return _LINE_SPECIAL.get(raw.lower(), raw.title())
 
 fill_df['Line'] = fill_df['Line'].apply(normalise_line)
 pack_df['Line'] = pack_df['Line'].apply(normalise_line)
