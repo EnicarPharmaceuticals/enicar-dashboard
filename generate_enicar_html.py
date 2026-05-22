@@ -182,16 +182,23 @@ PARTIES = sorted(set(party_cur.index) | set(party_prv.index))
 PARTIES = [p for p in PARTIES if str(p).strip() not in ('', 'nan')]
 
 # — Product type breakdown (Filling, Packing, Dispatch)
-PRODUCT_TYPES = ['Bottle', 'Pouch/Sachets', 'Ointment', 'External']
+PRODUCT_TYPES = ['Bottle', 'Flat Sachet', 'Stick Pack Sachet', 'Ointment', 'External']
 
-# Normalise product type: merge Sachet / Sachets / Pouch / Pouch/Sachet → Pouch/Sachets
-_POUCH_VARIANTS    = {'sachet', 'sachets', 'pouch', 'pouch/sachet', 'pouch/sachets', 'stick pack', 'stick-pack', 'stickpack'}
+# Normalise product type into the five canonical categories above.
+#   • Flat Sachet        ← sachet / flat sachet / pouch variants
+#   • Stick Pack Sachet  ← stick pack variants
+#   • Ointment           ← ointment / tube variants
+_FLAT_VARIANTS     = {'sachet', 'sachets', 'flat sachet', 'flat sachets',
+                      'pouch', 'pouch/sachet', 'pouch/sachets'}
+_STICK_VARIANTS    = {'stick pack', 'stick-pack', 'stickpack',
+                      'stick pack sachet', 'stick-pack sachet', 'stickpack sachet'}
 _OINTMENT_VARIANTS = {'ointment', 'ointments', 'tube', 'tubes'}
 def normalise_pt(v):
     if pd.isna(v): return v
     s = str(v).strip()
     l = s.lower()
-    if l in _POUCH_VARIANTS:    return 'Pouch/Sachets'
+    if l in _STICK_VARIANTS:    return 'Stick Pack Sachet'
+    if l in _FLAT_VARIANTS:     return 'Flat Sachet'
     if l in _OINTMENT_VARIANTS: return 'Ointment'
     return s.title()   # "bottle" → "Bottle", "external" → "External"
 
@@ -271,7 +278,7 @@ def product_type_rows():
         fv = fill_by_type.get(pt, 0)
         pv = pack_by_type.get(pt, 0)
         dv = disp_by_type.get(pt, 0)
-        # Always show all 4 product types, even if 0
+        # Always show all product types, even if 0
         bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
         rows += (
             f'<tr style="background:{bg}">'
@@ -582,12 +589,14 @@ function applyFilter() {{
 }}
 
 // ── Product Type Breakdown ────────────────────────────
-const _POUCH_JS    = new Set(['sachet','sachets','pouch','pouch/sachet','pouch/sachets','stick pack','stick-pack','stickpack']);
+const _FLAT_JS     = new Set(['sachet','sachets','flat sachet','flat sachets','pouch','pouch/sachet','pouch/sachets']);
+const _STICK_JS    = new Set(['stick pack','stick-pack','stickpack','stick pack sachet','stick-pack sachet','stickpack sachet']);
 const _OINT_JS     = new Set(['ointment','ointments','tube','tubes']);
 function normPT(pt) {{
   if (!pt) return pt;
   const l = pt.toLowerCase().trim();
-  if (_POUCH_JS.has(l)) return 'Pouch/Sachets';
+  if (_STICK_JS.has(l)) return 'Stick Pack Sachet';
+  if (_FLAT_JS.has(l))  return 'Flat Sachet';
   if (_OINT_JS.has(l))  return 'Ointment';
   return pt.trim().replace(/\\b\\w/g, c => c.toUpperCase());  // title case
 }}
