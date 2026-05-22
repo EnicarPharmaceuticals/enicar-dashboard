@@ -470,9 +470,9 @@ html = f"""<!DOCTYPE html>
   </div>
   <div class="tbl-wrap">
     <table>
-      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>UNITS FILLED (MTD)</th><th>% OF TOTAL</th></tr></thead>
+      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>UNITS FILLED (MTD)</th></tr></thead>
       <tbody id="fill-line-rows"></tbody>
-      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td><td class="td-num">100%</td></tr></tfoot>
+      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
     </table>
   </div>
 </div>
@@ -488,9 +488,9 @@ html = f"""<!DOCTYPE html>
   </div>
   <div class="tbl-wrap">
     <table>
-      <thead id="pack-thead"><tr class="th-row"><th>LINE (Packed)</th><th>UNITS PACKED (MTD)</th><th>% OF TOTAL</th></tr></thead>
+      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>UNITS PACKED (MTD)</th></tr></thead>
       <tbody id="pack-line-rows"></tbody>
-      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td><td class="td-num">100%</td></tr></tfoot>
+      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
     </table>
   </div>
 </div>
@@ -524,9 +524,9 @@ html = f"""<!DOCTYPE html>
   {sec('  ━━&nbsp;&nbsp;PARTY-WISE &nbsp; SALES &nbsp; (Dispatched) &nbsp;━━', C_ORG)}
   <div class="tbl-wrap">
     <table>
-      <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th><th>% OF TOTAL</th></tr></thead>
+      <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr></thead>
       <tbody id="party-rows"></tbody>
-      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">—</td><td class="td-num">100%</td></tr></tfoot>
+      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">—</td></tr></tfoot>
     </table>
   </div>
 </div>
@@ -547,6 +547,22 @@ const LINES = ENICAR.lines;
 // ── Helpers ──────────────────────────────────────────
 const fmt = v => Math.round(v).toLocaleString('en-IN');
 const pct = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '0.0%';
+
+// Fixed display order for line breakdowns:
+//   Line No 1..5 first (numeric), then Flat Sachet, Stick Pack Sachet,
+//   Sachet, Ointment, External.
+function lineOrderKey(name) {{
+  const s = (name||'').toString().trim();
+  const m = s.toLowerCase().match(/^line\\s*no\\.?\\s*0*(\\d+)/);
+  if (m) return [0, parseInt(m[1],10)];
+  const special = {{'flat sachet':1,'stick pack sachet':2,'sachet':3,'ointment':4,'external':5}};
+  const k = special[s.toLowerCase()];
+  return [1, k!==undefined ? k : 99];
+}}
+function cmpLine(a,b) {{
+  const ka=lineOrderKey(a), kb=lineOrderKey(b);
+  return ka[0]-kb[0] || ka[1]-kb[1] || String(a).localeCompare(String(b));
+}}
 
 // ── Build date dropdown ───────────────────────────────
 (function buildDropdown() {{
@@ -636,30 +652,30 @@ function renderFilling(fill, isAll) {{
   let rows = ''; let i = 0;
   if (isAll) {{
     // MTD: group by line only
-    document.getElementById('fill-thead').innerHTML = '<tr class="th-row"><th>FILLING LINE</th><th>UNITS FILLED (MTD)</th><th>% OF TOTAL</th></tr>';
-    document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td><td class="td-num">100%</td></tr>`;
+    document.getElementById('fill-thead').innerHTML = '<tr class="th-row"><th>FILLING LINE</th><th>UNITS FILLED (MTD)</th></tr>';
+    document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byLine = {{}};
     fill.forEach(r => {{ if(r.line) byLine[r.line] = (byLine[r.line]||0)+(r.qty||0); }});
-    Object.entries(byLine).sort((a,b)=>b[1]-a[1]).forEach(([ln,v]) => {{
+    Object.entries(byLine).sort((a,b)=>cmpLine(a[0],b[0])).forEach(([ln,v]) => {{
       const bg = i++%2===0 ? '#F1F8F6':'#fff';
-      rows += `<tr style="background:${{bg}}"><td class="td-name">${{ln}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(v)}}</td><td class="td-num">${{pct(v,tot)}}</td></tr>`;
+      rows += `<tr style="background:${{bg}}"><td class="td-name">${{ln}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(v)}}</td></tr>`;
     }});
-    document.getElementById('fill-line-rows').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+    document.getElementById('fill-line-rows').innerHTML = rows || '<tr><td colspan="2" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }} else {{
     // Daily: group by line + product
-    document.getElementById('fill-thead').innerHTML = '<tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>UNITS FILLED (TODAY)</th><th>% OF TOTAL</th></tr>';
-    document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="2">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td><td class="td-num">100%</td></tr>`;
+    document.getElementById('fill-thead').innerHTML = '<tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>UNITS FILLED (TODAY)</th></tr>';
+    document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="2">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byLineProd = {{}};
     fill.forEach(r => {{
       const k = (r.line||'—') + '|||' + (r.product||'—');
       if (!byLineProd[k]) byLineProd[k] = {{line:r.line||'—', product:r.product||'—', qty:0}};
       byLineProd[k].qty += (r.qty||0);
     }});
-    Object.values(byLineProd).sort((a,b)=>b.qty-a.qty).forEach(d => {{
+    Object.values(byLineProd).sort((a,b)=>cmpLine(a.line,b.line) || b.qty-a.qty).forEach(d => {{
       const bg = i++%2===0 ? '#F1F8F6':'#fff';
-      rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td><td class="td-num">${{pct(d.qty,tot)}}</td></tr>`;
+      rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
     }});
-    document.getElementById('fill-line-rows').innerHTML = rows || '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+    document.getElementById('fill-line-rows').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }}
 }}
 
@@ -673,30 +689,30 @@ function renderPacking(pack, fill, isAll) {{
   let rows = ''; let i = 0;
   if (isAll) {{
     // MTD: group by line only
-    document.getElementById('pack-thead').innerHTML = '<tr class="th-row"><th>LINE (Packed)</th><th>UNITS PACKED (MTD)</th><th>% OF TOTAL</th></tr>';
-    document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td><td class="td-num">100%</td></tr>`;
+    document.getElementById('pack-thead').innerHTML = '<tr class="th-row"><th>PACKING LINE</th><th>UNITS PACKED (MTD)</th></tr>';
+    document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byLine = {{}};
     pack.forEach(r => {{ if(r.line) byLine[r.line] = (byLine[r.line]||0)+(r.totalPacked||0); }});
-    Object.entries(byLine).sort((a,b)=>b[1]-a[1]).forEach(([ln,v]) => {{
+    Object.entries(byLine).sort((a,b)=>cmpLine(a[0],b[0])).forEach(([ln,v]) => {{
       const bg = i++%2===0 ? '#F1F8F6':'#fff';
-      rows += `<tr style="background:${{bg}}"><td class="td-name">${{ln}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(v)}}</td><td class="td-num">${{pct(v,tot)}}</td></tr>`;
+      rows += `<tr style="background:${{bg}}"><td class="td-name">${{ln}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(v)}}</td></tr>`;
     }});
-    document.getElementById('pack-line-rows').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+    document.getElementById('pack-line-rows').innerHTML = rows || '<tr><td colspan="2" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }} else {{
     // Daily: group by line + product
-    document.getElementById('pack-thead').innerHTML = '<tr class="th-row"><th>LINE (Packed)</th><th>PRODUCT NAME</th><th>UNITS PACKED (TODAY)</th><th>% OF TOTAL</th></tr>';
-    document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="2">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td><td class="td-num">100%</td></tr>`;
+    document.getElementById('pack-thead').innerHTML = '<tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>UNITS PACKED (TODAY)</th></tr>';
+    document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="2">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byLineProd = {{}};
     pack.forEach(r => {{
       const k = (r.line||'—') + '|||' + (r.product||'—');
       if (!byLineProd[k]) byLineProd[k] = {{line:r.line||'—', product:r.product||'—', qty:0}};
       byLineProd[k].qty += (r.totalPacked||0);
     }});
-    Object.values(byLineProd).sort((a,b)=>b.qty-a.qty).forEach(d => {{
+    Object.values(byLineProd).sort((a,b)=>cmpLine(a.line,b.line) || b.qty-a.qty).forEach(d => {{
       const bg = i++%2===0 ? '#F1F8F6':'#fff';
-      rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td><td class="td-num">${{pct(d.qty,tot)}}</td></tr>`;
+      rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
     }});
-    document.getElementById('pack-line-rows').innerHTML = rows || '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+    document.getElementById('pack-line-rows').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }}
 }}
 
@@ -732,19 +748,19 @@ function renderParties(disp, isAll) {{
   let rows = ''; let i = 0;
   if (isAll) {{
     // MTD: group by party only
-    document.getElementById('party-thead').innerHTML = '<tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th><th>% OF TOTAL</th></tr>';
-    document.getElementById('party-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">${{fmt(tot)}}</td><td class="td-num">100%</td></tr>`;
+    document.getElementById('party-thead').innerHTML = '<tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr>';
+    document.getElementById('party-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byParty = {{}};
     disp.forEach(r => {{ if(r.party) byParty[r.party] = (byParty[r.party]||0)+(r.qty||0); }});
     Object.entries(byParty).sort((a,b)=>b[1]-a[1]).forEach(([p,v]) => {{
       const bg = i++%2===0 ? '#FFF8F1':'#fff';
-      rows += `<tr style="background:${{bg}}"><td class="td-name">${{p}}</td><td class="td-num" style="color:#E65100;font-weight:700">${{fmt(v)}}</td><td class="td-num">${{pct(v,tot)}}</td></tr>`;
+      rows += `<tr style="background:${{bg}}"><td class="td-name">${{p}}</td><td class="td-num" style="color:#E65100;font-weight:700">${{fmt(v)}}</td></tr>`;
     }});
-    document.getElementById('party-rows').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+    document.getElementById('party-rows').innerHTML = rows || '<tr><td colspan="2" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }} else {{
     // Daily: group by party + product
-    document.getElementById('party-thead').innerHTML = '<tr class="th-row"><th>PARTY NAME</th><th>PRODUCT NAME</th><th>DISPATCHED (TODAY)</th><th>% OF TOTAL</th></tr>';
-    document.getElementById('party-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="2">TOTAL ALL PARTIES</td><td class="td-num">${{fmt(tot)}}</td><td class="td-num">100%</td></tr>`;
+    document.getElementById('party-thead').innerHTML = '<tr class="th-row"><th>PARTY NAME</th><th>PRODUCT NAME</th><th>DISPATCHED (TODAY)</th></tr>';
+    document.getElementById('party-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="2">TOTAL ALL PARTIES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byPartyProd = {{}};
     disp.forEach(r => {{
       const k = (r.party||'—') + '|||' + (r.product||'—');
@@ -753,9 +769,9 @@ function renderParties(disp, isAll) {{
     }});
     Object.values(byPartyProd).sort((a,b)=>b.qty-a.qty).forEach(d => {{
       const bg = i++%2===0 ? '#FFF8F1':'#fff';
-      rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.party}}</td><td class="td-name">${{d.product}}</td><td class="td-num" style="color:#E65100;font-weight:700">${{fmt(d.qty)}}</td><td class="td-num">${{pct(d.qty,tot)}}</td></tr>`;
+      rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.party}}</td><td class="td-name">${{d.product}}</td><td class="td-num" style="color:#E65100;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
     }});
-    document.getElementById('party-rows').innerHTML = rows || '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+    document.getElementById('party-rows').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }}
 }}
 
