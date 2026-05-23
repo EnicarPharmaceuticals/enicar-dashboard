@@ -112,6 +112,56 @@ def normalise_line(s):
         return f'Line No {int(m.group(1))}'
     return _LINE_SPECIAL.get(raw.lower(), raw.title())
 
+# ──────────────────────────────────────────────────────────────────────────────
+# CUSTOMER / PARTY ALIASES  ←──  EDIT THIS LIST WEEKLY
+# ------------------------------------------------------------------------------
+# Each customer has ONE canonical name (the dict key) and a list of every
+# spelling/typo that should map to it. To merge a newly-spotted duplicate,
+# just add the misspelling to the right list — or add a new "Canonical": [...]
+# entry for a brand-new customer.  Matching ignores case, extra spaces and dots.
+# ──────────────────────────────────────────────────────────────────────────────
+_PARTY_GROUPS = {
+    'Procter & Gamble':              ['Procter & Gamble'],
+    'Ronak Exim':                    ['Ronak Exim', 'Ronak exim ltd'],
+    'Galaxy Pharma':                 ['Galaxy', 'Galaxy pharma', 'Galxy pharma', 'Galexy pharma'],
+    'Macleods':                      ['Macleods', 'Macleoads'],
+    'Sapphire Lifescience Pvt Ltd':  ['Sapphire Lifescience Pvt. Ltd', 'Saphaire lifescience ltd',
+                                      'Sapphire lifescianes p ltd'],
+    'Lesanto Laboratories':          ['Lesanto', 'Lesanto Laboratories'],
+    'Group Pharma':                  ['GROUP', 'Group Pharma', 'Group Pharmaceutical'],
+    'IPC Healthcare':                ['IPC Healthcare'],
+    'Parnax Lab':                    ['PARNAX', 'Parnax Lab Ltd', 'Parnex lab'],
+    'Pharmatec':                     ['Pharmatec', 'Pharmatec Pvt Ltd', 'Pharmatech'],
+    'Pharmatrust Ltd':               ['Pharma trust', 'Pharmatrust ltd', 'Pharmatrust limited'],
+    'Socomed':                       ['Socomed', 'Socomed Pharma'],
+    'Bliss GVS':                     ['BLISS', 'Bliss GVS'],
+    'Careth Corporation':            ['Careth Corporation'],
+    'Shalina':                       ['Salina', 'Shalina'],
+    'UC Rebok Investment Ltd':       ['UC Rebok Investment', 'UC-rebok investment ltd'],
+    'Blue Map Pharmachem':           ['Blue Map Pharmachem'],
+    'Kanvid Pharmaceutical':         ['Kanvid Pharmaceutical'],
+    'Unique Pharma':                 ['Unique Pharma'],
+    'Workcell Solution':             ['Workcell Solution'],
+    'Alvita Pharma':                 ['Alvita pharma p ltd'],
+    'Indoco Remedies':               ['Indoco Remedies'],
+    'Kamal':                         ['KAMAL'],
+}
+
+def _pkey(s):
+    """Loose key for matching: lowercase, punctuation→space, single spaces."""
+    return ' '.join(re.sub(r'[.\-,/]', ' ', str(s).lower()).split())
+
+_PARTY_LOOKUP = {}
+for _canon, _variants in _PARTY_GROUPS.items():
+    _PARTY_LOOKUP[_pkey(_canon)] = _canon
+    for _v in _variants:
+        _PARTY_LOOKUP[_pkey(_v)] = _canon
+
+def normalise_party(s):
+    if pd.isna(s): return s
+    raw = ' '.join(str(s).strip().split())
+    return _PARTY_LOOKUP.get(_pkey(raw), raw)
+
 fill_df['Line'] = fill_df['Line'].apply(normalise_line)
 pack_df['Line'] = pack_df['Line'].apply(normalise_line)
 
@@ -122,6 +172,11 @@ disp_df = read_log('➕ Dispatch Log', 'B:I',
 staff_df = read_log('➕ Staff Log', 'B:F',
     ['Date','Total','Female','Male','Remarks'],
     ['Total','Female','Male'])
+
+# Merge duplicate customer spellings via the alias list above.
+for _df in (fill_df, pack_df, disp_df):
+    if 'Party' in _df.columns:
+        _df['Party'] = _df['Party'].apply(normalise_party)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PERIOD SETUP
