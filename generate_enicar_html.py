@@ -310,24 +310,27 @@ except Exception:
 def _batch_journey():
     """Return list of per-batch dicts with filled/packed/dispatched + status."""
     j = {}
-    def add(df, qty_col, role):
+    def add(df, qty_col, role, ptype_col):
         for _, r in df.iterrows():
             b = r.get('Batch')
             if pd.isna(b) or not str(b).strip():
                 continue
             k = _bkey(b)
-            e = j.setdefault(k, {'batch': str(b).strip(), 'product': None,
+            e = j.setdefault(k, {'batch': str(b).strip(), 'product': None, 'ptype': None,
                                  'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0,
                                  'last': None})
             e[role] += float(r.get(qty_col) or 0)
             if e['product'] is None and not pd.isna(r.get('Product')):
                 e['product'] = str(r.get('Product')).strip()
+            if e['ptype'] is None and not pd.isna(r.get(ptype_col)):
+                e['ptype'] = str(r.get(ptype_col)).strip()
             d = r.get('Date')
             if d is not None and (e['last'] is None or d > e['last']):
                 e['last'] = d
-    add(fill_df, 'Qty',        'filled')
-    add(pack_df, 'TotalPacked','packed')
-    add(disp_df, 'Qty',        'dispatched')
+    # Packing first so packed items take their product type from the packing log.
+    add(pack_df, 'TotalPacked','packed',     'ProdType')
+    add(fill_df, 'Qty',        'filled',     'ProductType')
+    add(disp_df, 'Qty',        'dispatched', 'ProductType')
 
     for k, e in j.items():
         f, p, d = e['filled'], e['packed'], e['dispatched']
@@ -434,8 +437,11 @@ def product_type_rows():
     return rows
 
 # Packed and sitting in BSR stock — i.e. packed but NOT yet dispatched.
+# Grouped & sorted by product type (canonical order), then product, then batch.
+def _ptype_rank(pt):
+    return PRODUCT_TYPES.index(pt) if pt in PRODUCT_TYPES else len(PRODUCT_TYPES)
 IN_STOCK = sorted([e for e in BATCH_JOURNEY if e['packed'] > 0 and e['dispatched'] == 0],
-                  key=lambda e: e['packed'], reverse=True)
+                  key=lambda e: (_ptype_rank(e['ptype']), (e['product'] or '').lower(), e['batch']))
 IN_STOCK_UNITS = sum(e['packed'] for e in IN_STOCK)
 
 def batch_journey_rows():
@@ -444,12 +450,13 @@ def batch_journey_rows():
         bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
         rows += (
             f'<tr style="background:{bg}">'
-            f'<td class="td-name" style="font-weight:600">{e["batch"]}</td>'
             f'<td class="td-name">{e["product"] or "—"}</td>'
+            f'<td class="td-name" style="color:#607D8B">{e["ptype"] or "—"}</td>'
+            f'<td class="td-name" style="font-weight:600">{e["batch"]}</td>'
             f'<td class="td-num" style="color:{C_AMB};font-weight:700">{n(e["packed"])}</td>'
             f'</tr>'
         )
-    return rows or '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
+    return rows or '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
 
 def party_table_rows():
     rows = ''
@@ -704,7 +711,7 @@ html = f"""<!DOCTYPE html>
   <div class="tbl-wrap">
     <table>
       <thead><tr class="th-row">
-        <th>BATCH</th><th>PRODUCT</th><th>PACKED (IN STOCK)</th>
+        <th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th>
       </tr></thead>
       <tbody>{batch_journey_rows()}</tbody>
     </table>
