@@ -433,31 +433,25 @@ def product_type_rows():
         )
     return rows
 
+# Packed and sitting in BSR stock — i.e. packed but NOT yet dispatched.
+IN_STOCK = sorted([e for e in BATCH_JOURNEY if e['packed'] > 0 and e['dispatched'] == 0],
+                  key=lambda e: e['packed'], reverse=True)
+IN_STOCK_UNITS = sum(e['packed'] for e in IN_STOCK)
+
 def batch_journey_rows():
     rows = ''
-    for i, e in enumerate(BATCH_JOURNEY):
-        problem = e['rank'] == 0
-        opening = e['rank'] == 4
-        if problem:
-            badge = f'<span style="color:#fff;background:{C_AMB};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">{e["status"]}</span>'
-        elif opening:
-            badge = f'<span style="color:#546E7A;background:#ECEFF1;padding:2px 8px;border-radius:10px;font-size:11px">{e["status"]}</span>'
-        else:
-            badge = f'<span style="color:{C_GRN};font-size:12px;font-weight:600">{e["status"]}</span>'
-        bg = '#FFF4F0' if problem else ('#F1F8F6' if i % 2 == 0 else '#FFFFFF')
+    for i, e in enumerate(IN_STOCK):
+        bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
         last = e['last'].strftime('%d %b') if e['last'] else '—'
         rows += (
             f'<tr style="background:{bg}">'
             f'<td class="td-name" style="font-weight:600">{e["batch"]}</td>'
             f'<td class="td-name">{e["product"] or "—"}</td>'
-            f'<td class="td-num" style="color:{C_SEC}">{n(e["filled"])}</td>'
-            f'<td class="td-num" style="color:{C_AMB}">{n(e["packed"])}</td>'
-            f'<td class="td-num" style="color:{C_ORG}">{n(e["dispatched"])}</td>'
+            f'<td class="td-num" style="color:{C_AMB};font-weight:700">{n(e["packed"])}</td>'
             f'<td class="td-name" style="color:#90A4AE;font-size:12px">{last}</td>'
-            f'<td>{badge}</td>'
             f'</tr>'
         )
-    return rows or '<tr><td colspan="7" style="text-align:center;color:#90A4AE;padding:12px">No batch data</td></tr>'
+    return rows or '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
 
 def party_table_rows():
     rows = ''
@@ -701,25 +695,18 @@ html = f"""<!DOCTYPE html>
 </div>
 
 <!-- ════════════════════════════════════════════════════════════
-     SECTION 7 — BATCH JOURNEY (Filling → Packing → Dispatch)
+     SECTION 7 — PACKED & IN STOCK (not yet dispatched)
 ════════════════════════════════════════════════════════════ -->
 <div class="card">
-  {sec('  ━━&nbsp;&nbsp;BATCH &nbsp; JOURNEY &nbsp; (Filling &nbsp;→&nbsp; Packing &nbsp;→&nbsp; Dispatch) &nbsp;━━', C_SEC)}
+  {sec('  ━━&nbsp;&nbsp;PACKED &nbsp;&amp;&nbsp; IN &nbsp; BSR &nbsp; STOCK &nbsp; (Not &nbsp; Yet &nbsp; Dispatched) &nbsp;━━', C_SEC)}
   <div class="tile-row">
-    {tile('FLOWING END-TO-END', n(_bj_flowing), 'filled→packed→dispatched', C_GRN)}
-    {tile('IN STOCK', n(_bj_stock), 'filled, not yet shipped', C_SEC)}
-    {tile('OPENING STOCK', n(_bj_opening), 'made before tracking (baseline)', '#546E7A')}
-    {tile('NEEDS ATTENTION', n(_bj_problems), 'shipped but no fill record', C_AMB)}
-  </div>
-  <div style="font-size:12px;color:#607D8B;padding:4px 4px 10px">
-    Lifetime trace by batch number. Rows highlighted in red are genuine gaps to check;
-    grey “opening stock” rows are pre-tracking and expected.
+    {tile('BATCHES IN STOCK', n(len(IN_STOCK)), 'packed, awaiting dispatch', C_SEC)}
+    {tile('UNITS IN STOCK', n(IN_STOCK_UNITS), 'packed & not dispatched', C_AMB)}
   </div>
   <div class="tbl-wrap">
     <table>
       <thead><tr class="th-row">
-        <th>BATCH</th><th>PRODUCT</th><th>FILLED</th><th>PACKED</th>
-        <th>DISPATCHED</th><th>LAST SEEN</th><th>STATUS</th>
+        <th>BATCH</th><th>PRODUCT</th><th>PACKED (IN STOCK)</th><th>LAST PACKED</th>
       </tr></thead>
       <tbody>{batch_journey_rows()}</tbody>
     </table>
