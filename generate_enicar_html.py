@@ -442,16 +442,14 @@ def batch_journey_rows():
     rows = ''
     for i, e in enumerate(IN_STOCK):
         bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
-        last = e['last'].strftime('%d %b') if e['last'] else '—'
         rows += (
             f'<tr style="background:{bg}">'
             f'<td class="td-name" style="font-weight:600">{e["batch"]}</td>'
             f'<td class="td-name">{e["product"] or "—"}</td>'
             f'<td class="td-num" style="color:{C_AMB};font-weight:700">{n(e["packed"])}</td>'
-            f'<td class="td-name" style="color:#90A4AE;font-size:12px">{last}</td>'
             f'</tr>'
         )
-    return rows or '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
+    return rows or '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
 
 def party_table_rows():
     rows = ''
@@ -706,7 +704,7 @@ html = f"""<!DOCTYPE html>
   <div class="tbl-wrap">
     <table>
       <thead><tr class="th-row">
-        <th>BATCH</th><th>PRODUCT</th><th>PACKED (IN STOCK)</th><th>LAST PACKED</th>
+        <th>BATCH</th><th>PRODUCT</th><th>PACKED (IN STOCK)</th>
       </tr></thead>
       <tbody>{batch_journey_rows()}</tbody>
     </table>
