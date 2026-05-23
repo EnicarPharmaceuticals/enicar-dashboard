@@ -283,9 +283,80 @@ pack_by_type = cur(pack_df).groupby('ProdType')['TotalPacked'].sum()
 disp_by_type = cur(disp_df).groupby('ProductType')['Qty'].sum()
 
 # ══════════════════════════════════════════════════════════════════════════════
+# BATCH JOURNEY  (Filling → Packing → Dispatch traceability, lifetime)
+# ──────────────────────────────────────────────────────────────────────────────
+# Batch number is the thread linking the three logs. For every batch we total
+# how much was filled, packed and dispatched, and assign a clear status.
+# A frozen baseline (batch_baseline.json) holds the "opening stock" batches that
+# were made BEFORE filling-log tracking began — those are expected to have no
+# filling record and are never flagged as a problem.
+# Designed to extend: when Production Plan + Raw Material Dispatch arrive, they
+# become two more stages keyed on the same batch number.
+# ══════════════════════════════════════════════════════════════════════════════
+import json, re as _re_bj
+
+def _bkey(b):
+    """Batch key — uppercase, no spaces (matches the typo checker)."""
+    return _re_bj.sub(r'\s+', '', str(b)).upper()
+
+# Load the frozen opening-stock baseline (created once, never auto-rewritten).
+_BASELINE_PATH = os.path.join(HERE, 'batch_baseline.json')
+try:
+    OPENING_STOCK = set(json.load(open(_BASELINE_PATH)).get('batches', []))
+except Exception:
+    OPENING_STOCK = set()
+    print('  Note: batch_baseline.json not found — opening stock not classified.')
+
+def _batch_journey():
+    """Return list of per-batch dicts with filled/packed/dispatched + status."""
+    j = {}
+    def add(df, qty_col, role):
+        for _, r in df.iterrows():
+            b = r.get('Batch')
+            if pd.isna(b) or not str(b).strip():
+                continue
+            k = _bkey(b)
+            e = j.setdefault(k, {'batch': str(b).strip(), 'product': None,
+                                 'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0,
+                                 'last': None})
+            e[role] += float(r.get(qty_col) or 0)
+            if e['product'] is None and not pd.isna(r.get('Product')):
+                e['product'] = str(r.get('Product')).strip()
+            d = r.get('Date')
+            if d is not None and (e['last'] is None or d > e['last']):
+                e['last'] = d
+    add(fill_df, 'Qty',        'filled')
+    add(pack_df, 'TotalPacked','packed')
+    add(disp_df, 'Qty',        'dispatched')
+
+    for k, e in j.items():
+        f, p, d = e['filled'], e['packed'], e['dispatched']
+        in_fill = f > 0
+        if k in OPENING_STOCK:                   # frozen pre-tracking stock — never flag
+            e['status'], e['rank'] = ('Opening stock (pre-system)', 4)
+        elif not in_fill:
+            e['status'], e['rank'] = ('⚠ Dispatched/packed but never filled', 0)
+        elif d > f * 1.02 and d - f > 1:         # shipped clearly more than made
+            e['status'], e['rank'] = ('⚠ Dispatched more than filled', 0)
+        elif d > 0:
+            e['status'], e['rank'] = ('Filled → Packed → Dispatched', 3)
+        elif p > 0:
+            e['status'], e['rank'] = ('Filled & packed (in stock)', 2)
+        else:
+            e['status'], e['rank'] = ('Filled only', 2)
+    # Problems first (rank 0), then most recent activity within each group
+    return sorted(j.values(),
+                  key=lambda e: (e['rank'], -(e['last'].toordinal() if e['last'] else 0)))
+
+BATCH_JOURNEY = _batch_journey()
+_bj_problems = sum(1 for e in BATCH_JOURNEY if e['rank'] == 0)
+_bj_flowing  = sum(1 for e in BATCH_JOURNEY if e['status'].startswith('Filled → Packed'))
+_bj_stock    = sum(1 for e in BATCH_JOURNEY if e['rank'] == 2)
+_bj_opening  = sum(1 for e in BATCH_JOURNEY if e['rank'] == 4)
+
+# ══════════════════════════════════════════════════════════════════════════════
 # BUILD JSON DATA FOR JS DAY FILTER
 # ══════════════════════════════════════════════════════════════════════════════
-import json
 
 def safe(v):
     if v is None: return None
@@ -361,6 +432,32 @@ def product_type_rows():
             f'</tr>'
         )
     return rows
+
+def batch_journey_rows():
+    rows = ''
+    for i, e in enumerate(BATCH_JOURNEY):
+        problem = e['rank'] == 0
+        opening = e['rank'] == 4
+        if problem:
+            badge = f'<span style="color:#fff;background:{C_AMB};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">{e["status"]}</span>'
+        elif opening:
+            badge = f'<span style="color:#546E7A;background:#ECEFF1;padding:2px 8px;border-radius:10px;font-size:11px">{e["status"]}</span>'
+        else:
+            badge = f'<span style="color:{C_GRN};font-size:12px;font-weight:600">{e["status"]}</span>'
+        bg = '#FFF4F0' if problem else ('#F1F8F6' if i % 2 == 0 else '#FFFFFF')
+        last = e['last'].strftime('%d %b') if e['last'] else '—'
+        rows += (
+            f'<tr style="background:{bg}">'
+            f'<td class="td-name" style="font-weight:600">{e["batch"]}</td>'
+            f'<td class="td-name">{e["product"] or "—"}</td>'
+            f'<td class="td-num" style="color:{C_SEC}">{n(e["filled"])}</td>'
+            f'<td class="td-num" style="color:{C_AMB}">{n(e["packed"])}</td>'
+            f'<td class="td-num" style="color:{C_ORG}">{n(e["dispatched"])}</td>'
+            f'<td class="td-name" style="color:#90A4AE;font-size:12px">{last}</td>'
+            f'<td>{badge}</td>'
+            f'</tr>'
+        )
+    return rows or '<tr><td colspan="7" style="text-align:center;color:#90A4AE;padding:12px">No batch data</td></tr>'
 
 def party_table_rows():
     rows = ''
@@ -599,6 +696,32 @@ html = f"""<!DOCTYPE html>
       <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr></thead>
       <tbody id="party-rows"></tbody>
       <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">—</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7 — BATCH JOURNEY (Filling → Packing → Dispatch)
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;BATCH &nbsp; JOURNEY &nbsp; (Filling &nbsp;→&nbsp; Packing &nbsp;→&nbsp; Dispatch) &nbsp;━━', C_SEC)}
+  <div class="tile-row">
+    {tile('FLOWING END-TO-END', n(_bj_flowing), 'filled→packed→dispatched', C_GRN)}
+    {tile('IN STOCK', n(_bj_stock), 'filled, not yet shipped', C_SEC)}
+    {tile('OPENING STOCK', n(_bj_opening), 'made before tracking (baseline)', '#546E7A')}
+    {tile('NEEDS ATTENTION', n(_bj_problems), 'shipped but no fill record', C_AMB)}
+  </div>
+  <div style="font-size:12px;color:#607D8B;padding:4px 4px 10px">
+    Lifetime trace by batch number. Rows highlighted in red are genuine gaps to check;
+    grey “opening stock” rows are pre-tracking and expected.
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr class="th-row">
+        <th>BATCH</th><th>PRODUCT</th><th>FILLED</th><th>PACKED</th>
+        <th>DISPATCHED</th><th>LAST SEEN</th><th>STATUS</th>
+      </tr></thead>
+      <tbody>{batch_journey_rows()}</tbody>
     </table>
   </div>
 </div>
