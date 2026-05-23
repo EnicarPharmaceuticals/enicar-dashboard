@@ -1,0 +1,27 @@
+name: Weekly Data Review
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'    # Mondays 04:00 UTC = 9:30 AM IST
+  workflow_dispatch:        # manual "Run workflow" button
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run weekly review + email the team
+        env:
+          GOOGLE_OAUTH_TOKEN: ${{ secrets.GOOGLE_OAUTH_TOKEN }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_SENDER: 'nimishpatil@enicarpharma.com'
+          DRIVE_FILE_ID: '1CMNGU9T2pae0rv4dXf3XDXGGqJXWy19O'
+        run: python cloud_weekly_review.py
