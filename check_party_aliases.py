@@ -14,7 +14,7 @@ import os, sys, re
 from difflib import SequenceMatcher
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.join(HERE, '..')
+ROOT = os.environ.get('DASHBOARD_ROOT') or os.path.join(HERE, '..')
 sys.path.insert(0, HERE)
 
 import pandas as pd
@@ -54,24 +54,24 @@ def main():
         if pkey(n) not in LOOKUP:
             unknown[n] = unknown.get(n, 0) + 1
 
-    print('── Customer / party alias review ──')
+    print('── Customer name check ──\n')
     if not unknown:
-        print('✓ Every customer name in the data is already in the alias list. Nothing to do.')
+        print('All customer names are recognised — nothing to clean up. ✅')
         return 0
 
-    print(f'\n{len(unknown)} name(s) NOT yet in the alias list:\n')
+    print('These customer names are new or spelled differently from what we have seen')
+    print('before. If any is just a different spelling of an existing customer, it should')
+    print('be merged so the reports stay accurate:\n')
     for name, cnt in sorted(unknown.items(), key=lambda x: -x[1]):
-        # suggest the closest known canonical
         best, score = None, 0.0
         for c in CANONS:
             s = SequenceMatcher(None, pkey(name), pkey(c)).ratio()
             if s > score:
                 best, score = c, s
-        hint = f'   ↳ looks like "{best}"?' if score >= 0.6 else '   ↳ (looks like a NEW customer)'
-        print(f'  {cnt:3}×  {name!r}')
-        print(hint)
-    print('\nTo fix: open generate_enicar_html.py → _PARTY_GROUPS, add each')
-    print('typo under the right customer, or add a new entry for new customers.')
+        if score >= 0.6:
+            print(f'  • "{name}" (used {cnt}×) — looks like the same as "{best}"')
+        else:
+            print(f'  • "{name}" (used {cnt}×) — looks like a brand-new customer')
     return 0
 
 
