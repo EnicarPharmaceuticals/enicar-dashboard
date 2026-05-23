@@ -1,33 +1,40 @@
 #!/usr/bin/env python3
 """
-check_batch_typos.py  —  weekly batch-number typo review
+check_batch_typos.py  —  weekly batch-number discrepancy review
 ─────────────────────────────────────────────────────────────────
-Batch number is the key that links Filling → Packing → Dispatch.
-Small typing slips break that link. This flags HIGH-CONFIDENCE typos
-only, so legitimate sequential batches are NOT falsely flagged:
+Batch number links Filling → Packing → Dispatch. When the same batch
+is mistyped in one log, the link breaks. This finds those and decides
+which spelling is CORRECT using this rule (in priority order):
 
-  1. Dropped / extra character   e.g.  6141C8501  vs  6141C85001
-  2. Letter typo, digits identical e.g. SC-05376  vs  SL-05376
-  3. Case mismatch                e.g. El-2417   vs  EL-2417
+  1. The spelling that appears in MORE logs wins
+     (e.g. in Filling + Packing  beats  only Dispatch).
+  2. Then: the one used in more rows.
+  3. Then: the one whose prefix / length is more common across all
+     batches (handles the case where each appears once).
 
-Pure single-digit changes (e.g. 6138 vs 6139) are deliberately NOT
-flagged — those are almost always different real batches.
+Only HIGH-CONFIDENCE typo shapes are considered, so legitimate
+sequential batches (6138… vs 6139…) are never flagged:
+  • dropped / extra character     6141C85001 vs 6141C8501
+  • letter typo, digits identical SC-05376  vs SL-05376
+  • case / spacing only           El-2417    vs EL-2417
 
 Run:  python3 check_batch_typos.py
 """
 
 import os, sys, re
+from collections import Counter
 import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, '..')
 XLSX = os.path.join(ROOT, 'Enicar_Dashboard_Template.xlsx')
+LOG_ORDER = ['Filling', 'Packing', 'Dispatch']
 
 
 def load():
-    specs = [('Filling', '➕ Filling Log', 'B:J', {'batch': 6, 'product': 2, 'party': 7}),
-             ('Packing', '➕ Packing Log', 'B:N', {'batch': 5, 'product': 2, 'party': 11}),
-             ('Dispatch', '➕ Dispatch Log', 'B:I', {'batch': 5, 'product': 1, 'party': 6})]
+    specs = [('Filling', '➕ Filling Log', 'B:J', {'batch': 6, 'product': 2}),
+             ('Packing', '➕ Packing Log', 'B:N', {'batch': 5, 'product': 2}),
+             ('Dispatch', '➕ Dispatch Log', 'B:I', {'batch': 5, 'product': 1})]
     rows = []
     for log, sheet, usecols, idx in specs:
         try:
@@ -38,30 +45,22 @@ def load():
             b = r.iloc[idx['batch']]
             if pd.isna(b):
                 continue
-            rows.append({
-                'log': log,
-                'batch': str(b).strip(),
-                'product': str(r.iloc[idx['product']]).strip() if not pd.isna(r.iloc[idx['product']]) else '',
-                'party': str(r.iloc[idx['party']]).strip() if not pd.isna(r.iloc[idx['party']]) else '',
-            })
+            prod = r.iloc[idx['product']]
+            rows.append({'log': log, 'batch': str(b).strip(),
+                         'product': '' if pd.isna(prod) else str(prod).strip()})
     return rows
 
 
-def norm(b):
-    return re.sub(r'\s+', '', str(b)).upper()
-
-
-def digits(b):
-    return re.sub(r'[^0-9]', '', str(b))
+def norm(b):    return re.sub(r'\s+', '', str(b)).upper()
+def digits(b):  return re.sub(r'[^0-9]', '', str(b))
+def prefix(b):  m = re.match(r'^([A-Z]+)', norm(b)); return m.group(1) if m else ''
 
 
 def is_one_indel(a, b):
-    """True if a and b differ by exactly one inserted/deleted character."""
     if abs(len(a) - len(b)) != 1:
         return False
     short, long = (a, b) if len(a) < len(b) else (b, a)
-    i = j = 0
-    skipped = False
+    i = j = 0; skipped = False
     while i < len(short) and j < len(long):
         if short[i] == long[j]:
             i += 1; j += 1
@@ -73,61 +72,92 @@ def is_one_indel(a, b):
 
 
 def classify(a, b):
-    """Return a typo reason if (a,b) look like the same batch mistyped, else None."""
     na, nb = norm(a), norm(b)
     if na == nb:
         return 'case/spacing only' if a != b else None
     if is_one_indel(na, nb):
         return 'dropped/extra character'
     if len(na) == len(nb) and digits(na) == digits(nb) and digits(na):
-        diffs = sum(1 for x, y in zip(na, nb) if x != y)
-        if diffs == 1:
+        if sum(1 for x, y in zip(na, nb) if x != y) == 1:
             return 'letter typo (digits identical)'
     return None
 
 
 def main():
     rows = load()
-    # unique batch strings per log
-    by_log = {}
+    if not rows:
+        print('── Batch-number discrepancy review ──')
+        print('No data could be read.'); return 0
+
+    # Per-batch metadata
     meta = {}
     for r in rows:
-        by_log.setdefault(r['log'], set()).add(r['batch'])
-        meta.setdefault(r['batch'], {'product': set(), 'party': set(), 'logs': set()})
-        meta[r['batch']]['product'].add(r['product'])
-        meta[r['batch']]['party'].add(r['party'])
-        meta[r['batch']]['logs'].add(r['log'])
+        m = meta.setdefault(r['batch'], {'logs': set(), 'rows': 0, 'product': set()})
+        m['logs'].add(r['log']); m['rows'] += 1
+        if r['product']:
+            m['product'].add(r['product'])
 
-    all_batches = sorted(meta)
-    seen = set()
-    findings = []
-    for i, a in enumerate(all_batches):
-        for b in all_batches[i+1:]:
-            reason = classify(a, b)
-            if not reason:
-                continue
-            # only interesting if they sit in DIFFERENT logs (a broken link)
-            if meta[a]['logs'] == meta[b]['logs'] and len(meta[a]['logs']) == 1:
-                # same single log — still worth flagging as a duplicate typo
-                pass
-            key = tuple(sorted((a, b)))
-            if key in seen:
-                continue
-            seen.add(key)
-            findings.append((a, b, reason))
+    batches = sorted(meta)
+    # global frequencies for tie-breaking
+    pref_freq = Counter(prefix(b) for b in batches if prefix(b))
+    len_freq  = Counter(len(norm(b)) for b in batches)
 
-    print('── Batch-number typo review ──')
-    if not findings:
-        print('✓ No likely batch-number typos found. Filling/Packing/Dispatch link cleanly.')
+    # union-find to cluster typo-variants
+    parent = {b: b for b in batches}
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]; x = parent[x]
+        return x
+    def union(a, b):
+        parent[find(a)] = find(b)
+
+    for i, a in enumerate(batches):
+        for b in batches[i+1:]:
+            if classify(a, b):
+                union(a, b)
+
+    clusters = {}
+    for b in batches:
+        clusters.setdefault(find(b), []).append(b)
+    clusters = [c for c in clusters.values() if len(c) > 1]
+
+    def rank_key(b):
+        # higher = more likely the CORRECT spelling
+        return (len(meta[b]['logs']), meta[b]['rows'],
+                pref_freq.get(prefix(b), 0), len_freq.get(len(norm(b)), 0))
+
+    print('── Batch-number discrepancy review ──')
+    if not clusters:
+        print('✓ No likely batch-number typos found. Logs link cleanly.')
         return 0
 
-    print(f'\n{len(findings)} possible batch typo(s) — review and fix at the source:\n')
-    for a, b, reason in findings:
-        la = '/'.join(sorted(meta[a]['logs']))
-        lb = '/'.join(sorted(meta[b]['logs']))
-        prod = ' / '.join(sorted({p for p in (meta[a]['product'] | meta[b]['product']) if p}))[:60]
-        print(f'  {a!r} [{la}]  ⟷  {b!r} [{lb}]')
-        print(f'     reason: {reason}   product: {prod}')
+    # sort clusters: confident ones (decided by log-count) first
+    def cluster_confident(c):
+        s = sorted(c, key=rank_key, reverse=True)
+        return len(meta[s[0]]['logs']) > len(meta[s[1]]['logs'])
+
+    clusters.sort(key=lambda c: (not cluster_confident(c)))
+
+    print(f'\n{len(clusters)} batch number(s) appear to be mistyped. For each, the')
+    print('CORRECT spelling (used in the most logs) is shown first, then the')
+    print('WRONG one(s) to fix in the sheet:\n')
+
+    for n, c in enumerate(clusters, 1):
+        ranked = sorted(c, key=rank_key, reverse=True)
+        correct = ranked[0]
+        wrongs = ranked[1:]
+        prod = ' / '.join(sorted({p for b in c for p in meta[b]['product']}))[:70]
+        c_logs = '+'.join(sorted(meta[correct]['logs'], key=LOG_ORDER.index))
+        confident = len(meta[correct]['logs']) > max(len(meta[w]['logs']) for w in wrongs)
+        tag = '' if confident else '   ⚠ each appears about equally — please confirm'
+        print(f'{n}. Product: {prod}')
+        print(f'   ✅ CORRECT : {correct!r:16} (in {c_logs})')
+        for w in wrongs:
+            w_logs = '+'.join(sorted(meta[w]['logs'], key=LOG_ORDER.index))
+            print(f'   ❌ FIX     : {w!r:16} (in {w_logs})  — {classify(correct, w)}')
+        if tag:
+            print(tag)
+        print()
     return 0
 
 
