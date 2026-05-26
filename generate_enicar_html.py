@@ -390,10 +390,18 @@ disp_rows = [{'date':safe(r['Date']),'product':safe(r['Product']),'packSize':saf
 staff_rows = [{'date':safe(r['Date']),'female':safe(r['Female']),'male':safe(r['Male'])}
               for _,r in cur(staff_df).iterrows()]
 
+batch_rows = [
+    {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'],
+     'filled':float(e['filled']), 'packed':float(e['packed']), 'dispatched':float(e['dispatched']),
+     'status':e['status']}
+    for e in BATCH_JOURNEY
+]
+
 DATA_JSON = json.dumps({
     'fill': fill_rows, 'pack': pack_rows, 'disp': disp_rows, 'staff': staff_rows,
     'lines': LINES, 'productTypes': PRODUCT_TYPES,
-    'bsrOpening': BSR_OPENING, 'fillAll': float(f_all), 'dispAll': float(d_all)
+    'bsrOpening': BSR_OPENING, 'fillAll': float(f_all), 'dispAll': float(d_all),
+    'batches': batch_rows
 })
 
 
@@ -600,6 +608,20 @@ html = f"""<!DOCTYPE html>
 </div>
 
 <div class="container">
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 0 — BATCH / PRODUCT LOOKUP
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;FIND &nbsp; A &nbsp; BATCH &nbsp; OR &nbsp; PRODUCT &nbsp;━━', C_SEC)}
+  <div style="padding:6px 4px 10px">
+    <input id="batch-search" type="text"
+           placeholder="Type a batch number or product name (e.g. EL-2430, Bonaplex)…"
+           oninput="lookupBatch()"
+           style="width:100%;padding:10px;font-size:14px;border:1px solid #B0BEC5;border-radius:6px;box-sizing:border-box">
+  </div>
+  <div id="batch-search-results"></div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 1 — PRODUCT TYPE BREAKDOWN
@@ -962,7 +984,49 @@ function renderParties(disp, isAll) {{
   }}
 }}
 
+// ── Batch / product lookup ───────────────────────────
+const BATCHES = ENICAR.batches || [];
+function lookupBatch() {{
+  const q = (document.getElementById('batch-search').value || '').trim().toLowerCase();
+  const out = document.getElementById('batch-search-results');
+  if (!q) {{
+    out.innerHTML = '<div style="color:#90A4AE;padding:8px 4px;font-size:12px">Type a batch number or product name to see where it is in the pipeline (filled / packed / dispatched)…</div>';
+    return;
+  }}
+  const hits = BATCHES.filter(b =>
+    ((b.batch||'').toLowerCase().includes(q)) ||
+    ((b.product||'').toLowerCase().includes(q))
+  );
+  if (!hits.length) {{
+    out.innerHTML = `<div style="color:#90A4AE;padding:8px 4px">No batches or products match "${{q}}".</div>`;
+    return;
+  }}
+  // Sort: matching product alphabetically, then batch
+  hits.sort((a,b) => (a.product||'').localeCompare(b.product||'') || (a.batch||'').localeCompare(b.batch||''));
+  let rows = '';
+  hits.slice(0,80).forEach((b,i) => {{
+    const bg = i%2===0 ? '#F1F8F6' : '#fff';
+    rows += `<tr style="background:${{bg}}">
+      <td class="td-name">${{b.product||'—'}}</td>
+      <td class="td-name" style="color:#607D8B">${{b.ptype||'—'}}</td>
+      <td class="td-name" style="font-weight:600">${{b.batch}}</td>
+      <td class="td-num" style="color:#00695C">${{fmt(b.filled)}}</td>
+      <td class="td-num" style="color:#BF360C">${{fmt(b.packed)}}</td>
+      <td class="td-num" style="color:#E65100">${{fmt(b.dispatched)}}</td>
+      <td class="td-name" style="font-size:12px">${{b.status}}</td>
+    </tr>`;
+  }});
+  const note = hits.length>80 ? `<div style="color:#90A4AE;font-size:11px;padding:4px">Showing first 80 of ${{hits.length}} matches — refine your search.</div>` : '';
+  out.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr class="th-row">
+      <th>PRODUCT</th><th>TYPE</th><th>BATCH</th><th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>
+    </tr></thead>
+    <tbody>${{rows}}</tbody>
+  </table></div>${{note}}`;
+}}
+
 // ── Init on load ──────────────────────────────────────
+lookupBatch();
 applyFilter();
 </script>
 
