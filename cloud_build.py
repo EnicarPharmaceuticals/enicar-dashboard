@@ -76,6 +76,22 @@ def main():
         return 1
     shutil.copyfile(generated, os.path.join(HERE, 'index.html'))
     print('✓ index.html updated from generated dashboard.')
+
+    # ── Product-name mismatch check (emails the team if needed) ────
+    # Runs every build, but emails are deduped by its own state file
+    # so the team only gets a first alert + 3-day reminders. Won't fail
+    # the build if email creds are missing or SMTP errors out.
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(HERE, 'check_product_mismatches.py')],
+            env=env, capture_output=True, text=True, timeout=60
+        )
+        if r.stdout: print(r.stdout.strip())
+        if r.returncode != 0 and r.stderr:
+            print('mismatch checker stderr:', r.stderr.strip())
+    except Exception as e:
+        print(f'mismatch checker skipped: {e}')
+
     return 0
 
 
