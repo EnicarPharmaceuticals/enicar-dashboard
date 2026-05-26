@@ -31,17 +31,19 @@ jobs:
       - name: Download data + build dashboard
         env:
           GOOGLE_OAUTH_TOKEN: ${{ secrets.GOOGLE_OAUTH_TOKEN }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_SENDER: 'nimishpatil@enicarpharma.com'
           DRIVE_FILE_ID: '1CMNGU9T2pae0rv4dXf3XDXGGqJXWy19O'
         run: python cloud_build.py
 
-      - name: Commit & push if the dashboard changed
+      - name: Commit & push if anything changed
         run: |
           git config user.name  "enicar-dashboard-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add index.html Enicar_Dashboard.html 2>/dev/null || true
+          git add index.html Enicar_Dashboard.html product_mismatch_state.json 2>/dev/null || true
           if git diff --staged --quiet; then
-            echo "No dashboard changes — nothing to commit."
+            echo "Nothing changed — nothing to commit."
           else
-            git commit -m "Auto-update dashboard (cloud) — $(date -u '+%d %b %Y %H:%M UTC')"
+            git commit -m "Auto-update — $(date -u '+%d %b %Y %H:%M UTC')"
             git push
           fi
