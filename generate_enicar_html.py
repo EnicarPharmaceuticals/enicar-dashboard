@@ -317,6 +317,7 @@ def _batch_journey():
                 continue
             k = _bkey(b)
             e = j.setdefault(k, {'batch': str(b).strip(), 'product': None, 'ptype': None,
+                                 'party': None,
                                  'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0,
                                  'last': None})
             e[role] += float(r.get(qty_col) or 0)
@@ -324,10 +325,12 @@ def _batch_journey():
                 e['product'] = str(r.get('Product')).strip()
             if e['ptype'] is None and not pd.isna(r.get(ptype_col)):
                 e['ptype'] = str(r.get(ptype_col)).strip()
+            if e['party'] is None and 'Party' in r.index and not pd.isna(r.get('Party')):
+                e['party'] = str(r.get('Party')).strip()
             d = r.get('Date')
             if d is not None and (e['last'] is None or d > e['last']):
                 e['last'] = d
-    # Packing first so packed items take their product type from the packing log.
+    # Packing first so packed items take their product type / party from the packing log.
     add(pack_df, 'TotalPacked','packed',     'ProdType')
     add(fill_df, 'Qty',        'filled',     'ProductType')
     add(disp_df, 'Qty',        'dispatched', 'ProductType')
@@ -445,11 +448,17 @@ def product_type_rows():
     return rows
 
 # Packed and sitting in BSR stock — i.e. packed but NOT yet dispatched.
-# Grouped & sorted by product type (canonical order), then product, then batch.
+# Primary sort: party name (so all of one customer's stock is grouped together);
+# then product type, then product, then batch.
 def _ptype_rank(pt):
     return PRODUCT_TYPES.index(pt) if pt in PRODUCT_TYPES else len(PRODUCT_TYPES)
-IN_STOCK = sorted([e for e in BATCH_JOURNEY if e['packed'] > 0 and e['dispatched'] == 0],
-                  key=lambda e: (_ptype_rank(e['ptype']), (e['product'] or '').lower(), e['batch']))
+IN_STOCK = sorted(
+    [e for e in BATCH_JOURNEY if e['packed'] > 0 and e['dispatched'] == 0],
+    key=lambda e: ((e['party'] or 'zzz').lower(),
+                   _ptype_rank(e['ptype']),
+                   (e['product'] or '').lower(),
+                   e['batch'])
+)
 IN_STOCK_UNITS = sum(e['packed'] for e in IN_STOCK)
 
 def batch_journey_rows():
@@ -458,13 +467,14 @@ def batch_journey_rows():
         bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
         rows += (
             f'<tr style="background:{bg}">'
+            f'<td class="td-name" style="font-weight:600">{e["party"] or "—"}</td>'
             f'<td class="td-name">{e["product"] or "—"}</td>'
             f'<td class="td-name" style="color:#607D8B">{e["ptype"] or "—"}</td>'
-            f'<td class="td-name" style="font-weight:600">{e["batch"]}</td>'
+            f'<td class="td-name">{e["batch"]}</td>'
             f'<td class="td-num" style="color:{C_AMB};font-weight:700">{n(e["packed"])}</td>'
             f'</tr>'
         )
-    return rows or '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
+    return rows or '<tr><td colspan="5" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
 
 def party_table_rows():
     rows = ''
@@ -733,7 +743,7 @@ html = f"""<!DOCTYPE html>
   <div class="tbl-wrap">
     <table>
       <thead><tr class="th-row">
-        <th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th>
+        <th>PARTY</th><th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th>
       </tr></thead>
       <tbody>{batch_journey_rows()}</tbody>
     </table>
