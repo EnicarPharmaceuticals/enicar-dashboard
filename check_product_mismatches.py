@@ -56,7 +56,8 @@ if not (SENDER and APP_PW):
 # ─── mismatch detection ─────────────────────────────────────────
 def _bkey(b):  return re.sub(r'\s+', '', str(b)).upper()
 def _pkey(s):  return ' '.join(str(s).strip().lower().split())
-def _root(s):  return re.sub(r'[^a-z0-9]', '', _pkey(s))[:6]   # for typo-vs-different-product heuristic
+def _root(s):  return re.sub(r'[^a-z0-9]', '', _pkey(s))[:6]    # for typo-vs-different-product heuristic
+def _canon(s): return re.sub(r'[^a-z0-9]', '', _pkey(s))        # strict: ignore ALL whitespace / punctuation / case
 
 
 def find_mismatches():
@@ -80,7 +81,10 @@ def find_mismatches():
             k = _bkey(b)
             raw_batch.setdefault(k, str(b).strip())
             raw_prod = str(p).strip()
-            e = by_batch[k][_pkey(raw_prod)]
+            # Group by _canon so spellings that differ ONLY by whitespace, case
+            # or punctuation collapse into one — those are silent normalizations,
+            # not worth emailing the team about.
+            e = by_batch[k][_canon(raw_prod)]
             if e['rep'] is None: e['rep'] = raw_prod
             e['logs'].add(log_name); e['rows'] += 1
 
