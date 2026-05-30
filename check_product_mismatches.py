@@ -61,55 +61,81 @@ def _canon(s): return re.sub(r'[^a-z0-9]', '', _pkey(s))        # strict: ignore
 
 
 def find_mismatches():
-    """Return list of issue dicts and a stable fingerprint for state."""
+    """Cross-verify product AND party names across all 4 logs by batch number.
+
+    Rules:
+      * Trivial whitespace / case / punctuation differences are ignored (_canon).
+      * If a batch is present in RM Dispensing, the RM spelling is the source
+        of truth — all other logs must match it.
+      * Otherwise, fall back to the 2-of-3-logs rule (most logs wins).
+    """
+    # (log_name, sheet, usecols, batch_idx, product_idx, party_idx) — indices
+    # are 0-based within the usecols slice.
     sources = [
-        ('Filling',  '➕ Filling Log',  'B:J', 6, 2),
-        ('Packing',  '➕ Packing Log',  'B:N', 5, 2),
-        ('Dispatch', '➕ Dispatch Log', 'B:I', 5, 1),
+        ('RM Dispensing','➕ RM Dispensing Log','B:I',3,2,1),
+        ('Filling',      '➕ Filling Log',      'B:J',6,2,7),
+        ('Packing',      '➕ Packing Log',      'B:N',5,2,10),
+        ('Dispatch',     '➕ Dispatch Log',     'B:I',5,1,6),
     ]
-    by_batch = defaultdict(lambda: defaultdict(lambda: {'rep': None, 'logs': set(), 'rows': 0}))
-    raw_batch = {}
-    for log_name, sheet, usecols, bidx, pidx in sources:
+    # batches[batch_key]['product'|'party'][canon] -> {rep, logs, rows}
+    batches = defaultdict(lambda: {
+        'product': defaultdict(lambda: {'rep': None, 'logs': set(), 'rows': 0}),
+        'party':   defaultdict(lambda: {'rep': None, 'logs': set(), 'rows': 0}),
+        'raw':     None,
+    })
+    for log_name, sheet, usecols, bidx, pidx, partyidx in sources:
         try:
             df = pd.read_excel(XLSX, sheet_name=sheet, header=3, usecols=usecols)
         except Exception:
             continue
         for _, r in df.iterrows():
-            b = r.iloc[bidx]; p = r.iloc[pidx]
-            if pd.isna(b) or pd.isna(p) or not str(p).strip():
-                continue
+            b = r.iloc[bidx]
+            if pd.isna(b) or not str(b).strip(): continue
             k = _bkey(b)
-            raw_batch.setdefault(k, str(b).strip())
-            raw_prod = str(p).strip()
-            # Group by _canon so spellings that differ ONLY by whitespace, case
-            # or punctuation collapse into one — those are silent normalizations,
-            # not worth emailing the team about.
-            e = by_batch[k][_canon(raw_prod)]
-            if e['rep'] is None: e['rep'] = raw_prod
-            e['logs'].add(log_name); e['rows'] += 1
+            if batches[k]['raw'] is None: batches[k]['raw'] = str(b).strip()
+            for field, idx in [('product', pidx), ('party', partyidx)]:
+                v = r.iloc[idx]
+                if pd.isna(v) or not str(v).strip(): continue
+                val = str(v).strip()
+                e = batches[k][field][_canon(val)]
+                if e['rep'] is None: e['rep'] = val
+                e['logs'].add(log_name); e['rows'] += 1
 
     issues = []
-    for k, spellings in by_batch.items():
-        if len(spellings) < 2:
-            continue
-        ranked = sorted(spellings.values(),
-                        key=lambda e: (len(e['logs']), e['rows']), reverse=True)
-        correct = ranked[0]
-        for wrong in ranked[1:]:
-            # Likely-different-products vs likely-typo — both worth flagging,
-            # but we label the seriously different ones distinctly.
-            severity = 'typo' if _root(correct['rep']) == _root(wrong['rep']) else 'different_product'
-            fp = f"{k}|{_pkey(correct['rep'])}|{_pkey(wrong['rep'])}"
-            issues.append({
-                'fingerprint':  fp,
-                'batch':        raw_batch[k],
-                'correct':      correct['rep'],
-                'correct_logs': sorted(correct['logs']),
-                'wrong':        wrong['rep'],
-                'wrong_logs':   sorted(wrong['logs']),
-                'severity':     severity,
-            })
-    issues.sort(key=lambda m: (m['severity'] != 'different_product', m['batch']))
+    for k, info in batches.items():
+        for field in ('product', 'party'):
+            spellings = info[field]
+            if len(spellings) < 2: continue
+
+            # RM wins if it has any spelling for this batch+field.
+            rm_entry = next((s for s in spellings.values() if 'RM Dispensing' in s['logs']), None)
+            if rm_entry is not None:
+                correct = rm_entry
+                wrong_list = [s for s in spellings.values() if s is not correct]
+                from_rm = True
+            else:
+                ranked = sorted(spellings.values(),
+                                key=lambda e: (len(e['logs']), e['rows']), reverse=True)
+                correct = ranked[0]
+                wrong_list = ranked[1:]
+                from_rm = False
+
+            for wrong in wrong_list:
+                severity = 'typo' if _root(correct['rep']) == _root(wrong['rep']) else 'different_value'
+                fp = f"{k}|{field}|{_canon(correct['rep'])}|{_canon(wrong['rep'])}"
+                issues.append({
+                    'fingerprint':  fp,
+                    'batch':        info['raw'],
+                    'field':        field,
+                    'correct':      correct['rep'],
+                    'correct_logs': sorted(correct['logs']),
+                    'wrong':        wrong['rep'],
+                    'wrong_logs':   sorted(wrong['logs']),
+                    'severity':     severity,
+                    'from_rm':      from_rm,
+                })
+    # Sort: serious issues first, then by batch, then field
+    issues.sort(key=lambda m: (m['severity'] != 'different_value', m['batch'], m['field']))
     return issues
 
 
@@ -131,42 +157,63 @@ def save_state(state):
 
 
 # ─── email body ─────────────────────────────────────────────────
+def _why(i):
+    """One-liner explaining why the 'correct' is correct."""
+    if i.get('from_rm'):
+        return f"RM Dispensing has \"{i['correct']}\" for this batch"
+    return f"already entered as \"{i['correct']}\" in {', '.join(i['correct_logs'])}"
+
 def build_body(to_send, is_reminder):
     stamp = datetime.now().strftime('%d %B %Y')
-    typos    = [i for i in to_send if i['severity'] == 'typo']
-    seriouse = [i for i in to_send if i['severity'] == 'different_product']
+
+    # Split into product fixes vs party fixes vs serious (different-product) cases
+    prod_fixes  = [i for i in to_send if i['field']=='product' and i['severity']=='typo']
+    party_fixes = [i for i in to_send if i['field']=='party'   and i['severity']=='typo']
+    serious     = [i for i in to_send if i['severity']=='different_value']
 
     lead = (
         "Hi team,\n\n"
-        "Quick fix request — we've spotted batches where the product name is "
-        "written differently in different logs. Since the batch number is the same, "
-        "it's really the same product, so one of the spellings needs correcting in "
-        "the Google Sheet.\n\n"
+        "Quick fix request — we've spotted batches where the product or customer "
+        "name is written differently in different logs. Since the batch number is "
+        "the same, the entries should match. RM Dispensing is the source of truth, "
+        "so please update Filling / Packing / Dispatch to match the RM spelling.\n\n"
     ) if not is_reminder else (
         "Hi team,\n\n"
         "Friendly reminder — the items below were flagged a few days ago and are "
-        "still uncorrected in the spreadsheet. Please update them when you get a moment.\n\n"
+        "still uncorrected in the spreadsheet. Please update them when you can.\n\n"
     )
 
     body = lead + "──────────────────────────────────────────────────\n\n"
 
-    if typos:
-        body += "SPELLING FIXES — please update in the Google Sheet:\n\n"
-        for i in typos:
+    if prod_fixes:
+        body += f"PRODUCT-NAME FIXES  ({len(prod_fixes)}):\n\n"
+        for i in prod_fixes:
             body += (
                 f"  • Batch {i['batch']}:\n"
                 f"      In the {', '.join(i['wrong_logs'])} log → "
                 f'change "{i["wrong"]}" to "{i["correct"]}"\n'
-                f"      (already entered as \"{i['correct']}\" in {', '.join(i['correct_logs'])})\n\n"
+                f"      ({_why(i)})\n\n"
             )
 
-    if seriouse:
+    if party_fixes:
         body += "──────────────────────────────────────────────────\n\n"
-        body += "PLEASE DOUBLE-CHECK — same batch number used for what look like\n"
-        body += "different products. Likely one of the rows has the wrong batch number:\n\n"
-        for i in seriouse:
+        body += f"CUSTOMER-NAME FIXES  ({len(party_fixes)}):\n\n"
+        for i in party_fixes:
             body += (
                 f"  • Batch {i['batch']}:\n"
+                f"      In the {', '.join(i['wrong_logs'])} log → "
+                f'change "{i["wrong"]}" to "{i["correct"]}"\n'
+                f"      ({_why(i)})\n\n"
+            )
+
+    if serious:
+        body += "──────────────────────────────────────────────────\n\n"
+        body += f"PLEASE DOUBLE-CHECK  ({len(serious)}) — same batch number used for what look like\n"
+        body += "different products/customers. Likely one of the rows has the wrong batch number:\n\n"
+        for i in serious:
+            label = 'product' if i['field']=='product' else 'customer'
+            body += (
+                f"  • Batch {i['batch']}  ({label}):\n"
                 f'      {", ".join(i["correct_logs"])} log says "{i["correct"]}"\n'
                 f'      {", ".join(i["wrong_logs"])} log says "{i["wrong"]}"\n'
                 f"      → kindly check which is right and correct the wrong row.\n\n"
@@ -226,7 +273,7 @@ def main():
         msg['To']   = ', '.join(TEAM)
         prefix = '[Reminder] ' if is_reminder else ''
         plural = 'fix' if len(to_send) == 1 else 'fixes'
-        msg['Subject'] = f'{prefix}Enicar — {len(to_send)} product-name {plural} needed in spreadsheet ({stamp})'
+        msg['Subject'] = f'{prefix}Enicar — {len(to_send)} spreadsheet {plural} (product/customer names) ({stamp})'
         msg.set_content(build_body(to_send, is_reminder))
         try:
             ctx = ssl.create_default_context()
