@@ -354,23 +354,32 @@ def _batch_journey():
 
     # RM dispensing — adds metadata only (not a quantity). Earliest dispensing
     # date per batch wins (in case the same batch was dispensed more than once).
+    def _as_date(v):
+        if v is None or (hasattr(v, '__class__') and pd.isna(v)): return None
+        if hasattr(v, 'date') and not isinstance(v, date):  # pandas Timestamp / datetime
+            return v.date()
+        if isinstance(v, date): return v
+        try:
+            t = pd.to_datetime(v, errors='coerce')
+            return None if pd.isna(t) else t.date()
+        except Exception:
+            return None
     for _, r in rm_df.iterrows():
         b = r.get('Batch')
         if pd.isna(b) or not str(b).strip():
             continue
         k = _bkey(b)
         e = j.setdefault(k, _new_entry(b))
-        d = r.get('Date')
-        if d is not None and not pd.isna(d):
-            if e['rm_date'] is None or d < e['rm_date']:
-                e['rm_date'] = d
+        rd = _as_date(r.get('Date'))
+        if rd is not None and (e['rm_date'] is None or rd < e['rm_date']):
+            e['rm_date'] = rd
         if e['rm_size'] is None:
             bs = r.get('BatchSize')
             if bs is not None and not pd.isna(bs) and float(bs) > 0:
                 e['rm_size'] = float(bs)
         if e['rm_bmr'] is None:
-            bmr = r.get('BMRDate')
-            if bmr is not None and not pd.isna(bmr):
+            bmr = _as_date(r.get('BMRDate'))
+            if bmr is not None:
                 e['rm_bmr'] = bmr
         if e['product'] is None and not pd.isna(r.get('Product')):
             e['product'] = str(r.get('Product')).strip()
@@ -440,7 +449,20 @@ disp_rows = [{'date':safe(r['Date']),'product':safe(r['Product']),'packSize':saf
 staff_rows = [{'date':safe(r['Date']),'female':safe(r['Female']),'male':safe(r['Male'])}
               for _,r in cur(staff_df).iterrows()]
 
-def _ds(d): return d.strftime('%d %b %Y') if d else None
+def _ds(d):
+    """Format a date-ish value as 'DD Mon YYYY'; tolerates strings, datetimes, dates, NaT, None."""
+    if d is None: return None
+    if hasattr(d, 'strftime'):
+        try: return d.strftime('%d %b %Y')
+        except Exception: return None
+    try:
+        import pandas as _pd
+        v = _pd.to_datetime(d, errors='coerce')
+        if _pd.isna(v): return None
+        return v.strftime('%d %b %Y')
+    except Exception:
+        s = str(d).strip()
+        return s or None
 batch_rows = [
     {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'], 'party':e['party'],
      'filled':float(e['filled']), 'packed':float(e['packed']), 'dispatched':float(e['dispatched']),
