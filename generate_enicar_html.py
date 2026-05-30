@@ -75,20 +75,23 @@ def parse_packed_total(val):
                 pass
         return 0
 
-# Read packing — keep TotalPacked as raw object so we can parse formula strings
+# Read packing. The sheet's column layout (after the TotalPacked column was
+# removed) is now:
+#   B Date | C PACKING LINE | D Product Name | E Pack Size | F Product Type
+#   G Batch No. | H Auto Cartinator | I Manual Carton | J Sleeve | K Naked
+#   L Party Name | M Remarks/Urgency | N (extra/blank)
 pack_df = pd.read_excel(TEMPLATE, sheet_name='➕ Packing Log', header=3, usecols='B:N')
-pack_df.columns = ['Date','Line','Product','PackSize','ProdType','Batch','AutoCarton','ManualCarton',
-                   'Sleeve','Naked','TotalPacked','Party','Remarks']
+pack_df.columns = ['Date','Line','Product','PackSize','ProdType','Batch',
+                   'AutoCarton','ManualCarton','Sleeve','Naked',
+                   'Party','Remarks','Extra']
 pack_df = pack_df.dropna(subset=['Date'])
 pack_df['Date'] = pd.to_datetime(pack_df['Date'], format='mixed', dayfirst=True, errors='coerce').dt.date
 pack_df = pack_df.dropna(subset=['Date'])
+# Each sub-column may be a plain number OR a formula string like "38 x 1600= 60800";
+# parse_packed_total handles both. Total packed = sum of the four.
 for c in ['AutoCarton','ManualCarton','Sleeve','Naked']:
-    pack_df[c] = pd.to_numeric(pack_df[c], errors='coerce').fillna(0)
-# Parse TotalPacked — handles both plain numbers and formula strings
-pack_df['TotalPacked'] = pack_df['TotalPacked'].apply(parse_packed_total)
-# If TotalPacked is still 0 but sub-columns have data, use their sum as fallback
-mask = pack_df['TotalPacked'] == 0
-pack_df.loc[mask, 'TotalPacked'] = pack_df.loc[mask, ['AutoCarton','ManualCarton','Sleeve','Naked']].sum(axis=1)
+    pack_df[c] = pack_df[c].apply(parse_packed_total)
+pack_df['TotalPacked'] = pack_df[['AutoCarton','ManualCarton','Sleeve','Naked']].sum(axis=1)
 
 # Canonicalise line names so typo variants collapse onto one clean label.
 #   "line no1", "Line No.4", "LINE NO 03", "lineno5" → "Line No 1/4/3/5"
