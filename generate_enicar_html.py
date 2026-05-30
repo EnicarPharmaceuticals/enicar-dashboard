@@ -176,10 +176,22 @@ staff_df = read_log('➕ Staff Log', 'B:F',
     ['Date','Total','Female','Male','Remarks'],
     ['Total','Female','Male'])
 
+# RM dispensing — the upstream stage (Raw-Material issued from store BEFORE
+# filling starts). This tab is optional; if it doesn't exist yet the rest of
+# the dashboard works unchanged. Expected layout (columns B:I in row 4):
+#   Date | Customer | Product | Batch Number | Batch Size | Pack Size | BMR Receipt Date | Remarks
+rm_df = read_log('➕ RM Dispensing Log', 'B:I',
+    ['Date','Customer','Product','Batch','BatchSize','PackSize','BMRDate','Remarks'],
+    ['BatchSize'])
+# read_log drops rows with no Date, but RM rows may legitimately have a blank
+# Date (BMR received, RM not yet dispensed). For our 'dispensed-but-not-filled'
+# view we only care about dispensed rows, so the date-required filter is fine.
+
 # Merge duplicate customer spellings via the alias list above.
-for _df in (fill_df, pack_df, disp_df):
-    if 'Party' in _df.columns:
-        _df['Party'] = _df['Party'].apply(normalise_party)
+for _df in (fill_df, pack_df, disp_df, rm_df):
+    party_col = 'Customer' if 'Customer' in _df.columns else 'Party'
+    if party_col in _df.columns:
+        _df[party_col] = _df[party_col].apply(normalise_party)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PERIOD SETUP
@@ -313,16 +325,18 @@ except Exception:
 def _batch_journey():
     """Return list of per-batch dicts with filled/packed/dispatched + status."""
     j = {}
+    def _new_entry(b):
+        return {'batch': str(b).strip(), 'product': None, 'ptype': None, 'party': None,
+                'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0, 'last': None,
+                'rm_date': None, 'rm_size': None, 'rm_bmr': None}
+
     def add(df, qty_col, role, ptype_col):
         for _, r in df.iterrows():
             b = r.get('Batch')
             if pd.isna(b) or not str(b).strip():
                 continue
             k = _bkey(b)
-            e = j.setdefault(k, {'batch': str(b).strip(), 'product': None, 'ptype': None,
-                                 'party': None,
-                                 'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0,
-                                 'last': None})
+            e = j.setdefault(k, _new_entry(b))
             e[role] += float(r.get(qty_col) or 0)
             if e['product'] is None and not pd.isna(r.get('Product')):
                 e['product'] = str(r.get('Product')).strip()
@@ -338,13 +352,43 @@ def _batch_journey():
     add(fill_df, 'Qty',        'filled',     'ProductType')
     add(disp_df, 'Qty',        'dispatched', 'ProductType')
 
+    # RM dispensing — adds metadata only (not a quantity). Earliest dispensing
+    # date per batch wins (in case the same batch was dispensed more than once).
+    for _, r in rm_df.iterrows():
+        b = r.get('Batch')
+        if pd.isna(b) or not str(b).strip():
+            continue
+        k = _bkey(b)
+        e = j.setdefault(k, _new_entry(b))
+        d = r.get('Date')
+        if d is not None and not pd.isna(d):
+            if e['rm_date'] is None or d < e['rm_date']:
+                e['rm_date'] = d
+        if e['rm_size'] is None:
+            bs = r.get('BatchSize')
+            if bs is not None and not pd.isna(bs) and float(bs) > 0:
+                e['rm_size'] = float(bs)
+        if e['rm_bmr'] is None:
+            bmr = r.get('BMRDate')
+            if bmr is not None and not pd.isna(bmr):
+                e['rm_bmr'] = bmr
+        if e['product'] is None and not pd.isna(r.get('Product')):
+            e['product'] = str(r.get('Product')).strip()
+        if e['party'] is None and not pd.isna(r.get('Customer')):
+            e['party'] = str(r.get('Customer')).strip()
+
     for k, e in j.items():
         f, p, d = e['filled'], e['packed'], e['dispatched']
         in_fill = f > 0
+        has_rm  = e['rm_date'] is not None
         if k in OPENING_STOCK:                   # frozen pre-tracking stock — never flag
             e['status'], e['rank'] = ('Opening stock (pre-system)', 4)
         elif not in_fill:
-            e['status'], e['rank'] = ('⚠ Dispatched/packed but never filled', 0)
+            if has_rm:
+                # RM is in the day store waiting to be taken into production.
+                e['status'], e['rank'] = ('RM dispensed — awaiting fill', 5)
+            else:
+                e['status'], e['rank'] = ('⚠ Dispatched/packed but never filled', 0)
         elif d > f * 1.02 and d - f > 1:         # shipped clearly more than made
             e['status'], e['rank'] = ('⚠ Dispatched more than filled', 0)
         elif d > 0:
@@ -396,9 +440,11 @@ disp_rows = [{'date':safe(r['Date']),'product':safe(r['Product']),'packSize':saf
 staff_rows = [{'date':safe(r['Date']),'female':safe(r['Female']),'male':safe(r['Male'])}
               for _,r in cur(staff_df).iterrows()]
 
+def _ds(d): return d.strftime('%d %b %Y') if d else None
 batch_rows = [
-    {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'],
+    {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'], 'party':e['party'],
      'filled':float(e['filled']), 'packed':float(e['packed']), 'dispatched':float(e['dispatched']),
+     'rmDate':_ds(e['rm_date']), 'rmSize':e['rm_size'], 'rmBmr':_ds(e['rm_bmr']),
      'status':e['status']}
     for e in BATCH_JOURNEY
 ]
@@ -450,6 +496,16 @@ def product_type_rows():
         )
     return rows
 
+# RM dispensed but NOT yet filled — i.e. material is sitting in the RM day
+# store, waiting for production to start. Sorted by dispensing date (oldest
+# first, so anything waiting longest sits at the top).
+RM_PENDING = sorted(
+    [e for e in BATCH_JOURNEY if e['rm_date'] is not None and e['filled'] == 0],
+    key=lambda e: (e['rm_date'], (e['party'] or 'zzz').lower(), e['batch'])
+)
+RM_PENDING_UNITS = sum((e['rm_size'] or 0) for e in RM_PENDING)
+RM_HAS_DATA      = any(e['rm_date'] is not None for e in BATCH_JOURNEY)
+
 # Packed and sitting in BSR stock — i.e. packed but NOT yet dispatched.
 # Primary sort: party name (so all of one customer's stock is grouped together);
 # then product type, then product, then batch.
@@ -463,6 +519,23 @@ IN_STOCK = sorted(
                    e['batch'])
 )
 IN_STOCK_UNITS = sum(e['packed'] for e in IN_STOCK)
+
+def rm_pending_rows():
+    rows = ''
+    for i, e in enumerate(RM_PENDING):
+        bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
+        days_waiting = (date.today() - e['rm_date']).days if e['rm_date'] else '—'
+        rows += (
+            f'<tr style="background:{bg}">'
+            f'<td class="td-name" style="font-weight:600">{e["party"] or "—"}</td>'
+            f'<td class="td-name">{e["product"] or "—"}</td>'
+            f'<td class="td-name">{e["batch"]}</td>'
+            f'<td class="td-num" style="color:{C_SEC};font-weight:600">{n(e["rm_size"] or 0)}</td>'
+            f'<td class="td-name" style="color:#90A4AE;font-size:12px">{e["rm_date"].strftime("%d %b") if e["rm_date"] else "—"}</td>'
+            f'<td class="td-num" style="color:#90A4AE;font-size:12px">{days_waiting}</td>'
+            f'</tr>'
+        )
+    return rows or '<tr><td colspan="6" style="text-align:center;color:#90A4AE;padding:12px">All dispensed RM has been taken into production. ✅</td></tr>'
 
 def batch_journey_rows():
     rows = ''
@@ -523,6 +596,36 @@ def line_table_rows(data_dict, total_cur, total_prv):
 # ASSEMBLE HTML
 # ══════════════════════════════════════════════════════════════════════════════
 generated_at = datetime.now().strftime('%d %b %Y, %I:%M %p')
+
+# Conditional RM section — only rendered when the RM Dispensing Log tab exists
+# and has at least one dispensed row. Until you add the tab, this stays empty.
+if RM_HAS_DATA:
+    RM_SECTION_HTML = f'''
+<!-- ════════════════════════════════════════════════════════════
+     SECTION — RM DISPENSED, AWAITING FILLING (in RM day store)
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;RM &nbsp; DISPENSED &nbsp;—&nbsp; AWAITING &nbsp; FILLING &nbsp;━━', C_SEC)}
+  <div class="tile-row">
+    {tile('BATCHES WAITING', n(len(RM_PENDING)), 'dispensed, not yet filled', C_SEC)}
+    {tile('TOTAL BATCH UNITS', n(RM_PENDING_UNITS), 'planned size of waiting batches', C_AMB)}
+  </div>
+  <div style="font-size:12px;color:#607D8B;padding:4px 4px 10px">
+    Raw material has left the store but the Filling Log has no record yet.
+    Oldest waiting batches sit at the top.
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr class="th-row">
+        <th>PARTY</th><th>PRODUCT</th><th>BATCH</th><th>BATCH SIZE</th><th>DISPENSED ON</th><th>DAYS WAITING</th>
+      </tr></thead>
+      <tbody>{rm_pending_rows()}</tbody>
+    </table>
+  </div>
+</div>
+'''
+else:
+    RM_SECTION_HTML = ''
 
 html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -621,6 +724,8 @@ html = f"""<!DOCTYPE html>
 </div>
 
 <div class="container">
+
+{RM_SECTION_HTML}
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 0 — BATCH / PRODUCT LOOKUP
@@ -1019,10 +1124,19 @@ function lookupBatch() {{
   let rows = '';
   hits.slice(0,80).forEach((b,i) => {{
     const bg = i%2===0 ? '#F1F8F6' : '#fff';
+    // RM cell — combines dispensed date + batch size + BMR date into one compact stage marker
+    let rmCell = '—';
+    if (b.rmDate) {{
+      const size = b.rmSize ? ' · size ' + fmt(b.rmSize) : '';
+      const bmr  = b.rmBmr  ? ' · BMR ' + b.rmBmr      : '';
+      rmCell = `<span style="color:#00695C">RM ${{b.rmDate}}${{size}}${{bmr}}</span>`;
+    }}
     rows += `<tr style="background:${{bg}}">
       <td class="td-name">${{b.product||'—'}}</td>
       <td class="td-name" style="color:#607D8B">${{b.ptype||'—'}}</td>
+      <td class="td-name">${{b.party||'—'}}</td>
       <td class="td-name" style="font-weight:600">${{b.batch}}</td>
+      <td class="td-name" style="font-size:11px">${{rmCell}}</td>
       <td class="td-num" style="color:#00695C">${{fmt(b.filled)}}</td>
       <td class="td-num" style="color:#BF360C">${{fmt(b.packed)}}</td>
       <td class="td-num" style="color:#E65100">${{fmt(b.dispatched)}}</td>
@@ -1032,7 +1146,7 @@ function lookupBatch() {{
   const note = hits.length>80 ? `<div style="color:#90A4AE;font-size:11px;padding:4px">Showing first 80 of ${{hits.length}} matches — refine your search.</div>` : '';
   out.innerHTML = `<div class="tbl-wrap"><table>
     <thead><tr class="th-row">
-      <th>PRODUCT</th><th>TYPE</th><th>BATCH</th><th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>
+      <th>PRODUCT</th><th>TYPE</th><th>PARTY</th><th>BATCH</th><th>RM DISPENSED</th><th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>
     </tr></thead>
     <tbody>${{rows}}</tbody>
   </table></div>${{note}}`;
