@@ -737,14 +737,6 @@ html = f"""<!DOCTYPE html>
 </div>
 <div class="period-bar">PRODUCTION &nbsp; DASHBOARD &nbsp;&nbsp;|&nbsp;&nbsp; {PERIOD}</div>
 
-<div class="filter-bar">
-  <label>📅 VIEW BY DATE:</label>
-  <select id="date-filter" onchange="applyFilter()">
-    <option value="all">All Month (MTD) — {PERIOD}</option>
-  </select>
-  <span class="filter-tag" id="filter-tag">MONTHLY TOTAL</span>
-</div>
-
 <div class="container">
 
 {RM_SECTION_HTML}
@@ -761,123 +753,6 @@ html = f"""<!DOCTYPE html>
            style="width:100%;padding:10px;font-size:14px;border:1px solid #B0BEC5;border-radius:6px;box-sizing:border-box">
   </div>
   <div id="batch-search-results"></div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 1 — PRODUCT TYPE BREAKDOWN
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PRODUCT &nbsp; TYPE &nbsp; BREAKDOWN &nbsp;━━')}
-  <div class="tbl-wrap">
-    <table>
-      <tr class="th-row">
-        <th>PRODUCT TYPE</th>
-        <th id="pt-hdr-fill">UNITS FILLED (MTD)</th>
-        <th id="pt-hdr-pack">UNITS PACKED (MTD)</th>
-        <th id="pt-hdr-disp">UNITS DISPATCHED (MTD)</th>
-      </tr>
-      <tbody id="pt-rows"></tbody>
-      <tr class="tot-row">
-        <td class="td-name">TOTAL</td>
-        <td class="td-num" id="pt-total-fill">—</td>
-        <td class="td-num" id="pt-total-pack">—</td>
-        <td class="td-num" id="pt-total-disp">—</td>
-      </tr>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 2 — FILLING
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;FILLING &nbsp; PRODUCTION &nbsp;━━')}
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL FILLED</div><div class="tvalue" id="f-total" style="color:{C_AMB}">—</div><div class="tsub">units filled</div></div>
-    <div class="tile"><div class="tlabel">FILL RECORDS</div><div class="tvalue" id="f-rec" style="color:{C_AMB}">—</div><div class="tsub">rows logged</div></div>
-    <div class="tile"><div class="tlabel">AVG UNITS / RECORD</div><div class="tvalue" id="f-avg" style="color:{C_AMB}">—</div><div class="tsub">units per entry</div></div>
-    <div class="tile"><div class="tlabel">ACTIVE LINES</div><div class="tvalue" id="f-lines" style="color:{C_AMB}">—</div><div class="tsub">lines active</div></div>
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>UNITS FILLED (MTD)</th></tr></thead>
-      <tbody id="fill-line-rows"></tbody>
-      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 2 — PACKING
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PACKING &nbsp; PRODUCTION &nbsp;━━')}
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL PACKED</div><div class="tvalue" id="p-total" style="color:{C_AMB}">—</div><div class="tsub">units packed</div></div>
-    <div class="tile"><div class="tlabel">FILL → PACK RATIO</div><div class="tvalue" id="p-ratio" style="color:{C_AMB}">—</div><div class="tsub">packed ÷ filled</div></div>
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>UNITS PACKED (MTD)</th></tr></thead>
-      <tbody id="pack-line-rows"></tbody>
-      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 3 — DISPATCH & BSR STOCK
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;DISPATCH &nbsp;&amp;&nbsp; BSR &nbsp; STOCK &nbsp;━━', C_ORG)}
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">DISPATCHED</div><div class="tvalue" id="d-total" style="color:{C_ORG}">—</div><div class="tsub">units dispatched</div></div>
-    <div class="tile"><div class="tlabel">DISPATCH / FILL</div><div class="tvalue" id="d-ratio" style="color:{C_ORG}">—</div><div class="tsub">dispatched ÷ filled</div></div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 4 — STAFF
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;STAFF &nbsp;&amp;&nbsp; ATTENDANCE &nbsp;━━')}
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">FEMALE WORKERS PRESENT</div><div class="tvalue" id="s-fem" style="color:{C_AMB}">—</div><div class="tsub">packing workers</div></div>
-    <div class="tile"><div class="tlabel">MALE WORKERS PRESENT</div><div class="tvalue" id="s-male" style="color:{C_AMB}">—</div><div class="tsub">filling & loading</div></div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 6 — PARTY-WISE SALES
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PARTY-WISE &nbsp; SALES &nbsp; (Dispatched) &nbsp;━━', C_ORG)}
-  <div class="tbl-wrap">
-    <table>
-      <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr></thead>
-      <tbody id="party-rows"></tbody>
-      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">—</td></tr></tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 7 — PACKED & IN STOCK (not yet dispatched)
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PACKED &nbsp;&amp;&nbsp; IN &nbsp; BSR &nbsp; STOCK &nbsp; (Not &nbsp; Yet &nbsp; Dispatched) &nbsp;━━', C_SEC)}
-  <div class="tile-row">
-    {tile('BATCHES IN STOCK', n(len(IN_STOCK)), 'packed, awaiting dispatch', C_SEC)}
-    {tile('UNITS IN STOCK', n(IN_STOCK_UNITS), 'packed & not dispatched', C_AMB)}
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr class="th-row">
-        <th>PARTY</th><th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th>
-      </tr></thead>
-      <tbody>{batch_journey_rows()}</tbody>
-    </table>
-  </div>
 </div>
 
 </div><!-- /container -->
@@ -929,29 +804,10 @@ function cmpLine(a,b) {{
 }})();
 
 // ── Main render ───────────────────────────────────────
-function applyFilter() {{
-  const sel = document.getElementById('date-filter').value;
-  const isAll = sel === 'all';
-  document.getElementById('filter-tag').textContent = isAll ? 'MONTHLY TOTAL' : 'DAILY VIEW';
-
-  const fill  = isAll ? ENICAR.fill  : ENICAR.fill.filter(r => r.date === sel);
-  const pack  = isAll ? ENICAR.pack  : ENICAR.pack.filter(r => r.date === sel);
-  const disp  = isAll ? ENICAR.disp  : ENICAR.disp.filter(r => r.date === sel);
-  const staff = isAll ? ENICAR.staff : ENICAR.staff.filter(r => r.date === sel);
-  const label = isAll ? 'MTD' : 'TODAY';
-
-  // Update product type breakdown column headers
-  document.getElementById('pt-hdr-fill').textContent = `UNITS FILLED (${{label}})`;
-  document.getElementById('pt-hdr-pack').textContent = `UNITS PACKED (${{label}})`;
-  document.getElementById('pt-hdr-disp').textContent = `UNITS DISPATCHED (${{label}})`;
-
-  renderProductTypes(fill, pack, disp);
-  renderFilling(fill, isAll);
-  renderPacking(pack, fill, isAll);
-  renderDispatch(disp, fill);
-  renderStaff(staff, isAll);
-  renderParties(disp, isAll);
-}}
+// Date-filter UI and the data-tile sections were removed — applyFilter is a
+// no-op for now. The render functions below are intentionally kept so this
+// can be re-enabled later by restoring the date-filter UI + section HTML.
+function applyFilter() {{ /* sections removed; nothing to refresh */ }}
 
 // ── Product Type Breakdown ────────────────────────────
 const _FLAT_JS     = new Set(['sachet','sachets','flat sachet','flat sachets','pouch','pouch/sachet','pouch/sachets']);
