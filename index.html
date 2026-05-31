@@ -82,17 +82,9 @@
 <!-- HEADER -->
 <div class="header">
   <h1>ENICAR</h1>
-  <div class="header-sub">PRODUCTION DASHBOARD &nbsp;|&nbsp; Generated 31 May 2026, 09:38 PM</div>
+  <div class="header-sub">PRODUCTION DASHBOARD &nbsp;|&nbsp; Generated 31 May 2026, 09:45 PM</div>
 </div>
 <div class="period-bar">PRODUCTION &nbsp; DASHBOARD &nbsp;&nbsp;|&nbsp;&nbsp; MAY 2026</div>
-
-<div class="filter-bar">
-  <label>📅 VIEW BY DATE:</label>
-  <select id="date-filter" onchange="applyFilter()">
-    <option value="all">All Month (MTD) — MAY 2026</option>
-  </select>
-  <span class="filter-tag" id="filter-tag">MONTHLY TOTAL</span>
-</div>
 
 <div class="container">
 
@@ -143,135 +135,10 @@
   <div id="batch-search-results"></div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 1 — PRODUCT TYPE BREAKDOWN
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  <div class="sec-hdr" style="background:#004D40">  ━━&nbsp;&nbsp;PRODUCT &nbsp; TYPE &nbsp; BREAKDOWN &nbsp;━━</div>
-  <div class="tbl-wrap">
-    <table>
-      <tr class="th-row">
-        <th>PRODUCT TYPE</th>
-        <th id="pt-hdr-fill">UNITS FILLED (MTD)</th>
-        <th id="pt-hdr-pack">UNITS PACKED (MTD)</th>
-        <th id="pt-hdr-disp">UNITS DISPATCHED (MTD)</th>
-      </tr>
-      <tbody id="pt-rows"></tbody>
-      <tr class="tot-row">
-        <td class="td-name">TOTAL</td>
-        <td class="td-num" id="pt-total-fill">—</td>
-        <td class="td-num" id="pt-total-pack">—</td>
-        <td class="td-num" id="pt-total-disp">—</td>
-      </tr>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 2 — FILLING
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  <div class="sec-hdr" style="background:#004D40">  ━━&nbsp;&nbsp;FILLING &nbsp; PRODUCTION &nbsp;━━</div>
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL FILLED</div><div class="tvalue" id="f-total" style="color:#BF360C">—</div><div class="tsub">units filled</div></div>
-    <div class="tile"><div class="tlabel">FILL RECORDS</div><div class="tvalue" id="f-rec" style="color:#BF360C">—</div><div class="tsub">rows logged</div></div>
-    <div class="tile"><div class="tlabel">AVG UNITS / RECORD</div><div class="tvalue" id="f-avg" style="color:#BF360C">—</div><div class="tsub">units per entry</div></div>
-    <div class="tile"><div class="tlabel">ACTIVE LINES</div><div class="tvalue" id="f-lines" style="color:#BF360C">—</div><div class="tsub">lines active</div></div>
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>UNITS FILLED (MTD)</th></tr></thead>
-      <tbody id="fill-line-rows"></tbody>
-      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 2 — PACKING
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  <div class="sec-hdr" style="background:#004D40">  ━━&nbsp;&nbsp;PACKING &nbsp; PRODUCTION &nbsp;━━</div>
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL PACKED</div><div class="tvalue" id="p-total" style="color:#BF360C">—</div><div class="tsub">units packed</div></div>
-    <div class="tile"><div class="tlabel">FILL → PACK RATIO</div><div class="tvalue" id="p-ratio" style="color:#BF360C">—</div><div class="tsub">packed ÷ filled</div></div>
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>UNITS PACKED (MTD)</th></tr></thead>
-      <tbody id="pack-line-rows"></tbody>
-      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 3 — DISPATCH & BSR STOCK
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  <div class="sec-hdr" style="background:#E65100">  ━━&nbsp;&nbsp;DISPATCH &nbsp;&amp;&nbsp; BSR &nbsp; STOCK &nbsp;━━</div>
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">DISPATCHED</div><div class="tvalue" id="d-total" style="color:#E65100">—</div><div class="tsub">units dispatched</div></div>
-    <div class="tile"><div class="tlabel">DISPATCH / FILL</div><div class="tvalue" id="d-ratio" style="color:#E65100">—</div><div class="tsub">dispatched ÷ filled</div></div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 4 — STAFF
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  <div class="sec-hdr" style="background:#004D40">  ━━&nbsp;&nbsp;STAFF &nbsp;&amp;&nbsp; ATTENDANCE &nbsp;━━</div>
-  <div class="tile-row">
-    <div class="tile"><div class="tlabel">FEMALE WORKERS PRESENT</div><div class="tvalue" id="s-fem" style="color:#BF360C">—</div><div class="tsub">packing workers</div></div>
-    <div class="tile"><div class="tlabel">MALE WORKERS PRESENT</div><div class="tvalue" id="s-male" style="color:#BF360C">—</div><div class="tsub">filling & loading</div></div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 6 — PARTY-WISE SALES
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  <div class="sec-hdr" style="background:#E65100">  ━━&nbsp;&nbsp;PARTY-WISE &nbsp; SALES &nbsp; (Dispatched) &nbsp;━━</div>
-  <div class="tbl-wrap">
-    <table>
-      <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr></thead>
-      <tbody id="party-rows"></tbody>
-      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">—</td></tr></tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════
-     SECTION 7 — PACKED & IN STOCK (not yet dispatched)
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  <div class="sec-hdr" style="background:#00695C">  ━━&nbsp;&nbsp;PACKED &nbsp;&amp;&nbsp; IN &nbsp; BSR &nbsp; STOCK &nbsp; (Not &nbsp; Yet &nbsp; Dispatched) &nbsp;━━</div>
-  <div class="tile-row">
-    <div class="tile">
-      <div class="tlabel">BATCHES IN STOCK</div>
-      <div class="tvalue" style="color:#00695C">55</div>
-      <div class="tsub">packed, awaiting dispatch</div>
-    </div>
-    <div class="tile">
-      <div class="tlabel">UNITS IN STOCK</div>
-      <div class="tvalue" style="color:#BF360C">1,968,368</div>
-      <div class="tsub">packed & not dispatched</div>
-    </div>
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr class="th-row">
-        <th>PARTY</th><th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th>
-      </tr></thead>
-      <tbody><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Alvita Pharma Pvt.Ltd Pharma Pvt.Ltd</td><td class="td-name">Almagaz</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">ALV-005</td><td class="td-num" style="color:#BF360C;font-weight:700">3,270</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Bliss GVS pharma Ltd</td><td class="td-name">Funbact BB cream</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">FBE004</td><td class="td-num" style="color:#BF360C;font-weight:700">33,920</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Blue Map Pharmachem Pharmachem</td><td class="td-name">Octamin</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">BM-29278</td><td class="td-num" style="color:#BF360C;font-weight:700">7,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Blue Map Pharmachem Pharmachem</td><td class="td-name">Retidine</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">BM-01279</td><td class="td-num" style="color:#BF360C;font-weight:700">25,200</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Blue Map Pharmachem Pharmachem</td><td class="td-name">Vicinex</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">BM-01280</td><td class="td-num" style="color:#BF360C;font-weight:700">26,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Galaxy Pharma</td><td class="td-name">Derma calm</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">GE03049</td><td class="td-num" style="color:#BF360C;font-weight:700">4,392</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Galaxy Pharma</td><td class="td-name">Mycomin</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">GE04045</td><td class="td-num" style="color:#BF360C;font-weight:700">9,600</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Galaxy Pharma</td><td class="td-name">Tineahit</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">GE06048</td><td class="td-num" style="color:#BF360C;font-weight:700">10,160</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Galaxy pharma pharma</td><td class="td-name">Terbibact Mixi Cream</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">GE06047</td><td class="td-num" style="color:#BF360C;font-weight:700">39,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">London United Exports LTD</td><td class="td-name">Wormbat</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">EL-2429</td><td class="td-num" style="color:#BF360C;font-weight:700">33,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">MACLEODES</td><td class="td-name">Setflow</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">ME-68570</td><td class="td-num" style="color:#BF360C;font-weight:700">15,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Parnax Lab</td><td class="td-name">Bactoderme</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">PNO-0110</td><td class="td-num" style="color:#BF360C;font-weight:700">30,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Parnax Lab</td><td class="td-name">Miconax cream</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">PNO0107</td><td class="td-num" style="color:#BF360C;font-weight:700">30,400</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Parnax Lab</td><td class="td-name">Miconax cream</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">PNO0208</td><td class="td-num" style="color:#BF360C;font-weight:700">32,360</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Parnax Lab</td><td class="td-name">Miconax cream</td><td class="td-name" style="color:#607D8B">Ointment</td><td class="td-name">PNO0309</td><td class="td-num" style="color:#BF360C;font-weight:700">30,600</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Livogen iron tonic</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6142C85004</td><td class="td-num" style="color:#BF360C;font-weight:700">50,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Livogen iron tonic</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6143C85001</td><td class="td-num" style="color:#BF360C;font-weight:700">25,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Livogen iron tonic</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6143C85002</td><td class="td-num" style="color:#BF360C;font-weight:700">8,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Osto polybion(p.s)</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6142C85003</td><td class="td-num" style="color:#BF360C;font-weight:700">7,500</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Osto polybion(sale)</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6142C85002</td><td class="td-num" style="color:#BF360C;font-weight:700">25,200</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Polybion LC</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6138C85001</td><td class="td-num" style="color:#BF360C;font-weight:700">33,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Polybion LC</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6139C85001</td><td class="td-num" style="color:#BF360C;font-weight:700">33,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Polybion LC</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6140C85001</td><td class="td-num" style="color:#BF360C;font-weight:700">33,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Procter & Gamble</td><td class="td-name">Polybion LC</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">6141C85001</td><td class="td-num" style="color:#BF360C;font-weight:700">66,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ranak Exim pvt Ltd.</td><td class="td-name">Redsun (cocktail)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-841267</td><td class="td-num" style="color:#BF360C;font-weight:700">24,800</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Ranak Exim pvt Ltd.</td><td class="td-name">Redsun (cocktail)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-851268</td><td class="td-num" style="color:#BF360C;font-weight:700">107,200</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ranak Exim pvt Ltd.</td><td class="td-name">Redsun (honey))</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-901273</td><td class="td-num" style="color:#BF360C;font-weight:700">26,400</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Ranak Exim pvt Ltd.</td><td class="td-name">Redsun (mint)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-731254</td><td class="td-num" style="color:#BF360C;font-weight:700">64,200</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ranak Exim pvt Ltd.</td><td class="td-name">Redsun (mint)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-741255</td><td class="td-num" style="color:#BF360C;font-weight:700">110,400</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Happyrona Forte</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">RE-651294</td><td class="td-num" style="color:#BF360C;font-weight:700">28,500</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (cherry )</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-601241</td><td class="td-num" style="color:#BF360C;font-weight:700">107,200</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (cherry )</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-611242</td><td class="td-num" style="color:#BF360C;font-weight:700">26,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (cherry)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-621243</td><td class="td-num" style="color:#BF360C;font-weight:700">26,800</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (Honey)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-911274</td><td class="td-num" style="color:#BF360C;font-weight:700">100,800</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (Mint)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-721253</td><td class="td-num" style="color:#BF360C;font-weight:700">108,800</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (mix-fruit )</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-661247</td><td class="td-num" style="color:#BF360C;font-weight:700">110,400</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (mix-fruit )</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-671248</td><td class="td-num" style="color:#BF360C;font-weight:700">24,800</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun (mix-fruit )</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-681249</td><td class="td-num" style="color:#BF360C;font-weight:700">110,400</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Ronak Exim pvt Ltd.</td><td class="td-name">Redsun(banana)</td><td class="td-name" style="color:#607D8B">Flat Sachet</td><td class="td-name">RE-571240</td><td class="td-num" style="color:#BF360C;font-weight:700">44,800</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Sapphire Lifescience Pvt Ltd</td><td class="td-name">Alaize</td><td class="td-name" style="color:#607D8B">Stick Pack Sachet</td><td class="td-name">ALE-135</td><td class="td-num" style="color:#BF360C;font-weight:700">1,656</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Sapphire Lifescience Pvt Ltd</td><td class="td-name">Alaize</td><td class="td-name" style="color:#607D8B">Stick Pack Sachet</td><td class="td-name">ALE-139</td><td class="td-num" style="color:#BF360C;font-weight:700">3,912</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Sapphire Lifescience Pvt Ltd</td><td class="td-name">Alaize</td><td class="td-name" style="color:#607D8B">Stick Pack Sachet</td><td class="td-name">ALE-140</td><td class="td-num" style="color:#BF360C;font-weight:700">24,672</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Sapphire Lifescience Pvt Ltd</td><td class="td-name">Alaize</td><td class="td-name" style="color:#607D8B">Stick Pack Sachet</td><td class="td-name">ALE-142</td><td class="td-num" style="color:#BF360C;font-weight:700">19,800</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Sapphire Lifescience Pvt Ltd</td><td class="td-name">Alaize</td><td class="td-name" style="color:#607D8B">Stick Pack Sachet</td><td class="td-name">ALE-143</td><td class="td-num" style="color:#BF360C;font-weight:700">10,800</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Shalina</td><td class="td-name">Tossego</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">S-1272</td><td class="td-num" style="color:#BF360C;font-weight:700">15,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Shalina</td><td class="td-name">Polygel</td><td class="td-name" style="color:#607D8B">Stick Pack Sachet</td><td class="td-name">60007</td><td class="td-num" style="color:#BF360C;font-weight:700">500</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Shalina</td><td class="td-name">Polygel</td><td class="td-name" style="color:#607D8B">Stick Pack Sachet</td><td class="td-name">650007</td><td class="td-num" style="color:#BF360C;font-weight:700">53,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Socomed</td><td class="td-name">Bon D3</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">SC05386</td><td class="td-num" style="color:#BF360C;font-weight:700">10,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Socomed</td><td class="td-name">Prince s heptin plus</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">SL05384</td><td class="td-num" style="color:#BF360C;font-weight:700">27,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Socomed</td><td class="td-name">Riboquine</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">SL05386</td><td class="td-num" style="color:#BF360C;font-weight:700">10,000</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">UC Rebok Investment Ltd</td><td class="td-name">Rebok Nystatin drops</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">EL-2417</td><td class="td-num" style="color:#BF360C;font-weight:700">86,200</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">UC-Rebok Investment Ltd. Investment Ltd.</td><td class="td-name">Rebok Nystatin drops</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">EL-2292</td><td class="td-num" style="color:#BF360C;font-weight:700">1,950</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">UC-Rebok Investment Ltd. Investment Ltd.</td><td class="td-name">Rebok Nystatin drops</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">EL-2416</td><td class="td-num" style="color:#BF360C;font-weight:700">43,000</td></tr><tr style="background:#FFFFFF"><td class="td-name" style="font-weight:600">Unique pharma Pharma</td><td class="td-name">Amylase</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">U-137</td><td class="td-num" style="color:#BF360C;font-weight:700">14,904</td></tr><tr style="background:#F1F8F6"><td class="td-name" style="font-weight:600">Unique pharma Pharma</td><td class="td-name">Amylase</td><td class="td-name" style="color:#607D8B">Bottle</td><td class="td-name">U-138</td><td class="td-num" style="color:#BF360C;font-weight:700">13,872</td></tr></tbody>
-    </table>
-  </div>
-</div>
-
 </div><!-- /container -->
 
 <div class="footer">
-  Generated by Enicar Dashboard Generator &nbsp;|&nbsp; 31 May 2026, 09:38 PM<br>
+  Generated by Enicar Dashboard Generator &nbsp;|&nbsp; 31 May 2026, 09:45 PM<br>
   Data source: Enicar_Dashboard_Template.xlsx &nbsp;|&nbsp;
   Run <strong>Refresh_Dashboard.command</strong> to update with latest data
 </div>
@@ -317,29 +184,10 @@ function cmpLine(a,b) {
 })();
 
 // ── Main render ───────────────────────────────────────
-function applyFilter() {
-  const sel = document.getElementById('date-filter').value;
-  const isAll = sel === 'all';
-  document.getElementById('filter-tag').textContent = isAll ? 'MONTHLY TOTAL' : 'DAILY VIEW';
-
-  const fill  = isAll ? ENICAR.fill  : ENICAR.fill.filter(r => r.date === sel);
-  const pack  = isAll ? ENICAR.pack  : ENICAR.pack.filter(r => r.date === sel);
-  const disp  = isAll ? ENICAR.disp  : ENICAR.disp.filter(r => r.date === sel);
-  const staff = isAll ? ENICAR.staff : ENICAR.staff.filter(r => r.date === sel);
-  const label = isAll ? 'MTD' : 'TODAY';
-
-  // Update product type breakdown column headers
-  document.getElementById('pt-hdr-fill').textContent = `UNITS FILLED (${label})`;
-  document.getElementById('pt-hdr-pack').textContent = `UNITS PACKED (${label})`;
-  document.getElementById('pt-hdr-disp').textContent = `UNITS DISPATCHED (${label})`;
-
-  renderProductTypes(fill, pack, disp);
-  renderFilling(fill, isAll);
-  renderPacking(pack, fill, isAll);
-  renderDispatch(disp, fill);
-  renderStaff(staff, isAll);
-  renderParties(disp, isAll);
-}
+// Date-filter UI and the data-tile sections were removed — applyFilter is a
+// no-op for now. The render functions below are intentionally kept so this
+// can be re-enabled later by restoring the date-filter UI + section HTML.
+function applyFilter() { /* sections removed; nothing to refresh */ }
 
 // ── Product Type Breakdown ────────────────────────────
 const _FLAT_JS     = new Set(['sachet','sachets','flat sachet','flat sachets','pouch','pouch/sachet','pouch/sachets']);
