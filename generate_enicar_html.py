@@ -176,22 +176,10 @@ staff_df = read_log('➕ Staff Log', 'B:F',
     ['Date','Total','Female','Male','Remarks'],
     ['Total','Female','Male'])
 
-# RM dispensing — the upstream stage (Raw-Material issued from store BEFORE
-# filling starts). This tab is optional; if it doesn't exist yet the rest of
-# the dashboard works unchanged. Expected layout (columns B:I in row 4):
-#   Date | Customer | Product | Batch Number | Batch Size | Pack Size | BMR Receipt Date | Remarks
-rm_df = read_log('➕ RM Dispensing Log', 'B:I',
-    ['Date','Customer','Product','Batch','BatchSize','PackSize','BMRDate','Remarks'],
-    ['BatchSize'])
-# read_log drops rows with no Date, but RM rows may legitimately have a blank
-# Date (BMR received, RM not yet dispensed). For our 'dispensed-but-not-filled'
-# view we only care about dispensed rows, so the date-required filter is fine.
-
 # Merge duplicate customer spellings via the alias list above.
-for _df in (fill_df, pack_df, disp_df, rm_df):
-    party_col = 'Customer' if 'Customer' in _df.columns else 'Party'
-    if party_col in _df.columns:
-        _df[party_col] = _df[party_col].apply(normalise_party)
+for _df in (fill_df, pack_df, disp_df):
+    if 'Party' in _df.columns:
+        _df['Party'] = _df['Party'].apply(normalise_party)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PERIOD SETUP
@@ -325,18 +313,16 @@ except Exception:
 def _batch_journey():
     """Return list of per-batch dicts with filled/packed/dispatched + status."""
     j = {}
-    def _new_entry(b):
-        return {'batch': str(b).strip(), 'product': None, 'ptype': None, 'party': None,
-                'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0, 'last': None,
-                'rm_date': None, 'rm_size': None, 'rm_bmr': None}
-
     def add(df, qty_col, role, ptype_col):
         for _, r in df.iterrows():
             b = r.get('Batch')
             if pd.isna(b) or not str(b).strip():
                 continue
             k = _bkey(b)
-            e = j.setdefault(k, _new_entry(b))
+            e = j.setdefault(k, {'batch': str(b).strip(), 'product': None, 'ptype': None,
+                                 'party': None,
+                                 'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0,
+                                 'last': None})
             e[role] += float(r.get(qty_col) or 0)
             if e['product'] is None and not pd.isna(r.get('Product')):
                 e['product'] = str(r.get('Product')).strip()
@@ -352,52 +338,13 @@ def _batch_journey():
     add(fill_df, 'Qty',        'filled',     'ProductType')
     add(disp_df, 'Qty',        'dispatched', 'ProductType')
 
-    # RM dispensing — adds metadata only (not a quantity). Earliest dispensing
-    # date per batch wins (in case the same batch was dispensed more than once).
-    def _as_date(v):
-        if v is None or (hasattr(v, '__class__') and pd.isna(v)): return None
-        if hasattr(v, 'date') and not isinstance(v, date):  # pandas Timestamp / datetime
-            return v.date()
-        if isinstance(v, date): return v
-        try:
-            t = pd.to_datetime(v, errors='coerce')
-            return None if pd.isna(t) else t.date()
-        except Exception:
-            return None
-    for _, r in rm_df.iterrows():
-        b = r.get('Batch')
-        if pd.isna(b) or not str(b).strip():
-            continue
-        k = _bkey(b)
-        e = j.setdefault(k, _new_entry(b))
-        rd = _as_date(r.get('Date'))
-        if rd is not None and (e['rm_date'] is None or rd < e['rm_date']):
-            e['rm_date'] = rd
-        if e['rm_size'] is None:
-            bs = r.get('BatchSize')
-            if bs is not None and not pd.isna(bs) and float(bs) > 0:
-                e['rm_size'] = float(bs)
-        if e['rm_bmr'] is None:
-            bmr = _as_date(r.get('BMRDate'))
-            if bmr is not None:
-                e['rm_bmr'] = bmr
-        if e['product'] is None and not pd.isna(r.get('Product')):
-            e['product'] = str(r.get('Product')).strip()
-        if e['party'] is None and not pd.isna(r.get('Customer')):
-            e['party'] = str(r.get('Customer')).strip()
-
     for k, e in j.items():
         f, p, d = e['filled'], e['packed'], e['dispatched']
         in_fill = f > 0
-        has_rm  = e['rm_date'] is not None
         if k in OPENING_STOCK:                   # frozen pre-tracking stock — never flag
             e['status'], e['rank'] = ('Opening stock (pre-system)', 4)
         elif not in_fill:
-            if has_rm:
-                # RM is in the day store waiting to be taken into production.
-                e['status'], e['rank'] = ('RM dispensed — awaiting fill', 5)
-            else:
-                e['status'], e['rank'] = ('⚠ Dispatched/packed but never filled', 0)
+            e['status'], e['rank'] = ('⚠ Dispatched/packed but never filled', 0)
         elif d > f * 1.02 and d - f > 1:         # shipped clearly more than made
             e['status'], e['rank'] = ('⚠ Dispatched more than filled', 0)
         elif d > 0:
@@ -449,24 +396,9 @@ disp_rows = [{'date':safe(r['Date']),'product':safe(r['Product']),'packSize':saf
 staff_rows = [{'date':safe(r['Date']),'female':safe(r['Female']),'male':safe(r['Male'])}
               for _,r in cur(staff_df).iterrows()]
 
-def _ds(d):
-    """Format a date-ish value as 'DD Mon YYYY'; tolerates strings, datetimes, dates, NaT, None."""
-    if d is None: return None
-    if hasattr(d, 'strftime'):
-        try: return d.strftime('%d %b %Y')
-        except Exception: return None
-    try:
-        import pandas as _pd
-        v = _pd.to_datetime(d, errors='coerce')
-        if _pd.isna(v): return None
-        return v.strftime('%d %b %Y')
-    except Exception:
-        s = str(d).strip()
-        return s or None
 batch_rows = [
-    {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'], 'party':e['party'],
+    {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'],
      'filled':float(e['filled']), 'packed':float(e['packed']), 'dispatched':float(e['dispatched']),
-     'rmDate':_ds(e['rm_date']), 'rmSize':e['rm_size'], 'rmBmr':_ds(e['rm_bmr']),
      'status':e['status']}
     for e in BATCH_JOURNEY
 ]
@@ -518,16 +450,6 @@ def product_type_rows():
         )
     return rows
 
-# RM dispensed but NOT yet filled — i.e. material is sitting in the RM day
-# store, waiting for production to start. Sorted by dispensing date (oldest
-# first, so anything waiting longest sits at the top).
-RM_PENDING = sorted(
-    [e for e in BATCH_JOURNEY if e['rm_date'] is not None and e['filled'] == 0],
-    key=lambda e: (e['rm_date'], (e['party'] or 'zzz').lower(), e['batch'])
-)
-RM_PENDING_UNITS = sum((e['rm_size'] or 0) for e in RM_PENDING)
-RM_HAS_DATA      = any(e['rm_date'] is not None for e in BATCH_JOURNEY)
-
 # Packed and sitting in BSR stock — i.e. packed but NOT yet dispatched.
 # Primary sort: party name (so all of one customer's stock is grouped together);
 # then product type, then product, then batch.
@@ -541,23 +463,6 @@ IN_STOCK = sorted(
                    e['batch'])
 )
 IN_STOCK_UNITS = sum(e['packed'] for e in IN_STOCK)
-
-def rm_pending_rows():
-    rows = ''
-    for i, e in enumerate(RM_PENDING):
-        bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
-        days_waiting = (date.today() - e['rm_date']).days if e['rm_date'] else '—'
-        rows += (
-            f'<tr style="background:{bg}">'
-            f'<td class="td-name" style="font-weight:600">{e["party"] or "—"}</td>'
-            f'<td class="td-name">{e["product"] or "—"}</td>'
-            f'<td class="td-name">{e["batch"]}</td>'
-            f'<td class="td-num" style="color:{C_SEC};font-weight:600">{n(e["rm_size"] or 0)}</td>'
-            f'<td class="td-name" style="color:#90A4AE;font-size:12px">{e["rm_date"].strftime("%d %b") if e["rm_date"] else "—"}</td>'
-            f'<td class="td-num" style="color:#90A4AE;font-size:12px">{days_waiting}</td>'
-            f'</tr>'
-        )
-    return rows or '<tr><td colspan="6" style="text-align:center;color:#90A4AE;padding:12px">All dispensed RM has been taken into production. ✅</td></tr>'
 
 def batch_journey_rows():
     rows = ''
@@ -618,36 +523,6 @@ def line_table_rows(data_dict, total_cur, total_prv):
 # ASSEMBLE HTML
 # ══════════════════════════════════════════════════════════════════════════════
 generated_at = datetime.now().strftime('%d %b %Y, %I:%M %p')
-
-# Conditional RM section — only rendered when the RM Dispensing Log tab exists
-# and has at least one dispensed row. Until you add the tab, this stays empty.
-if RM_HAS_DATA:
-    RM_SECTION_HTML = f'''
-<!-- ════════════════════════════════════════════════════════════
-     SECTION — RM DISPENSED, AWAITING FILLING (in RM day store)
-════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;RM &nbsp; DISPENSED &nbsp;—&nbsp; AWAITING &nbsp; FILLING &nbsp;━━', C_SEC)}
-  <div class="tile-row">
-    {tile('BATCHES WAITING', n(len(RM_PENDING)), 'dispensed, not yet filled', C_SEC)}
-    {tile('TOTAL BATCH UNITS', n(RM_PENDING_UNITS), 'planned size of waiting batches', C_AMB)}
-  </div>
-  <div style="font-size:12px;color:#607D8B;padding:4px 4px 10px">
-    Raw material has left the store but the Filling Log has no record yet.
-    Oldest waiting batches sit at the top.
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr class="th-row">
-        <th>PARTY</th><th>PRODUCT</th><th>BATCH</th><th>BATCH SIZE</th><th>DISPENSED ON</th><th>DAYS WAITING</th>
-      </tr></thead>
-      <tbody>{rm_pending_rows()}</tbody>
-    </table>
-  </div>
-</div>
-'''
-else:
-    RM_SECTION_HTML = ''
 
 html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -737,9 +612,15 @@ html = f"""<!DOCTYPE html>
 </div>
 <div class="period-bar">PRODUCTION &nbsp; DASHBOARD &nbsp;&nbsp;|&nbsp;&nbsp; {PERIOD}</div>
 
-<div class="container">
+<div class="filter-bar">
+  <label>📅 VIEW BY DATE:</label>
+  <select id="date-filter" onchange="applyFilter()">
+    <option value="all">All Month (MTD) — {PERIOD}</option>
+  </select>
+  <span class="filter-tag" id="filter-tag">MONTHLY TOTAL</span>
+</div>
 
-{RM_SECTION_HTML}
+<div class="container">
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 0 — BATCH / PRODUCT LOOKUP
@@ -753,6 +634,123 @@ html = f"""<!DOCTYPE html>
            style="width:100%;padding:10px;font-size:14px;border:1px solid #B0BEC5;border-radius:6px;box-sizing:border-box">
   </div>
   <div id="batch-search-results"></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1 — PRODUCT TYPE BREAKDOWN
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;PRODUCT &nbsp; TYPE &nbsp; BREAKDOWN &nbsp;━━')}
+  <div class="tbl-wrap">
+    <table>
+      <tr class="th-row">
+        <th>PRODUCT TYPE</th>
+        <th id="pt-hdr-fill">UNITS FILLED (MTD)</th>
+        <th id="pt-hdr-pack">UNITS PACKED (MTD)</th>
+        <th id="pt-hdr-disp">UNITS DISPATCHED (MTD)</th>
+      </tr>
+      <tbody id="pt-rows"></tbody>
+      <tr class="tot-row">
+        <td class="td-name">TOTAL</td>
+        <td class="td-num" id="pt-total-fill">—</td>
+        <td class="td-num" id="pt-total-pack">—</td>
+        <td class="td-num" id="pt-total-disp">—</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2 — FILLING
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;FILLING &nbsp; PRODUCTION &nbsp;━━')}
+  <div class="tile-row">
+    <div class="tile"><div class="tlabel">TOTAL FILLED</div><div class="tvalue" id="f-total" style="color:{C_AMB}">—</div><div class="tsub">units filled</div></div>
+    <div class="tile"><div class="tlabel">FILL RECORDS</div><div class="tvalue" id="f-rec" style="color:{C_AMB}">—</div><div class="tsub">rows logged</div></div>
+    <div class="tile"><div class="tlabel">AVG UNITS / RECORD</div><div class="tvalue" id="f-avg" style="color:{C_AMB}">—</div><div class="tsub">units per entry</div></div>
+    <div class="tile"><div class="tlabel">ACTIVE LINES</div><div class="tvalue" id="f-lines" style="color:{C_AMB}">—</div><div class="tsub">lines active</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>UNITS FILLED (MTD)</th></tr></thead>
+      <tbody id="fill-line-rows"></tbody>
+      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2 — PACKING
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;PACKING &nbsp; PRODUCTION &nbsp;━━')}
+  <div class="tile-row">
+    <div class="tile"><div class="tlabel">TOTAL PACKED</div><div class="tvalue" id="p-total" style="color:{C_AMB}">—</div><div class="tsub">units packed</div></div>
+    <div class="tile"><div class="tlabel">FILL → PACK RATIO</div><div class="tvalue" id="p-ratio" style="color:{C_AMB}">—</div><div class="tsub">packed ÷ filled</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>UNITS PACKED (MTD)</th></tr></thead>
+      <tbody id="pack-line-rows"></tbody>
+      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3 — DISPATCH & BSR STOCK
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;DISPATCH &nbsp;&amp;&nbsp; BSR &nbsp; STOCK &nbsp;━━', C_ORG)}
+  <div class="tile-row">
+    <div class="tile"><div class="tlabel">DISPATCHED</div><div class="tvalue" id="d-total" style="color:{C_ORG}">—</div><div class="tsub">units dispatched</div></div>
+    <div class="tile"><div class="tlabel">DISPATCH / FILL</div><div class="tvalue" id="d-ratio" style="color:{C_ORG}">—</div><div class="tsub">dispatched ÷ filled</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4 — STAFF
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;STAFF &nbsp;&amp;&nbsp; ATTENDANCE &nbsp;━━')}
+  <div class="tile-row">
+    <div class="tile"><div class="tlabel">FEMALE WORKERS PRESENT</div><div class="tvalue" id="s-fem" style="color:{C_AMB}">—</div><div class="tsub">packing workers</div></div>
+    <div class="tile"><div class="tlabel">MALE WORKERS PRESENT</div><div class="tvalue" id="s-male" style="color:{C_AMB}">—</div><div class="tsub">filling & loading</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 6 — PARTY-WISE SALES
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;PARTY-WISE &nbsp; SALES &nbsp; (Dispatched) &nbsp;━━', C_ORG)}
+  <div class="tbl-wrap">
+    <table>
+      <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr></thead>
+      <tbody id="party-rows"></tbody>
+      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">—</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7 — PACKED & IN STOCK (not yet dispatched)
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;PACKED &nbsp;&amp;&nbsp; IN &nbsp; BSR &nbsp; STOCK &nbsp; (Not &nbsp; Yet &nbsp; Dispatched) &nbsp;━━', C_SEC)}
+  <div class="tile-row">
+    {tile('BATCHES IN STOCK', n(len(IN_STOCK)), 'packed, awaiting dispatch', C_SEC)}
+    {tile('UNITS IN STOCK', n(IN_STOCK_UNITS), 'packed & not dispatched', C_AMB)}
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr class="th-row">
+        <th>PARTY</th><th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th>
+      </tr></thead>
+      <tbody>{batch_journey_rows()}</tbody>
+    </table>
+  </div>
 </div>
 
 </div><!-- /container -->
@@ -804,10 +802,29 @@ function cmpLine(a,b) {{
 }})();
 
 // ── Main render ───────────────────────────────────────
-// Date-filter UI and the data-tile sections were removed — applyFilter is a
-// no-op for now. The render functions below are intentionally kept so this
-// can be re-enabled later by restoring the date-filter UI + section HTML.
-function applyFilter() {{ /* sections removed; nothing to refresh */ }}
+function applyFilter() {{
+  const sel = document.getElementById('date-filter').value;
+  const isAll = sel === 'all';
+  document.getElementById('filter-tag').textContent = isAll ? 'MONTHLY TOTAL' : 'DAILY VIEW';
+
+  const fill  = isAll ? ENICAR.fill  : ENICAR.fill.filter(r => r.date === sel);
+  const pack  = isAll ? ENICAR.pack  : ENICAR.pack.filter(r => r.date === sel);
+  const disp  = isAll ? ENICAR.disp  : ENICAR.disp.filter(r => r.date === sel);
+  const staff = isAll ? ENICAR.staff : ENICAR.staff.filter(r => r.date === sel);
+  const label = isAll ? 'MTD' : 'TODAY';
+
+  // Update product type breakdown column headers
+  document.getElementById('pt-hdr-fill').textContent = `UNITS FILLED (${{label}})`;
+  document.getElementById('pt-hdr-pack').textContent = `UNITS PACKED (${{label}})`;
+  document.getElementById('pt-hdr-disp').textContent = `UNITS DISPATCHED (${{label}})`;
+
+  renderProductTypes(fill, pack, disp);
+  renderFilling(fill, isAll);
+  renderPacking(pack, fill, isAll);
+  renderDispatch(disp, fill);
+  renderStaff(staff, isAll);
+  renderParties(disp, isAll);
+}}
 
 // ── Product Type Breakdown ────────────────────────────
 const _FLAT_JS     = new Set(['sachet','sachets','flat sachet','flat sachets','pouch','pouch/sachet','pouch/sachets']);
@@ -1002,19 +1019,10 @@ function lookupBatch() {{
   let rows = '';
   hits.slice(0,80).forEach((b,i) => {{
     const bg = i%2===0 ? '#F1F8F6' : '#fff';
-    // RM cell — combines dispensed date + batch size + BMR date into one compact stage marker
-    let rmCell = '—';
-    if (b.rmDate) {{
-      const size = b.rmSize ? ' · size ' + fmt(b.rmSize) : '';
-      const bmr  = b.rmBmr  ? ' · BMR ' + b.rmBmr      : '';
-      rmCell = `<span style="color:#00695C">RM ${{b.rmDate}}${{size}}${{bmr}}</span>`;
-    }}
     rows += `<tr style="background:${{bg}}">
       <td class="td-name">${{b.product||'—'}}</td>
       <td class="td-name" style="color:#607D8B">${{b.ptype||'—'}}</td>
-      <td class="td-name">${{b.party||'—'}}</td>
       <td class="td-name" style="font-weight:600">${{b.batch}}</td>
-      <td class="td-name" style="font-size:11px">${{rmCell}}</td>
       <td class="td-num" style="color:#00695C">${{fmt(b.filled)}}</td>
       <td class="td-num" style="color:#BF360C">${{fmt(b.packed)}}</td>
       <td class="td-num" style="color:#E65100">${{fmt(b.dispatched)}}</td>
@@ -1024,7 +1032,7 @@ function lookupBatch() {{
   const note = hits.length>80 ? `<div style="color:#90A4AE;font-size:11px;padding:4px">Showing first 80 of ${{hits.length}} matches — refine your search.</div>` : '';
   out.innerHTML = `<div class="tbl-wrap"><table>
     <thead><tr class="th-row">
-      <th>PRODUCT</th><th>TYPE</th><th>PARTY</th><th>BATCH</th><th>RM DISPENSED</th><th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>
+      <th>PRODUCT</th><th>TYPE</th><th>BATCH</th><th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>
     </tr></thead>
     <tbody>${{rows}}</tbody>
   </table></div>${{note}}`;
