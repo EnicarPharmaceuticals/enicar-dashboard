@@ -207,14 +207,54 @@ for _df in (fill_df, pack_df, disp_df):
 # ══════════════════════════════════════════════════════════════════════════════
 # PERIOD SETUP
 # ══════════════════════════════════════════════════════════════════════════════
-month_start = date(YEAR, MONTH, 1)
-month_end   = date(YEAR, MONTH, calendar.monthrange(YEAR, MONTH)[1])
-pm = MONTH - 1 if MONTH > 1 else 12
-py = YEAR       if MONTH > 1 else YEAR - 1
-prev_start  = date(py, pm, 1)
-prev_end    = date(py, pm, calendar.monthrange(py, pm)[1])
-PERIOD      = month_start.strftime('%B %Y').upper()
-PREV        = prev_start.strftime('%b %Y')
+# Period spans the latest TWO months whenever both have data (so we don't lose
+# the previous month right after a month rollover). When only one month exists,
+# we just show that one. PERIOD_MONTHS is a sorted list of (year, month) tuples.
+def _months_with_data():
+    months = set()
+    for sheet, uc in [('➕ Filling Log','B:J'),
+                      ('➕ Packing Log','B:N'),
+                      ('➕ Dispatch Log','B:I')]:
+        try:
+            _df = pd.read_excel(TEMPLATE, sheet_name=sheet, header=3, usecols=uc)
+            _d = pd.to_datetime(_df.iloc[:,0], format='mixed', dayfirst=True, errors='coerce').dropna()
+            # Guard against typos like '30.050203' that parse to 1970 — only
+            # accept dates from 2024 onwards.
+            for ts in _d:
+                if ts.year >= 2024:
+                    months.add((ts.year, ts.month))
+        except Exception:
+            pass
+    return sorted(months)
+
+if len(sys.argv) > 2:
+    PERIOD_MONTHS = [(YEAR, MONTH)]            # explicit user override
+else:
+    mm = _months_with_data()
+    PERIOD_MONTHS = mm[-2:] if len(mm) >= 2 else (mm or [(today.year, today.month)])
+
+# month_start / month_end now span the FULL period (could be 1 or 2 months).
+_y0, _m0 = PERIOD_MONTHS[0]
+_y1, _m1 = PERIOD_MONTHS[-1]
+month_start = date(_y0, _m0, 1)
+month_end   = date(_y1, _m1, calendar.monthrange(_y1, _m1)[1])
+
+# Previous comparison window = same length immediately before month_start.
+from datetime import timedelta
+_window_days = (month_end - month_start).days + 1
+prev_end   = month_start - timedelta(days=1)
+prev_start = prev_end - timedelta(days=_window_days - 1)
+
+if len(PERIOD_MONTHS) == 1:
+    PERIOD = month_start.strftime('%B %Y').upper()
+else:
+    PERIOD = (month_start.strftime('%b %Y').upper() + ' – '
+              + date(_y1, _m1, 1).strftime('%b %Y').upper())
+PREV = prev_start.strftime('%b %Y')
+
+# Keep YEAR/MONTH pointing at the latest month for downstream code that still
+# references them (e.g. JS year/month labels).
+YEAR, MONTH = _y1, _m1
 
 def filt(df, s, e): return df[(df['Date'] >= s) & (df['Date'] <= e)]
 def cur(df):        return filt(df, month_start, month_end)
