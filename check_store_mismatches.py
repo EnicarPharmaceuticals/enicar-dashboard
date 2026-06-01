@@ -33,7 +33,7 @@ ROOT  = os.environ.get('DASHBOARD_ROOT') or os.path.join(HERE, '..')
 XLSX  = os.path.join(ROOT, 'Enicar_Dashboard_Template.xlsx')
 STATE = os.path.join(HERE, 'store_mismatch_state.json')
 
-REMIND_AFTER_DAYS = 2
+REMIND_AFTER_DAYS = 3
 TEAM = ['store@enicarpharma.com']
 
 # ─── creds ──────────────────────────────────────────────────────
