@@ -92,6 +92,18 @@ def main():
     except Exception as e:
         print(f'mismatch checker skipped: {e}')
 
+    # ── Store-side RM mismatch check (separate email to store@enicarpharma.com) ──
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(HERE, 'check_store_mismatches.py')],
+            env=env, capture_output=True, text=True, timeout=60
+        )
+        if r.stdout: print(r.stdout.strip())
+        if r.returncode != 0 and r.stderr:
+            print('store-mismatch checker stderr:', r.stderr.strip())
+    except Exception as e:
+        print(f'store-mismatch checker skipped: {e}')
+
     return 0
 
 
