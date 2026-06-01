@@ -385,7 +385,8 @@ def _batch_journey():
             e = j.setdefault(k, {'batch': str(b).strip(), 'product': None, 'ptype': None,
                                  'party': None,
                                  'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0,
-                                 'last': None})
+                                 'last': None, 'last_disp': None,
+                                 'auto_cleared': False, 'leftover_cleared': 0.0})
             e[role] += float(r.get(qty_col) or 0)
             if e['product'] is None and not pd.isna(r.get('Product')):
                 e['product'] = str(r.get('Product')).strip()
@@ -396,10 +397,28 @@ def _batch_journey():
             d = r.get('Date')
             if d is not None and (e['last'] is None or d > e['last']):
                 e['last'] = d
+            # Track most recent DISPATCH date separately — used for auto-clearing
+            # tiny leftover stock 60+ days after the last dispatch.
+            if role == 'dispatched' and d is not None and (e['last_disp'] is None or d > e['last_disp']):
+                e['last_disp'] = d
     # Packing first so packed items take their product type / party from the packing log.
     add(pack_df, 'TotalPacked','packed',     'ProdType')
     add(fill_df, 'Qty',        'filled',     'ProductType')
     add(disp_df, 'Qty',        'dispatched', 'ProductType')
+
+    # Auto-clear rule: small leftover (≤500 units) sitting >60 days after the
+    # last dispatch is treated as effectively gone (samples, shrinkage, returns,
+    # etc.) so the BSR stock total and Batch Journey don't carry stale remnants
+    # forever. Threshold tuned to cover the typical 100–300 bottle leftover.
+    AUTO_CLEAR_UNITS = 500
+    AUTO_CLEAR_DAYS  = 60
+    today_d = date.today()
+    for e in j.values():
+        leftover = e['filled'] - e['dispatched']
+        if (e['last_disp'] is not None and 0 < leftover <= AUTO_CLEAR_UNITS
+                and (today_d - e['last_disp']).days >= AUTO_CLEAR_DAYS):
+            e['auto_cleared']     = True
+            e['leftover_cleared'] = leftover
 
     for k, e in j.items():
         f, p, d = e['filled'], e['packed'], e['dispatched']
@@ -410,6 +429,9 @@ def _batch_journey():
             e['status'], e['rank'] = ('⚠ Dispatched/packed but never filled', 0)
         elif d > f * 1.02 and d - f > 1:         # shipped clearly more than made
             e['status'], e['rank'] = ('⚠ Dispatched more than filled', 0)
+        elif e['auto_cleared']:
+            e['status'], e['rank'] = (
+                f"✅ Complete (small {int(e['leftover_cleared']):,}-unit leftover auto-cleared after 60d)", 3)
         elif d > 0:
             e['status'], e['rank'] = ('Filled → Packed → Dispatched', 3)
         elif p > 0:
@@ -421,6 +443,16 @@ def _batch_journey():
                   key=lambda e: (e['rank'], -(e['last'].toordinal() if e['last'] else 0)))
 
 BATCH_JOURNEY = _batch_journey()
+
+# Subtract auto-cleared small leftovers from the BSR stock total so old
+# remnants stop inflating "in stock" forever. Logged on the dashboard side
+# only (the underlying logs are not modified).
+AUTO_CLEARED_TOTAL = sum(e.get('leftover_cleared', 0) for e in BATCH_JOURNEY)
+AUTO_CLEARED_COUNT = sum(1 for e in BATCH_JOURNEY if e.get('auto_cleared'))
+if AUTO_CLEARED_TOTAL:
+    bsr_stock = bsr_stock - AUTO_CLEARED_TOTAL
+    print(f"   Auto-cleared {AUTO_CLEARED_COUNT} batch(es) "
+          f"({int(AUTO_CLEARED_TOTAL):,} units of small leftover stock) from BSR.")
 _bj_problems = sum(1 for e in BATCH_JOURNEY if e['rank'] == 0)
 _bj_flowing  = sum(1 for e in BATCH_JOURNEY if e['status'].startswith('Filled → Packed'))
 _bj_stock    = sum(1 for e in BATCH_JOURNEY if e['rank'] == 2)
