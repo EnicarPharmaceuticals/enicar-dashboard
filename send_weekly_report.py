@@ -44,6 +44,10 @@ CLEAN_BATCHES   = 'every batch number lines up'
 
 
 def has_findings(text):
+    # If the pipeline-status section is present, always send the weekly
+    # email so the team gets the pipeline view even when typos are clean.
+    if 'Production-pipeline status' in text:
+        return True
     return not (CLEAN_CUSTOMERS in text and CLEAN_BATCHES in text)
 
 
