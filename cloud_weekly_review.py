@@ -57,6 +57,7 @@ def main():
         f.write('=' * 50 + '\n\n')
         f.write(run('check_party_aliases.py') + '\n')
         f.write(run('check_batch_typos.py') + '\n')
+        f.write(run('check_rm_pipeline.py') + '\n')
     print('✓ Report built.')
 
     # Email it (always-team mode in the cloud).
