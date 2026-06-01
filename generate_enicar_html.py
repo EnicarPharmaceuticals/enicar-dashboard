@@ -30,8 +30,31 @@ OUTPUT       = os.path.join(ROOT, 'Enicar_Dashboard.html')
 BSR_OPENING  = 0      # ← Set your opening BSR stock balance here (units)
 
 today = datetime.today()
-YEAR  = int(sys.argv[1]) if len(sys.argv) > 1 else today.year
-MONTH = int(sys.argv[2]) if len(sys.argv) > 2 else today.month
+
+def _latest_month_with_data():
+    """Look at the Filling/Packing/Dispatch logs and return (year, month) of
+    the most recent row. This avoids showing an empty current month right after
+    a month rollover (e.g. on 1 June when only May has data so far)."""
+    try:
+        import pandas as _pd
+        latest = None
+        for sheet, uc in [('➕ Filling Log','B:J'),
+                          ('➕ Packing Log','B:N'),
+                          ('➕ Dispatch Log','B:I')]:
+            df = _pd.read_excel(TEMPLATE, sheet_name=sheet, header=3, usecols=uc)
+            d = _pd.to_datetime(df.iloc[:,0], format='mixed', dayfirst=True, errors='coerce').dropna()
+            if len(d):
+                m = d.max()
+                if latest is None or m > latest: latest = m
+        return (latest.year, latest.month) if latest is not None else (today.year, today.month)
+    except Exception:
+        return (today.year, today.month)
+
+if len(sys.argv) > 2:
+    YEAR  = int(sys.argv[1])
+    MONTH = int(sys.argv[2])
+else:
+    YEAR, MONTH = _latest_month_with_data()
 
 # Lines and parties are read dynamically from your Excel — no hardcoding needed
 
