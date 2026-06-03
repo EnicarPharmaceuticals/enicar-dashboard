@@ -1,6 +1,6 @@
 {
   "created": "2026-05-23",
-  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable).",
+  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable). | 2026-06-03: added RE-601241, RE-851268 (Redsun batches filled before tracking \u2014 user confirmed).",
   "batches": [
     "4186539",
     "4188214",
@@ -88,12 +88,14 @@
     "RE-571240",
     "RE-581239",
     "RE-591240",
+    "RE-601241",
     "RE-661247",
     "RE-671248",
     "RE-681249",
     "RE-721253",
     "RE-731254",
     "RE-741255",
+    "RE-851268",
     "RE-861269",
     "RE-931295",
     "RE-941296",
