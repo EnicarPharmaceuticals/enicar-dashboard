@@ -71,8 +71,11 @@ def find_mismatches():
     """
     # (log_name, sheet, usecols, batch_idx, product_idx, party_idx) — indices
     # are 0-based within the usecols slice.
+    # RM tab is now 24 columns (RM team uses extra fields). With usecols='B:I'
+    # we get: [0]SR.NO  [1]CUSTOMER  [2]BMR DATE  [3]BMR TIME
+    #         [4]NAME OF PRODUCT  [5]BATCH NUMBER  [6]BATCH SIZE  [7]UOM
     sources = [
-        ('RM Dispensing','➕ RM Dispensing Log','B:I',3,2,1),
+        ('RM Dispensing','➕ RM Dispensing Log','B:I',5,4,1),
         ('Filling',      '➕ Filling Log',      'B:J',6,2,7),
         ('Packing',      '➕ Packing Log',      'B:N',5,2,10),
         ('Dispatch',     '➕ Dispatch Log',     'B:I',5,1,6),
