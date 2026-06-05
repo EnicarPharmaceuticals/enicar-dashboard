@@ -458,6 +458,66 @@ _bj_flowing  = sum(1 for e in BATCH_JOURNEY if e['status'].startswith('Filled �
 _bj_stock    = sum(1 for e in BATCH_JOURNEY if e['rank'] == 2)
 _bj_opening  = sum(1 for e in BATCH_JOURNEY if e['rank'] == 4)
 
+# ── Monthly summary (RM → Fill → Pack → Disp) ─────────────────────────────────
+# Builds the per-month bottle totals plus a batch-funnel of THIS MONTH's
+# RM-dispensed batches (where each one stands now across the pipeline).
+def _monthly_summary():
+    try:
+        rm_all = pd.read_excel(TEMPLATE, sheet_name='➕ RM Dispensing Log', header=3)
+    except Exception:
+        return []
+    if 'PLAN' not in rm_all.columns or 'DISPENSING DATE' not in rm_all.columns:
+        return []
+    rm = rm_all[rm_all['DISPENSING DATE'].notna()
+                & (rm_all['PLAN'].astype(str).str.strip().str.upper() == 'REGULAR')
+                & ~rm_all['BATCH NUMBER'].astype(str).str.upper().str.contains('TLB', na=False)].copy()
+    rm['_d'] = pd.to_datetime(rm['DISPENSING DATE'], errors='coerce')
+    rm['_m'] = rm['_d'].dt.to_period('M').astype(str)
+    rm['_k'] = rm['BATCH NUMBER'].astype(str).apply(_bkey)
+
+    fkey_all = set(fill_df['Batch'].dropna().apply(lambda x: _bkey(x)))
+    pkey_all = set(pack_df['Batch'].dropna().apply(lambda x: _bkey(x)))
+    dkey_all = set(disp_df['Batch'].dropna().apply(lambda x: _bkey(x)))
+
+    fill_with_m = fill_df.copy()
+    fill_with_m['_m'] = pd.to_datetime(fill_with_m['Date'], errors='coerce').apply(
+        lambda d: d.strftime('%Y-%m') if pd.notna(d) and hasattr(d, 'strftime') else None)
+    pack_with_m = pack_df.copy()
+    pack_with_m['_m'] = pd.to_datetime(pack_with_m['Date'], errors='coerce').apply(
+        lambda d: d.strftime('%Y-%m') if pd.notna(d) and hasattr(d, 'strftime') else None)
+    disp_with_m = disp_df.copy()
+    disp_with_m['_m'] = pd.to_datetime(disp_with_m['Date'], errors='coerce').apply(
+        lambda d: d.strftime('%Y-%m') if pd.notna(d) and hasattr(d, 'strftime') else None)
+
+    months = sorted(set(rm['_m'].dropna()) | set(fill_with_m['_m'].dropna())
+                    | set(pack_with_m['_m'].dropna()) | set(disp_with_m['_m'].dropna()))
+    months = [m for m in months if m >= '2026-05']
+
+    out = []
+    for m in months:
+        rmk = set(rm[rm['_m']==m]['_k'].dropna())
+        f_m = fill_with_m[fill_with_m['_m']==m]
+        p_m = pack_with_m[pack_with_m['_m']==m]
+        d_m = disp_with_m[disp_with_m['_m']==m]
+        out.append({
+            'm':         m,
+            'rm_b':      len(rmk),
+            'f_b':       len(set(f_m['Batch'].dropna().apply(_bkey))),
+            'p_b':       len(set(p_m['Batch'].dropna().apply(_bkey))),
+            'd_b':       len(set(d_m['Batch'].dropna().apply(_bkey))),
+            'f_u':       float(pd.to_numeric(f_m.get('Qty', pd.Series()), errors='coerce').sum()),
+            'p_u':       float(p_m.get('TotalPacked', pd.Series()).sum()),
+            'd_u':       float(pd.to_numeric(d_m.get('Qty', pd.Series()), errors='coerce').sum()),
+            # Batch funnel — of THIS MONTH's RM dispenses, where are they now?
+            'bf_filled': sum(1 for k in rmk if k in fkey_all),
+            'bf_packed': sum(1 for k in rmk if k in pkey_all),
+            'bf_disp':   sum(1 for k in rmk if k in dkey_all),
+            'bf_pending':sum(1 for k in rmk if k not in fkey_all),
+        })
+    return out
+
+MONTHLY_SUMMARY = _monthly_summary()
+
 # ══════════════════════════════════════════════════════════════════════════════
 # BUILD JSON DATA FOR JS DAY FILTER
 # ══════════════════════════════════════════════════════════════════════════════
@@ -617,6 +677,69 @@ def line_table_rows(data_dict, total_cur, total_prv):
 # ══════════════════════════════════════════════════════════════════════════════
 # ASSEMBLE HTML
 # ══════════════════════════════════════════════════════════════════════════════
+def monthly_summary_html():
+    """Render the per-month pipeline glance — bottles funnel + batch funnel."""
+    if not MONTHLY_SUMMARY:
+        return ''
+    blocks = ''
+    for s in MONTHLY_SUMMARY:
+        # Pretty month label
+        try:
+            yr, mo = s['m'].split('-')
+            from datetime import date as _date
+            label = _date(int(yr), int(mo), 1).strftime('%B %Y').upper()
+        except Exception:
+            label = s['m']
+        f_u, p_u, d_u = s['f_u'], s['p_u'], s['d_u']
+        pf = (p_u/f_u*100) if f_u else 0
+        dp = (d_u/p_u*100) if p_u else 0
+        delta = f_u - d_u
+        # bar widths (relative to filled = 100%)
+        wf = 100 if f_u else 0
+        wp = (p_u/f_u*100) if f_u else 0
+        wd = (d_u/f_u*100) if f_u else 0
+        # batch funnel widths (relative to RM dispensed = 100%)
+        rm_b = max(s['rm_b'], 1)
+        bf_w_fill = s['bf_filled'] / rm_b * 100
+        bf_w_pack = s['bf_packed'] / rm_b * 100
+        bf_w_disp = s['bf_disp']   / rm_b * 100
+        bf_w_pend = s['bf_pending']/ rm_b * 100
+
+        blocks += f'''
+        <div style="background:#F1F8F6;border-radius:8px;padding:14px 16px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-weight:700;color:{C_PRI};font-size:16px">{label}</div>
+            <div style="color:#607D8B;font-size:12px">In-stock delta: <strong style="color:{C_SEC}">{n(delta) if delta>=0 else '-'+n(-delta)} units</strong></div>
+          </div>
+          <!-- Bottle funnel (units) -->
+          <table style="width:100%;font-size:13px;margin-bottom:8px">
+            <tr><td style="width:80px;color:#546E7A">Filled</td>
+                <td><div style="display:inline-block;background:{C_SEC};color:#fff;padding:3px 8px;border-radius:4px;width:{wf:.0f}%;box-sizing:border-box;min-width:80px">{n(f_u)} units &nbsp;|&nbsp; {s['f_b']} batches</div></td></tr>
+            <tr><td style="color:#546E7A">Packed</td>
+                <td><div style="display:inline-block;background:{C_AMB};color:#fff;padding:3px 8px;border-radius:4px;width:{wp:.0f}%;box-sizing:border-box;min-width:80px">{n(p_u)} units &nbsp;|&nbsp; {s['p_b']} batches &nbsp;<span style="opacity:.85">({pf:.1f}% of Filled)</span></div></td></tr>
+            <tr><td style="color:#546E7A">Dispatched</td>
+                <td><div style="display:inline-block;background:{C_ORG};color:#fff;padding:3px 8px;border-radius:4px;width:{wd:.0f}%;box-sizing:border-box;min-width:80px">{n(d_u)} units &nbsp;|&nbsp; {s['d_b']} batches &nbsp;<span style="opacity:.85">({dp:.1f}% of Packed)</span></div></td></tr>
+          </table>
+          <!-- Batch funnel for this month's RM dispenses -->
+          <div style="border-top:1px solid #B0BEC5;padding-top:8px;margin-top:8px;font-size:12px;color:#546E7A">
+            <span style="font-weight:600;color:{C_PRI}">RM dispensed in this month — where they are now (by batch number):</span>
+            <table style="width:100%;font-size:12px;margin-top:6px">
+              <tr><td style="width:160px">RM dispensed</td>
+                  <td><div style="display:inline-block;background:#90A4AE;color:#fff;padding:2px 6px;border-radius:3px;min-width:50px">{s['rm_b']} batches</div></td></tr>
+              <tr><td>↳ Reached Filling</td>
+                  <td><div style="display:inline-block;background:{C_SEC};color:#fff;padding:2px 6px;border-radius:3px;width:{bf_w_fill:.0f}%;min-width:50px;box-sizing:border-box">{s['bf_filled']} ({bf_w_fill:.0f}%)</div></td></tr>
+              <tr><td>↳ Reached Packing</td>
+                  <td><div style="display:inline-block;background:{C_AMB};color:#fff;padding:2px 6px;border-radius:3px;width:{bf_w_pack:.0f}%;min-width:50px;box-sizing:border-box">{s['bf_packed']} ({bf_w_pack:.0f}%)</div></td></tr>
+              <tr><td>↳ Reached Dispatch</td>
+                  <td><div style="display:inline-block;background:{C_ORG};color:#fff;padding:2px 6px;border-radius:3px;width:{bf_w_disp:.0f}%;min-width:50px;box-sizing:border-box">{s['bf_disp']} ({bf_w_disp:.0f}%)</div></td></tr>
+              <tr><td>⚠ Still pending (no production yet)</td>
+                  <td><div style="display:inline-block;background:#B71C1C;color:#fff;padding:2px 6px;border-radius:3px;width:{bf_w_pend:.0f}%;min-width:50px;box-sizing:border-box">{s['bf_pending']} ({bf_w_pend:.0f}%)</div></td></tr>
+            </table>
+          </div>
+        </div>
+        '''
+    return blocks
+
 generated_at = datetime.now().strftime('%d %b %Y, %I:%M %p')
 
 html = f"""<!DOCTYPE html>
@@ -716,6 +839,18 @@ html = f"""<!DOCTYPE html>
 </div>
 
 <div class="container">
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 00 — MONTHLY SUMMARY (RM → Fill → Pack → Disp)
+════════════════════════════════════════════════════════════ -->
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;MONTHLY &nbsp; SUMMARY &nbsp; (RM &nbsp;→&nbsp; Fill &nbsp;→&nbsp; Pack &nbsp;→&nbsp; Dispatch) &nbsp;━━', C_PRI)}
+  <div style="font-size:12px;color:#607D8B;padding:4px 4px 12px">
+    Top: bottles/units produced in each month at each stage. Bottom: where this month's RM-dispensed
+    <strong>batches</strong> are right now in the pipeline. May data starts from 13 May (when tracking began).
+  </div>
+  {monthly_summary_html()}
+</div>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 0 — BATCH / PRODUCT LOOKUP
