@@ -54,6 +54,8 @@
   "EL-2452|party|cariesco|cariescoexports": "2026-06-03",
   "EL-2452|product|zalbend|zalbend20mgml": "2026-06-03",
   "EL-2453|party|enicarpharmaceuticalpvtltd|enicarpharmaceuticalspvtltd": "2026-06-03",
+  "ELB-95|party|sapphirelifesciencepvtltd|sapphirelifesciencespvtltd": "2026-06-05",
+  "ELB-95|product|albentel|albentelsusp": "2026-06-05",
   "ET-12324|party|tushupharma|pharmatecpvtltd": "2026-06-03",
   "ET-12324|product|enicidsuspensionkanvid|enicidsusp": "2026-06-03",
   "ET-13325|party|tushupharma|pharmatecpvtltd": "2026-06-03",
@@ -131,5 +133,6 @@
   "SL05407|product|abytonefortesyrup|abytonefortewhite": "2026-06-03",
   "U-139|product|unisangtonic|unisagtonic": "2026-06-03",
   "U-140|product|unisangtonic|unisagtonic": "2026-06-03",
-  "VFS-015|party|nelpalifescience|enicarpharmaceuticalpvtltd": "2026-06-03"
+  "VFS-015|party|nelpalifescience|enicarpharmaceuticalpvtltd": "2026-06-03",
+  "VFS-016|party|nelpalifescience|enicarpharmaceuticalpvtltd": "2026-06-05"
 }
