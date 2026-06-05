@@ -82,7 +82,7 @@
 <!-- HEADER -->
 <div class="header">
   <h1>ENICAR</h1>
-  <div class="header-sub">PRODUCTION DASHBOARD &nbsp;|&nbsp; Generated 05 Jun 2026, 03:37 PM</div>
+  <div class="header-sub">PRODUCTION DASHBOARD &nbsp;|&nbsp; Generated 05 Jun 2026, 03:56 PM</div>
 </div>
 <div class="period-bar">PRODUCTION &nbsp; DASHBOARD &nbsp;&nbsp;|&nbsp;&nbsp; MAY 2026 – JUN 2026</div>
 
@@ -125,16 +125,37 @@
             <span style="font-weight:600;color:#004D40">RM dispensed in this month — where they are now (by batch number):</span>
             <table style="width:100%;font-size:12px;margin-top:6px">
               <tr><td style="width:160px">RM dispensed</td>
-                  <td><div style="display:inline-block;background:#90A4AE;color:#fff;padding:2px 6px;border-radius:3px;min-width:50px">129 batches</div></td></tr>
+                  <td><div style="display:inline-block;background:#90A4AE;color:#fff;padding:2px 6px;border-radius:3px;min-width:50px">99 batches</div></td></tr>
               <tr><td>↳ Reached Filling</td>
-                  <td><div style="display:inline-block;background:#00695C;color:#fff;padding:2px 6px;border-radius:3px;width:57%;min-width:50px;box-sizing:border-box">73 (57%)</div></td></tr>
+                  <td><div style="display:inline-block;background:#00695C;color:#fff;padding:2px 6px;border-radius:3px;width:68%;min-width:50px;box-sizing:border-box">67 (68%)</div></td></tr>
               <tr><td>↳ Reached Packing</td>
-                  <td><div style="display:inline-block;background:#BF360C;color:#fff;padding:2px 6px;border-radius:3px;width:51%;min-width:50px;box-sizing:border-box">66 (51%)</div></td></tr>
+                  <td><div style="display:inline-block;background:#BF360C;color:#fff;padding:2px 6px;border-radius:3px;width:53%;min-width:50px;box-sizing:border-box">52 (53%)</div></td></tr>
               <tr><td>↳ Reached Dispatch</td>
-                  <td><div style="display:inline-block;background:#E65100;color:#fff;padding:2px 6px;border-radius:3px;width:26%;min-width:50px;box-sizing:border-box">33 (26%)</div></td></tr>
+                  <td><div style="display:inline-block;background:#E65100;color:#fff;padding:2px 6px;border-radius:3px;width:23%;min-width:50px;box-sizing:border-box">23 (23%)</div></td></tr>
               <tr><td>⚠ Still pending (no production yet)</td>
-                  <td><div style="display:inline-block;background:#B71C1C;color:#fff;padding:2px 6px;border-radius:3px;width:43%;min-width:50px;box-sizing:border-box">56 (43%)</div></td></tr>
+                  <td><div style="display:inline-block;background:#B71C1C;color:#fff;padding:2px 6px;border-radius:3px;width:32%;min-width:50px;box-sizing:border-box">32 (32%)</div></td></tr>
             </table>
+          </div>
+
+          <!-- Cross-month: this month's production split by which RM-dispense month it came from -->
+          <div style="border-top:1px solid #B0BEC5;padding-top:8px;margin-top:10px;font-size:12px;color:#546E7A">
+            <span style="font-weight:600;color:#004D40">Where May 2026's production came from (RM dispense source):</span>
+            <table style="width:100%;font-size:12px;margin-top:6px">
+              <tr style="color:#90A4AE;font-size:11px"><td style="width:140px">&nbsp;</td><td>From THIS month's dispenses</td><td>From earlier-month dispenses</td><td>Other / unmatched</td></tr>
+              <tr><td>Filled in May 2026</td>
+                  <td><span style="color:#00695C;font-weight:600">2,466,925 u</span> <span style="color:#90A4AE">(54b)</span></td>
+                  <td><span style="color:#00695C;font-weight:600">0 u</span> <span style="color:#90A4AE">(0b)</span></td>
+                  <td><span style="color:#90A4AE">1,262,791 u (37b)</span></td></tr>
+              <tr><td>Packed in May 2026</td>
+                  <td><span style="color:#BF360C;font-weight:600">1,427,242 u</span> <span style="color:#90A4AE">(39b)</span></td>
+                  <td><span style="color:#BF360C;font-weight:600">0 u</span> <span style="color:#90A4AE">(0b)</span></td>
+                  <td><span style="color:#90A4AE">1,699,349 u (54b)</span></td></tr>
+              <tr><td>Dispatched in May 2026</td>
+                  <td><span style="color:#E65100;font-weight:600">485,158 u</span> <span style="color:#90A4AE">(19b)</span></td>
+                  <td><span style="color:#E65100;font-weight:600">0 u</span> <span style="color:#90A4AE">(0b)</span></td>
+                  <td><span style="color:#90A4AE">1,558,923 u (46b)</span></td></tr>
+            </table>
+            <div style="margin-top:4px;color:#90A4AE;font-size:11px">"Other / unmatched" = batches whose RM dispense isn't in the tracking window (pre-11-May or missing).</div>
           </div>
         </div>
         
@@ -167,6 +188,27 @@
               <tr><td>⚠ Still pending (no production yet)</td>
                   <td><div style="display:inline-block;background:#B71C1C;color:#fff;padding:2px 6px;border-radius:3px;width:83%;min-width:50px;box-sizing:border-box">10 (83%)</div></td></tr>
             </table>
+          </div>
+
+          <!-- Cross-month: this month's production split by which RM-dispense month it came from -->
+          <div style="border-top:1px solid #B0BEC5;padding-top:8px;margin-top:10px;font-size:12px;color:#546E7A">
+            <span style="font-weight:600;color:#004D40">Where June 2026's production came from (RM dispense source):</span>
+            <table style="width:100%;font-size:12px;margin-top:6px">
+              <tr style="color:#90A4AE;font-size:11px"><td style="width:140px">&nbsp;</td><td>From THIS month's dispenses</td><td>From earlier-month dispenses</td><td>Other / unmatched</td></tr>
+              <tr><td>Filled in June 2026</td>
+                  <td><span style="color:#00695C;font-weight:600">6,000 u</span> <span style="color:#90A4AE">(2b)</span></td>
+                  <td><span style="color:#00695C;font-weight:600">724,800 u</span> <span style="color:#90A4AE">(16b)</span></td>
+                  <td><span style="color:#90A4AE">36,900 u (1b)</span></td></tr>
+              <tr><td>Packed in June 2026</td>
+                  <td><span style="color:#BF360C;font-weight:600">0 u</span> <span style="color:#90A4AE">(0b)</span></td>
+                  <td><span style="color:#BF360C;font-weight:600">595,200 u</span> <span style="color:#90A4AE">(20b)</span></td>
+                  <td><span style="color:#90A4AE">161,640 u (6b)</span></td></tr>
+              <tr><td>Dispatched in June 2026</td>
+                  <td><span style="color:#E65100;font-weight:600">0 u</span> <span style="color:#90A4AE">(0b)</span></td>
+                  <td><span style="color:#E65100;font-weight:600">327,262 u</span> <span style="color:#90A4AE">(5b)</span></td>
+                  <td><span style="color:#90A4AE">74,375 u (4b)</span></td></tr>
+            </table>
+            <div style="margin-top:4px;color:#90A4AE;font-size:11px">"Other / unmatched" = batches whose RM dispense isn't in the tracking window (pre-11-May or missing).</div>
           </div>
         </div>
         
@@ -314,7 +356,7 @@
 </div><!-- /container -->
 
 <div class="footer">
-  Generated by Enicar Dashboard Generator &nbsp;|&nbsp; 05 Jun 2026, 03:37 PM<br>
+  Generated by Enicar Dashboard Generator &nbsp;|&nbsp; 05 Jun 2026, 03:56 PM<br>
   Data source: Enicar_Dashboard_Template.xlsx &nbsp;|&nbsp;
   Run <strong>Refresh_Dashboard.command</strong> to update with latest data
 </div>
