@@ -1,6 +1,6 @@
 {
   "created": "2026-05-23",
-  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable). | 2026-06-03: added RE-601241, RE-851268 (Redsun batches filled before tracking \u2014 user confirmed). | 2026-06-05: added ALE-139, ALE-140 (Alaize) and RE-011329 (Ronfit cold D) \u2014 filled before 13 May tracking start.",
+  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable). | 2026-06-03: added RE-601241, RE-851268 (Redsun batches filled before tracking \u2014 user confirmed). | 2026-06-05: added ALE-139, ALE-140 (Alaize) and RE-011329 (Ronfit cold D) \u2014 filled before 13 May tracking start. | 2026-06-05: added ALE-143 (Alaize, same pre-tracking pattern as 139/140).",
   "batches": [
     "4186539",
     "4188214",
@@ -27,6 +27,7 @@
     "ALE-135",
     "ALE-139",
     "ALE-140",
+    "ALE-143",
     "ALF-143",
     "ALF-144",
     "ALF-145",
