@@ -1,6 +1,6 @@
 {
   "created": "2026-05-23",
-  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable). | 2026-06-03: added RE-601241, RE-851268 (Redsun batches filled before tracking \u2014 user confirmed).",
+  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable). | 2026-06-03: added RE-601241, RE-851268 (Redsun batches filled before tracking \u2014 user confirmed). | 2026-06-05: added ALE-139, ALE-140 (Alaize) and RE-011329 (Ronfit cold D) \u2014 filled before 13 May tracking start.",
   "batches": [
     "4186539",
     "4188214",
@@ -25,6 +25,8 @@
     "6131C85001",
     "650007",
     "ALE-135",
+    "ALE-139",
+    "ALE-140",
     "ALF-143",
     "ALF-144",
     "ALF-145",
@@ -80,6 +82,7 @@
     "PNO-0505",
     "PNO-0606",
     "PNO0107",
+    "RE-011329",
     "RE-021317",
     "RE-031304",
     "RE-041230",
