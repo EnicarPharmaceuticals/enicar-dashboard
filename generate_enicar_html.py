@@ -459,8 +459,10 @@ _bj_stock    = sum(1 for e in BATCH_JOURNEY if e['rank'] == 2)
 _bj_opening  = sum(1 for e in BATCH_JOURNEY if e['rank'] == 4)
 
 # ── Monthly summary (RM → Fill → Pack → Disp) ─────────────────────────────────
-# Builds the per-month bottle totals plus a batch-funnel of THIS MONTH's
-# RM-dispensed batches (where each one stands now across the pipeline).
+# Tracking-start cutoff: dispenses before this date were from the pre-system
+# era and are excluded so they don't pollute the monthly numbers.
+TRACKING_START = date(2026, 5, 11)
+
 def _monthly_summary():
     try:
         rm_all = pd.read_excel(TEMPLATE, sheet_name='➕ RM Dispensing Log', header=3)
@@ -472,8 +474,12 @@ def _monthly_summary():
                 & (rm_all['PLAN'].astype(str).str.strip().str.upper() == 'REGULAR')
                 & ~rm_all['BATCH NUMBER'].astype(str).str.upper().str.contains('TLB', na=False)].copy()
     rm['_d'] = pd.to_datetime(rm['DISPENSING DATE'], errors='coerce')
+    # Tracking-start cutoff (May 11) — drop earlier dispenses
+    rm = rm[rm['_d'].dt.date >= TRACKING_START]
     rm['_m'] = rm['_d'].dt.to_period('M').astype(str)
     rm['_k'] = rm['BATCH NUMBER'].astype(str).apply(_bkey)
+    # batch_key → its RM dispense month (so we can ask "this June filling came from which dispense month?")
+    rm_month_by_key = dict(zip(rm['_k'], rm['_m']))
 
     fkey_all = set(fill_df['Batch'].dropna().apply(lambda x: _bkey(x)))
     pkey_all = set(pack_df['Batch'].dropna().apply(lambda x: _bkey(x)))
@@ -493,6 +499,29 @@ def _monthly_summary():
                     | set(pack_with_m['_m'].dropna()) | set(disp_with_m['_m'].dropna()))
     months = [m for m in months if m >= '2026-05']
 
+    def _split_by_rm_month(df, qty_col, this_month):
+        """Split a production month's rows by which RM-dispensing month each batch came from."""
+        from_this   = {'b': set(), 'u': 0.0}
+        from_prev   = {'b': set(), 'u': 0.0}
+        from_other  = {'b': set(), 'u': 0.0}    # earlier than previous, or unknown RM
+        for _, r in df.iterrows():
+            b = r.get('Batch')
+            if pd.isna(b) or not str(b).strip(): continue
+            k = _bkey(b)
+            q = float(pd.to_numeric(r.get(qty_col), errors='coerce') or 0)
+            rm_m = rm_month_by_key.get(k)
+            if rm_m == this_month:
+                from_this['b'].add(k); from_this['u'] += q
+            elif rm_m is not None and rm_m < this_month:
+                from_prev['b'].add(k); from_prev['u'] += q
+            else:
+                from_other['b'].add(k); from_other['u'] += q
+        return {
+            'this':  {'b': len(from_this['b']),  'u': from_this['u']},
+            'prev':  {'b': len(from_prev['b']),  'u': from_prev['u']},
+            'other': {'b': len(from_other['b']), 'u': from_other['u']},
+        }
+
     out = []
     for m in months:
         rmk = set(rm[rm['_m']==m]['_k'].dropna())
@@ -508,11 +537,14 @@ def _monthly_summary():
             'f_u':       float(pd.to_numeric(f_m.get('Qty', pd.Series()), errors='coerce').sum()),
             'p_u':       float(p_m.get('TotalPacked', pd.Series()).sum()),
             'd_u':       float(pd.to_numeric(d_m.get('Qty', pd.Series()), errors='coerce').sum()),
-            # Batch funnel — of THIS MONTH's RM dispenses, where are they now?
             'bf_filled': sum(1 for k in rmk if k in fkey_all),
             'bf_packed': sum(1 for k in rmk if k in pkey_all),
             'bf_disp':   sum(1 for k in rmk if k in dkey_all),
             'bf_pending':sum(1 for k in rmk if k not in fkey_all),
+            # NEW: this month's production split by source RM-dispense month
+            'fill_split': _split_by_rm_month(f_m, 'Qty',         m),
+            'pack_split': _split_by_rm_month(p_m, 'TotalPacked', m),
+            'disp_split': _split_by_rm_month(d_m, 'Qty',         m),
         })
     return out
 
@@ -735,6 +767,27 @@ def monthly_summary_html():
               <tr><td>⚠ Still pending (no production yet)</td>
                   <td><div style="display:inline-block;background:#B71C1C;color:#fff;padding:2px 6px;border-radius:3px;width:{bf_w_pend:.0f}%;min-width:50px;box-sizing:border-box">{s['bf_pending']} ({bf_w_pend:.0f}%)</div></td></tr>
             </table>
+          </div>
+
+          <!-- Cross-month: this month's production split by which RM-dispense month it came from -->
+          <div style="border-top:1px solid #B0BEC5;padding-top:8px;margin-top:10px;font-size:12px;color:#546E7A">
+            <span style="font-weight:600;color:{C_PRI}">Where {label.title()}'s production came from (RM dispense source):</span>
+            <table style="width:100%;font-size:12px;margin-top:6px">
+              <tr style="color:#90A4AE;font-size:11px"><td style="width:140px">&nbsp;</td><td>From THIS month's dispenses</td><td>From earlier-month dispenses</td><td>Other / unmatched</td></tr>
+              <tr><td>Filled in {label.title()}</td>
+                  <td><span style="color:{C_SEC};font-weight:600">{n(s['fill_split']['this']['u'])} u</span> <span style="color:#90A4AE">({s['fill_split']['this']['b']}b)</span></td>
+                  <td><span style="color:{C_SEC};font-weight:600">{n(s['fill_split']['prev']['u'])} u</span> <span style="color:#90A4AE">({s['fill_split']['prev']['b']}b)</span></td>
+                  <td><span style="color:#90A4AE">{n(s['fill_split']['other']['u'])} u ({s['fill_split']['other']['b']}b)</span></td></tr>
+              <tr><td>Packed in {label.title()}</td>
+                  <td><span style="color:{C_AMB};font-weight:600">{n(s['pack_split']['this']['u'])} u</span> <span style="color:#90A4AE">({s['pack_split']['this']['b']}b)</span></td>
+                  <td><span style="color:{C_AMB};font-weight:600">{n(s['pack_split']['prev']['u'])} u</span> <span style="color:#90A4AE">({s['pack_split']['prev']['b']}b)</span></td>
+                  <td><span style="color:#90A4AE">{n(s['pack_split']['other']['u'])} u ({s['pack_split']['other']['b']}b)</span></td></tr>
+              <tr><td>Dispatched in {label.title()}</td>
+                  <td><span style="color:{C_ORG};font-weight:600">{n(s['disp_split']['this']['u'])} u</span> <span style="color:#90A4AE">({s['disp_split']['this']['b']}b)</span></td>
+                  <td><span style="color:{C_ORG};font-weight:600">{n(s['disp_split']['prev']['u'])} u</span> <span style="color:#90A4AE">({s['disp_split']['prev']['b']}b)</span></td>
+                  <td><span style="color:#90A4AE">{n(s['disp_split']['other']['u'])} u ({s['disp_split']['other']['b']}b)</span></td></tr>
+            </table>
+            <div style="margin-top:4px;color:#90A4AE;font-size:11px">"Other / unmatched" = batches whose RM dispense isn't in the tracking window (pre-11-May or missing).</div>
           </div>
         </div>
         '''
