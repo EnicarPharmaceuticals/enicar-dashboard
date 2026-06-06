@@ -738,7 +738,7 @@ def monthly_summary_html():
         bf_w_pend = s['bf_pending']/ rm_b * 100
 
         blocks += f'''
-        <div style="background:#F1F8F6;border-radius:8px;padding:14px 16px;margin-bottom:14px">
+        <div id="monthly-block-{s['m']}" class="monthly-block" style="background:#F1F8F6;border-radius:8px;padding:14px 16px;margin-bottom:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-weight:700;color:{C_PRI};font-size:16px">{label}</div>
             <div style="color:#607D8B;font-size:12px">In-stock delta: <strong style="color:{C_SEC}">{n(delta) if delta>=0 else '-'+n(-delta)} units</strong></div>
@@ -895,12 +895,14 @@ html = f"""<!DOCTYPE html>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 00 — MONTHLY SUMMARY (RM → Fill → Pack → Disp)
+     Hidden by default — shown only when the date-filter is set to
+     a "Monthly view: YYYY-MM" option. JS toggles individual blocks.
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
+<div class="card" id="monthly-summary-card" style="display:none">
   {sec('  ━━&nbsp;&nbsp;MONTHLY &nbsp; SUMMARY &nbsp; (RM &nbsp;→&nbsp; Fill &nbsp;→&nbsp; Pack &nbsp;→&nbsp; Dispatch) &nbsp;━━', C_PRI)}
   <div style="font-size:12px;color:#607D8B;padding:4px 4px 12px">
     Top: bottles/units produced in each month at each stage. Bottom: where this month's RM-dispensed
-    <strong>batches</strong> are right now in the pipeline. May data starts from 13 May (when tracking began).
+    <strong>batches</strong> are right now in the pipeline. May data starts from 11 May (tracking start).
   </div>
   {monthly_summary_html()}
 </div>
@@ -1071,15 +1073,26 @@ function cmpLine(a,b) {{
 
 // ── Build date dropdown ───────────────────────────────
 (function buildDropdown() {{
+  const sel = document.getElementById('date-filter');
+  const monthsAbbr = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // Monthly Summary options at the top — one per available month, served by the server
+  const monthBlocks = document.querySelectorAll('#monthly-summary-card .monthly-block');
+  monthBlocks.forEach(blk => {{
+    const m = blk.id.replace('monthly-block-','');
+    const [y, mo] = m.split('-');
+    const opt = document.createElement('option');
+    opt.value = 'monthly:' + m;
+    opt.text = `📊 ${{monthsAbbr[parseInt(mo)]}} ${{y}} — Monthly Summary view`;
+    sel.appendChild(opt);
+  }});
+  // Daily date options
   const dates = new Set();
   [...ENICAR.fill, ...ENICAR.pack, ...ENICAR.disp].forEach(r => {{ if(r.date) dates.add(r.date); }});
-  const sel = document.getElementById('date-filter');
   [...dates].sort().reverse().forEach(d => {{
     const opt = document.createElement('option');
     opt.value = d;
     const [y,m,day] = d.split('-');
-    const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    opt.text = `${{parseInt(day)}} ${{months[parseInt(m)]}} ${{y}}`;
+    opt.text = `${{parseInt(day)}} ${{monthsAbbr[parseInt(m)]}} ${{y}}`;
     sel.appendChild(opt);
   }});
 }})();
@@ -1087,6 +1100,32 @@ function cmpLine(a,b) {{
 // ── Main render ───────────────────────────────────────
 function applyFilter() {{
   const sel = document.getElementById('date-filter').value;
+
+  // Monthly-Summary view: show only the chosen month's block, hide everything else
+  const isMonthlyView = sel.startsWith('monthly:');
+  const summaryCard = document.getElementById('monthly-summary-card');
+  document.querySelectorAll('.monthly-block').forEach(b => b.style.display = 'none');
+  if (isMonthlyView) {{
+    const m = sel.slice('monthly:'.length);
+    summaryCard.style.display = '';
+    const blk = document.getElementById('monthly-block-' + m);
+    if (blk) blk.style.display = '';
+    // Hide the other content cards (everything except the search + monthly summary)
+    document.querySelectorAll('.container > .card').forEach(card => {{
+      if (card.id !== 'monthly-summary-card'
+          && !card.querySelector('#batch-search')) {{
+        card.style.display = 'none';
+      }} else {{
+        card.style.display = '';
+      }}
+    }});
+    document.getElementById('filter-tag').textContent = 'MONTHLY VIEW';
+    return;
+  }} else {{
+    summaryCard.style.display = 'none';
+    document.querySelectorAll('.container > .card').forEach(card => {{ card.style.display = ''; }});
+  }}
+
   const isAll = sel === 'all';
   document.getElementById('filter-tag').textContent = isAll ? 'MONTHLY TOTAL' : 'DAILY VIEW';
 
