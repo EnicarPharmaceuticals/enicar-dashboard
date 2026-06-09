@@ -1110,9 +1110,9 @@ html = f"""<!DOCTYPE html>
   </div>
   <div class="tbl-wrap">
     <table>
-      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PARTY</th><th>UNITS FILLED (MTD)</th></tr></thead>
+      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS FILLED (MTD)</th></tr></thead>
       <tbody id="fill-line-rows"></tbody>
-      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name" colspan="3">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
+      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
     </table>
   </div>
 </div>
@@ -1128,9 +1128,9 @@ html = f"""<!DOCTYPE html>
   </div>
   <div class="tbl-wrap">
     <table>
-      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PARTY</th><th>UNITS PACKED (MTD)</th></tr></thead>
+      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS PACKED (MTD)</th></tr></thead>
       <tbody id="pack-line-rows"></tbody>
-      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name" colspan="3">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
+      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
     </table>
   </div>
 </div>
@@ -1347,23 +1347,24 @@ function renderFilling(fill, isAll) {{
 
   let rows = ''; let i = 0;
   const label = isAll ? 'MTD' : 'TODAY';
-  // Group by line + product + party in both MTD and Daily views.
-  document.getElementById('fill-thead').innerHTML = `<tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PARTY</th><th>UNITS FILLED (${{label}})</th></tr>`;
-  document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="3">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
+  // Group by line + product + packSize + party in both MTD and Daily views.
+  document.getElementById('fill-thead').innerHTML = `<tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS FILLED (${{label}})</th></tr>`;
+  document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
   const byKey = {{}};
   fill.forEach(r => {{
-    const ln = r.line||'—', pr = r.product||'—', pa = r.party||'—';
-    const k = ln + '|||' + pr + '|||' + pa;
-    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, party:pa, qty:0}};
+    const ln = r.line||'—', pr = r.product||'—', ps = (r.packSize===null||r.packSize===undefined||r.packSize==='')?'—':String(r.packSize), pa = r.party||'—';
+    const k = ln + '|||' + pr + '|||' + ps + '|||' + pa;
+    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, packSize:ps, party:pa, qty:0}};
     byKey[k].qty += (r.qty||0);
   }});
   Object.values(byKey).sort((a,b) => cmpLine(a.line,b.line)
                                   || a.product.localeCompare(b.product)
+                                  || String(a.packSize).localeCompare(String(b.packSize))
                                   || a.party.localeCompare(b.party)).forEach(d => {{
     const bg = i++%2===0 ? '#F1F8F6':'#fff';
-    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
+    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#37474F">${{d.packSize}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
   }});
-  document.getElementById('fill-line-rows').innerHTML = rows || '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+  document.getElementById('fill-line-rows').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
 }}
 
 // ── Packing ───────────────────────────────────────────
@@ -1375,23 +1376,24 @@ function renderPacking(pack, fill, isAll) {{
 
   let rows = ''; let i = 0;
   const label = isAll ? 'MTD' : 'TODAY';
-  // Group by line + product + party in both MTD and Daily views.
-  document.getElementById('pack-thead').innerHTML = `<tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PARTY</th><th>UNITS PACKED (${{label}})</th></tr>`;
-  document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="3">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
+  // Group by line + product + packSize + party in both MTD and Daily views.
+  document.getElementById('pack-thead').innerHTML = `<tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS PACKED (${{label}})</th></tr>`;
+  document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
   const byKey = {{}};
   pack.forEach(r => {{
-    const ln = r.line||'—', pr = r.product||'—', pa = r.party||'—';
-    const k = ln + '|||' + pr + '|||' + pa;
-    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, party:pa, qty:0}};
+    const ln = r.line||'—', pr = r.product||'—', ps = (r.packSize===null||r.packSize===undefined||r.packSize==='')?'—':String(r.packSize), pa = r.party||'—';
+    const k = ln + '|||' + pr + '|||' + ps + '|||' + pa;
+    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, packSize:ps, party:pa, qty:0}};
     byKey[k].qty += (r.totalPacked||0);
   }});
   Object.values(byKey).sort((a,b) => cmpLine(a.line,b.line)
                                   || a.product.localeCompare(b.product)
+                                  || String(a.packSize).localeCompare(String(b.packSize))
                                   || a.party.localeCompare(b.party)).forEach(d => {{
     const bg = i++%2===0 ? '#F1F8F6':'#fff';
-    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
+    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#37474F">${{d.packSize}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
   }});
-  document.getElementById('pack-line-rows').innerHTML = rows || '<tr><td colspan="4" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+  document.getElementById('pack-line-rows').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
 }}
 
 // ── Dispatch ──────────────────────────────────────────
