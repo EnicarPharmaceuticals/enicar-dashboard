@@ -418,7 +418,7 @@ def _batch_journey():
                 continue
             k = _bkey(b)
             e = j.setdefault(k, {'batch': str(b).strip(), 'product': None, 'ptype': None,
-                                 'party': None,
+                                 'party': None, 'packsize': None,
                                  'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0,
                                  'last': None, 'last_disp': None,
                                  'auto_cleared': False, 'leftover_cleared': 0.0})
@@ -429,6 +429,8 @@ def _batch_journey():
                 e['ptype'] = str(r.get(ptype_col)).strip()
             if e['party'] is None and 'Party' in r.index and not pd.isna(r.get('Party')):
                 e['party'] = str(r.get('Party')).strip()
+            if e['packsize'] is None and 'PackSize' in r.index and not pd.isna(r.get('PackSize')):
+                e['packsize'] = str(r.get('PackSize')).strip()
             d = r.get('Date')
             if d is not None and (e['last'] is None or d > e['last']):
                 e['last'] = d
@@ -653,6 +655,7 @@ staff_rows = [{'date':safe(r['Date']),'female':safe(r['Female']),'male':safe(r['
 
 batch_rows = [
     {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'],
+     'party':e.get('party'), 'packSize':e.get('packsize'),
      'filled':float(e['filled']), 'packed':float(e['packed']), 'dispatched':float(e['dispatched']),
      'status':e['status']}
     for e in BATCH_JOURNEY
@@ -1480,6 +1483,7 @@ function lookupBatch() {{
     rows += `<tr style="background:${{bg}}">
       <td class="td-name">${{b.product||'—'}}</td>
       <td class="td-name" style="color:#607D8B">${{b.ptype||'—'}}</td>
+      <td class="td-name" style="color:#37474F">${{b.packSize||'—'}}</td>
       <td class="td-name" style="font-weight:600">${{b.batch}}</td>
       <td class="td-num" style="color:#00695C">${{fmt(b.filled)}}</td>
       <td class="td-num" style="color:#BF360C">${{fmt(b.packed)}}</td>
@@ -1490,7 +1494,7 @@ function lookupBatch() {{
   const note = hits.length>80 ? `<div style="color:#90A4AE;font-size:11px;padding:4px">Showing first 80 of ${{hits.length}} matches — refine your search.</div>` : '';
   out.innerHTML = `<div class="tbl-wrap"><table>
     <thead><tr class="th-row">
-      <th>PRODUCT</th><th>TYPE</th><th>BATCH</th><th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>
+      <th>PRODUCT</th><th>TYPE</th><th>PACK SIZE</th><th>BATCH</th><th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>
     </tr></thead>
     <tbody>${{rows}}</tbody>
   </table></div>${{note}}`;
