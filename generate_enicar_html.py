@@ -147,30 +147,65 @@ def normalise_line(s):
 # entry for a brand-new customer.  Matching ignores case, extra spaces and dots.
 # ──────────────────────────────────────────────────────────────────────────────
 _PARTY_GROUPS = {
-    'Procter & Gamble':              ['Procter & Gamble'],
-    'Ronak Exim':                    ['Ronak Exim', 'Ronak exim ltd'],
-    'Galaxy Pharma':                 ['Galaxy', 'Galaxy pharma', 'Galxy pharma', 'Galexy pharma'],
-    'Macleods':                      ['Macleods', 'Macleoads'],
-    'Sapphire Lifescience Pvt Ltd':  ['Sapphire Lifescience Pvt. Ltd', 'Saphaire lifescience ltd',
-                                      'Sapphire lifescianes p ltd'],
-    'Lesanto Laboratories':          ['Lesanto', 'Lesanto Laboratories'],
-    'Group Pharma':                  ['GROUP', 'Group Pharma', 'Group Pharmaceutical'],
-    'IPC Healthcare':                ['IPC Healthcare'],
-    'Parnax Lab':                    ['PARNAX', 'Parnax Lab Ltd', 'Parnex lab'],
-    'Pharmatec':                     ['Pharmatec', 'Pharmatec Pvt Ltd', 'Pharmatech'],
-    'Pharmatrust Ltd':               ['Pharma trust', 'Pharmatrust ltd', 'Pharmatrust limited'],
-    'Socomed':                       ['Socomed', 'Socomed Pharma'],
-    'Bliss GVS':                     ['BLISS', 'Bliss GVS'],
-    'Careth Corporation':            ['Careth Corporation'],
-    'Shalina':                       ['Salina', 'Shalina'],
-    'UC Rebok Investment Ltd':       ['UC Rebok Investment', 'UC-rebok investment ltd'],
-    'Blue Map Pharmachem':           ['Blue Map Pharmachem'],
+    'Procter & Gamble':              ['Procter & Gamble', 'P&G'],
+    'Ronak Exim pvt Ltd':            ['Ronak Exim', 'Ronak exim ltd', 'Ronak Exim Ltd',
+                                      'Ronak Exim P vt Ltd', 'Ronak Exim pvt Ltd',
+                                      'Ronak Exim pvt Ltd.', 'Ranak Exim pvt Ltd.', 'RONAK'],
+    'Galaxy Pharma':                 ['Galaxy', 'Galaxy pharma', 'Galxy pharma',
+                                      'Galexy pharma', 'GALEXY'],
+    'Macleods':                      ['Macleods', 'Macleoads', 'MACLEODES'],
+    'Sapphire Lifescience Pvt. Ltd.': [
+                                      'Sapphire Lifescience Pvt Ltd',
+                                      'Sapphire Lifescience Pvt. Ltd',
+                                      'Sapphire Lifescience Pvt. Ltd.',
+                                      'Sapphire Life Science L TD',
+                                      'Sapphire Life Science Ltd',
+                                      'Sapphire Life Sciences Ltd',
+                                      'Sapphire Lifesciences  pvt. Ltd.',
+                                      'Sapphire lifesciences pvt ltd',
+                                      'Sapphire life science Ltd',
+                                      'Saphaire lifescience ltd',
+                                      'Sapphire lifescianes p ltd',
+                                      'SAPPHIRE'],
+    'Lesanto Laboratories':          ['Lesanto', 'Lesanto Laboratories',
+                                      'Lesanto labroatories', 'LESANTO'],
+    'Group Pharma':                  ['GROUP', 'Group Pharma', 'Group Pharmaceutical',
+                                      'Group Pharmaceutical Pharma', 'Group Pharmaceutical pharma'],
+    'IPC Healthcare':                ['IPC Healthcare', 'IPC Healthcare Pvt Ltd',
+                                      'Ipc Healthcare pvt ltd', 'ipc Healthcare', 'IPC'],
+    'Parnax Lab':                    ['PARNAX', 'Parnax Lab Ltd', 'Parnax Lab Ltd Ltd',
+                                      'Parnax Lab Ltd.', 'Parnex lab', 'PARNEX'],
+    'Pharmatec Pvt. Ltd.':           ['Pharmatec', 'Pharmatec Pvt Ltd',
+                                      'Pharmatec Pvt. Ltd', 'Pharmatech', 'PHARMATEC'],
+    'Pharmatrust Ltd':               ['Pharma trust', 'Pharmatrust ltd', 'Pharmatrust limited',
+                                      'Pharmatrust Limited', 'Pharmatrust Limited ltd',
+                                      'PHARMATRUST'],
+    'Socomed Pharma':                ['Socomed', 'Socomed pharma', 'Socomed pharma Pvt Ltd.',
+                                      'SOCOMED'],
+    'Bliss GVS':                     ['BLISS', 'Bliss GVS', 'Bliss GVS pharma Ltd'],
+    'Careth Corporation':            ['Careth Corporation', 'Careth corporation'],
+    'Shalina Laboratories Pvt Ltd':  ['Salina', 'Shalina', 'Shalina Laboratories Pvt Ltd.',
+                                      'Shalina  Laboratories Pvt Ltd.', 'SHALINA'],
+    'UC Rebok Investment Ltd':       ['UC Rebok Investment', 'UC-rebok investment ltd',
+                                      'UC-Rebok investment Ltd.', 'UC-Rebok investment ltd',
+                                      'UC-REBOK'],
+    'Blue Map Pharmachem':           ['Blue Map Pharmachem', 'BLUE MAP', 'Blue Map'],
     'Kanvid Pharmaceutical':         ['Kanvid Pharmaceutical'],
-    'Unique Pharma':                 ['Unique Pharma'],
-    'Workcell Solution':             ['Workcell Solution'],
-    'Alvita Pharma':                 ['Alvita pharma p ltd'],
-    'Indoco Remedies':               ['Indoco Remedies'],
+    'Unique Pharma':                 ['Unique Pharma', 'Unique pharma', 'UNIQUE'],
+    'Workcell Solution':             ['Workcell Solution', 'WORKCELL SOLUTION'],
+    'Alvita Pharma Pvt Ltd':         ['Alvita pharma p ltd', 'Alvita Pharma',
+                                      'Alvita Pharma Pvt Ltd.', 'Alvita Pharma Pvt.Ltd',
+                                      'ALVITA'],
+    'Indoco Remedies':               ['Indoco Remedies', 'INDOCO', 'Indoco Remedies Ltd.'],
     'Kamal':                         ['KAMAL'],
+    'Enicar Pharmaceutical Pvt Ltd': ['Enicar Pharmaceutical Pvt Ltd',
+                                      'Enicar Pharmaceuticals pvt ltd', 'ENICAR'],
+    'London United Exports Ltd':     ['London United', 'London United Exports Ltd', 'LONDON', 'LONEDON'],
+    'Yellow & Orange Pharmacy':      ['YELLOW ORANGE', 'Yellow & Orange Pharmacy',
+                                      'Yellow & Orange Pharmacy.'],
+    'Tushu Pharma':                  ['TUSHU', 'Tushu Pharma'],
+    'Unichem Ghana':                 ['UNICHEM', 'Unichem Ghana'],
+    'Nelpa Lifescience':             ['NELPA', 'Nelpa Lifescience'],
 }
 
 def _pkey(s):
@@ -528,6 +563,37 @@ def _monthly_summary():
         f_m = fill_with_m[fill_with_m['_m']==m]
         p_m = pack_with_m[pack_with_m['_m']==m]
         d_m = disp_with_m[disp_with_m['_m']==m]
+
+        # Product type breakdown (overall for this month)
+        pt_table = {}
+        for pt in PRODUCT_TYPES:
+            pt_table[pt] = {
+                'f': float(pd.to_numeric(f_m[f_m['ProductType']==pt]['Qty'], errors='coerce').sum()),
+                'p': float(p_m[p_m['ProdType']==pt]['TotalPacked'].sum()),
+                'd': float(pd.to_numeric(d_m[d_m['ProductType']==pt]['Qty'], errors='coerce').sum()),
+            }
+
+        # Per customer × product type (party names already alias-normalised on load)
+        cust_data = {}
+        for df_x, qty_col, ptype_col, stage in [
+            (f_m, 'Qty',         'ProductType', 'f'),
+            (p_m, 'TotalPacked', 'ProdType',    'p'),
+            (d_m, 'Qty',         'ProductType', 'd'),
+        ]:
+            for _, r in df_x.iterrows():
+                cust = r.get('Party')
+                if pd.isna(cust) or not str(cust).strip(): continue
+                cust = str(cust).strip()
+                pt = r.get(ptype_col)
+                if pd.isna(pt) or pt not in PRODUCT_TYPES: continue
+                q = float(pd.to_numeric(r.get(qty_col), errors='coerce') or 0)
+                cust_data.setdefault(cust, {p:{'f':0.0,'p':0.0,'d':0.0} for p in PRODUCT_TYPES})
+                cust_data[cust][pt][stage] += q
+        # Sort customers by total volume desc, keep only non-empty
+        def _cust_total(c):
+            return sum(cust_data[c][pt]['f']+cust_data[c][pt]['p']+cust_data[c][pt]['d'] for pt in PRODUCT_TYPES)
+        customers = sorted([c for c in cust_data if _cust_total(c) > 0], key=_cust_total, reverse=True)
+
         out.append({
             'm':         m,
             'rm_b':      len(rmk),
@@ -541,10 +607,12 @@ def _monthly_summary():
             'bf_packed': sum(1 for k in rmk if k in pkey_all),
             'bf_disp':   sum(1 for k in rmk if k in dkey_all),
             'bf_pending':sum(1 for k in rmk if k not in fkey_all),
-            # NEW: this month's production split by source RM-dispense month
             'fill_split': _split_by_rm_month(f_m, 'Qty',         m),
             'pack_split': _split_by_rm_month(p_m, 'TotalPacked', m),
             'disp_split': _split_by_rm_month(d_m, 'Qty',         m),
+            'pt_table':   pt_table,
+            'customers':  customers,
+            'cust_data':  cust_data,
         })
     return out
 
@@ -789,9 +857,93 @@ def monthly_summary_html():
             </table>
             <div style="margin-top:4px;color:#90A4AE;font-size:11px">"Other / unmatched" = batches whose RM dispense isn't in the tracking window (pre-11-May or missing).</div>
           </div>
+          {_pt_and_customer_html(s)}
         </div>
         '''
     return blocks
+
+def _pt_and_customer_html(s):
+    """Renders the Product Type breakdown table + per-customer breakdown for one month."""
+    pt = s['pt_table']
+    tot_f = sum(pt[p]['f'] for p in PRODUCT_TYPES)
+    tot_p = sum(pt[p]['p'] for p in PRODUCT_TYPES)
+    tot_d = sum(pt[p]['d'] for p in PRODUCT_TYPES)
+    rows = ''
+    for i, p in enumerate(PRODUCT_TYPES):
+        bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
+        rows += (f'<tr style="background:{bg}"><td class="td-name">{p}</td>'
+                 f'<td class="td-num" style="color:{C_SEC};font-weight:600">{n(pt[p]["f"])}</td>'
+                 f'<td class="td-num" style="color:{C_AMB};font-weight:600">{n(pt[p]["p"])}</td>'
+                 f'<td class="td-num" style="color:{C_ORG};font-weight:600">{n(pt[p]["d"])}</td></tr>')
+
+    pt_html = f'''
+    <div style="border-top:1px solid #B0BEC5;padding-top:10px;margin-top:14px">
+      <div style="font-weight:700;color:{C_PRI};font-size:13px;margin-bottom:6px">Product type breakdown — this month</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:{C_PRI};color:#fff">
+          <th style="padding:6px 8px;text-align:left">PRODUCT TYPE</th>
+          <th style="padding:6px 8px;text-align:right">UNITS FILLED</th>
+          <th style="padding:6px 8px;text-align:right">UNITS PACKED</th>
+          <th style="padding:6px 8px;text-align:right">UNITS DISPATCHED</th>
+        </tr></thead>
+        <tbody>{rows}</tbody>
+        <tfoot><tr style="background:{C_LBG};font-weight:700">
+          <td style="padding:6px 8px">TOTAL</td>
+          <td class="td-num" style="color:{C_SEC}">{n(tot_f)}</td>
+          <td class="td-num" style="color:{C_AMB}">{n(tot_p)}</td>
+          <td class="td-num" style="color:{C_ORG}">{n(tot_d)}</td>
+        </tr></tfoot>
+      </table>
+    </div>
+    '''
+
+    # Per-customer
+    cust_blocks = ''
+    for cust in s['customers']:
+        cd = s['cust_data'][cust]
+        # Build only non-empty rows
+        nonzero_rows = []
+        ctot_f = ctot_p = ctot_d = 0.0
+        for p in PRODUCT_TYPES:
+            f, pa, d = cd[p]['f'], cd[p]['p'], cd[p]['d']
+            if f + pa + d == 0:
+                continue
+            nonzero_rows.append((p, f, pa, d))
+            ctot_f += f; ctot_p += pa; ctot_d += d
+        if not nonzero_rows:
+            continue
+        rows_html = ''
+        for i, (p, f, pa, d) in enumerate(nonzero_rows):
+            bg = '#FAFAFA' if i % 2 == 0 else '#FFFFFF'
+            rows_html += (f'<tr style="background:{bg}"><td style="padding:3px 8px;color:#37474F">{p}</td>'
+                          f'<td class="td-num" style="color:{C_SEC};padding:3px 8px">{n(f)}</td>'
+                          f'<td class="td-num" style="color:{C_AMB};padding:3px 8px">{n(pa)}</td>'
+                          f'<td class="td-num" style="color:{C_ORG};padding:3px 8px">{n(d)}</td></tr>')
+        cust_blocks += f'''
+        <div style="margin-top:10px;border:1px solid #ECEFF1;border-radius:6px;overflow:hidden">
+          <div style="background:#ECEFF1;padding:6px 10px;font-weight:700;color:{C_PRI};font-size:13px">
+            {cust} <span style="color:#90A4AE;font-weight:400;font-size:11px">— total F:{n(ctot_f)}  P:{n(ctot_p)}  D:{n(ctot_d)}</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:#fff;color:#607D8B">
+              <th style="padding:4px 8px;text-align:left">Product Type</th>
+              <th style="padding:4px 8px;text-align:right">FILLED</th>
+              <th style="padding:4px 8px;text-align:right">PACKED</th>
+              <th style="padding:4px 8px;text-align:right">DISPATCHED</th>
+            </tr></thead>
+            <tbody>{rows_html}</tbody>
+          </table>
+        </div>
+        '''
+
+    cust_html = f'''
+    <div style="margin-top:16px">
+      <div style="font-weight:700;color:{C_PRI};font-size:13px;margin-bottom:4px">By customer × product type — this month</div>
+      <div style="font-size:11px;color:#90A4AE;margin-bottom:8px">Sorted by total volume. Empty product types are hidden per customer.</div>
+      {cust_blocks if cust_blocks else '<div style="color:#90A4AE;padding:8px">No customer activity this month.</div>'}
+    </div>
+    '''
+    return pt_html + cust_html
 
 generated_at = datetime.now().strftime('%d %b %Y, %I:%M %p')
 
