@@ -60,6 +60,14 @@ def _root(s):  return re.sub(r'[^a-z0-9]', '', _pkey(s))[:6]    # for typo-vs-di
 def _canon(s): return re.sub(r'[^a-z0-9]', '', _pkey(s))        # strict: ignore ALL whitespace / punctuation / case
 
 
+# Permanently-ignored mismatches — user-confirmed intentional, not data errors.
+# Each entry: (batch_key, field) — skips any mismatch flagged on that batch+field.
+# Add new entries here (with a comment explaining why) when something is approved as "expected".
+_IGNORE_KEYS = {
+    ('SL05407', 'product'),   # One batch produces both [Red] and [White] Abytone forte — expected to split in downstream logs
+}
+
+
 def find_mismatches():
     """Cross-verify product AND party names across all 4 logs by batch number.
 
@@ -123,6 +131,8 @@ def find_mismatches():
                 wrong_list = ranked[1:]
                 from_rm = False
 
+            if (k, field) in _IGNORE_KEYS:
+                continue
             for wrong in wrong_list:
                 severity = 'typo' if _root(correct['rep']) == _root(wrong['rep']) else 'different_value'
                 fp = f"{k}|{field}|{_canon(correct['rep'])}|{_canon(wrong['rep'])}"
