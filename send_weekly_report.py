@@ -41,6 +41,7 @@ REVIEW_ONLY = ['swaralisave@enicarpharma.com']
 
 CLEAN_CUSTOMERS = 'All customer names are recognised'
 CLEAN_BATCHES   = 'every batch number lines up'
+CLEAN_DATES     = 'every row reads as a sensible date'
 
 
 def has_findings(text):
@@ -48,7 +49,8 @@ def has_findings(text):
     # email so the team gets the pipeline view even when typos are clean.
     if 'Production-pipeline status' in text:
         return True
-    return not (CLEAN_CUSTOMERS in text and CLEAN_BATCHES in text)
+    return not (CLEAN_CUSTOMERS in text and CLEAN_BATCHES in text
+                and CLEAN_DATES in text)
 
 
 def build_body(report_text, first_time):
