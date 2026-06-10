@@ -37,7 +37,7 @@ XLSX = os.path.join(ROOT, 'Enicar_Dashboard_Template.xlsx')
 def all_party_names():
     names = []
     for sheet, usecols, idx in [('➕ Dispatch Log', 'B:I', 6),
-                                ('➕ Packing Log', 'B:N', 11),
+                                ('➕ Packing Log', 'B:N', 10),
                                 ('➕ Filling Log', 'B:J', 7)]:
         try:
             df = pd.read_excel(XLSX, sheet_name=sheet, header=3, usecols=usecols)
