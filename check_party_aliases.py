@@ -35,13 +35,17 @@ XLSX = os.path.join(ROOT, 'Enicar_Dashboard_Template.xlsx')
 
 
 def all_party_names():
+    # Look up the customer-name column by header so we don't break when the
+    # team adds or removes a column in any of these sheets.
     names = []
-    for sheet, usecols, idx in [('➕ Dispatch Log', 'B:I', 6),
-                                ('➕ Packing Log', 'B:N', 10),
-                                ('➕ Filling Log', 'B:J', 7)]:
+    for sheet in ['➕ Dispatch Log', '➕ Packing Log', '➕ Filling Log']:
         try:
-            df = pd.read_excel(XLSX, sheet_name=sheet, header=3, usecols=usecols)
-            names += df.iloc[:, idx].dropna().astype(str).str.strip().tolist()
+            df = pd.read_excel(XLSX, sheet_name=sheet, header=3)
+            party_col = next((c for c in df.columns
+                              if str(c).strip().lower() in {'party name', 'customer', 'party'}),
+                             None)
+            if party_col is not None:
+                names += df[party_col].dropna().astype(str).str.strip().tolist()
         except Exception:
             pass
     return [n for n in names if n and n.lower() != 'nan']
