@@ -98,20 +98,40 @@ def parse_packed_total(val):
                 pass
         return 0
 
-# Read packing. The sheet's column layout (after the TotalPacked column was
-# removed) is now:
-#   B Date | C PACKING LINE | D Product Name | E Pack Size | F Product Type
-#   G Batch No. | H Auto Cartinator | I Manual Carton | J Sleeve | K Naked
-#   L Party Name | M Remarks/Urgency | N (extra/blank)
-pack_df = pd.read_excel(TEMPLATE, sheet_name='➕ Packing Log', header=3, usecols='B:N')
-pack_df.columns = ['Date','Line','Product','PackSize','ProdType','Batch',
-                   'AutoCarton','ManualCarton','Sleeve','Naked',
-                   'Party','Remarks','Extra']
+# Read packing. We look up columns by HEADER NAME instead of position so the
+# dashboard doesn't break when the team adds/removes a column (e.g. when the
+# "Naked" packing-quantity column was removed in June 2026).
+_pack_raw = pd.read_excel(TEMPLATE, sheet_name='➕ Packing Log', header=3)
+
+def _pcol(*candidates):
+    """Find a column in pack_raw whose header matches any candidate (case-insensitive,
+    whitespace-collapsed). Returns the matching pandas Series, or a Series of NaN."""
+    norm = {re.sub(r'\s+',' ', str(c)).strip().lower(): c for c in _pack_raw.columns}
+    for cand in candidates:
+        key = re.sub(r'\s+',' ', cand).strip().lower()
+        if key in norm:
+            return _pack_raw[norm[key]]
+    return pd.Series([pd.NA]*len(_pack_raw))
+
+pack_df = pd.DataFrame({
+    'Date':         _pcol('Date'),
+    'Line':         _pcol('PACKING LINE','Packing Line','Line'),
+    'Product':      _pcol('Product Name','Product'),
+    'PackSize':     _pcol('Pack Size'),
+    'ProdType':     _pcol('Product Type'),
+    'Batch':        _pcol('Batch No.','Batch'),
+    'AutoCarton':   _pcol('Carton (Auto Cartinator)','Carton(Auto Cartinator)','Auto Cartinator','AutoCarton'),
+    'ManualCarton': _pcol('Carton (Manual)','Carton(Manual)','Manual Carton','ManualCarton'),
+    'Sleeve':       _pcol('Sleeve'),
+    'Naked':        _pcol('Naked'),   # absent in current sheet — column of NaNs is fine
+    'Party':        _pcol('Party Name','Customer','Party'),
+    'Remarks':      _pcol('Remarks / Urgency','Remarks/Urgency','Remarks'),
+})
 pack_df = pack_df.dropna(subset=['Date'])
 pack_df['Date'] = pd.to_datetime(pack_df['Date'], format='mixed', dayfirst=True, errors='coerce').dt.date
 pack_df = pack_df.dropna(subset=['Date'])
 # Each sub-column may be a plain number OR a formula string like "38 x 1600= 60800";
-# parse_packed_total handles both. Total packed = sum of the four.
+# parse_packed_total handles both. Total packed = sum of all packing-qty columns.
 for c in ['AutoCarton','ManualCarton','Sleeve','Naked']:
     pack_df[c] = pack_df[c].apply(parse_packed_total)
 pack_df['TotalPacked'] = pack_df[['AutoCarton','ManualCarton','Sleeve','Naked']].sum(axis=1)
