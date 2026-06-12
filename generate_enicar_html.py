@@ -226,6 +226,12 @@ _PARTY_GROUPS = {
     'Tushu Pharma':                  ['TUSHU', 'Tushu Pharma'],
     'Unichem Ghana':                 ['UNICHEM', 'Unichem Ghana'],
     'Nelpa Lifescience':             ['NELPA', 'Nelpa Lifescience'],
+    'Corporsano Mediaid':            ['Corporsano', 'Corporsano Mediaid',
+                                      'Corporsano Media id', 'CORPORSANO'],
+    'Cariesco Exports':              ['Cariesco', 'Cariesco Exports', 'CARIESCO'],
+    'Cedar Point Chemist Ltd':       ['Cedar Point', 'Cedar point chemist limited',
+                                      'Cedar Point Chemist Ltd', 'Cedar Point Chemist Limited',
+                                      'CEDAR'],
 }
 
 def _pkey(s):
