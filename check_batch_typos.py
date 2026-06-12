@@ -208,8 +208,20 @@ def main():
             if stronger and near_slip(x, y) and products_compatible(px, main_product(y)):
                 cands.append(y)
         if cands:
-            best = max(cands, key=rank_key)
-            orphans.append((x, best))
+            # When several candidates are equally plausible (same edit distance,
+            # same product), prefer one that exists in RM Dispensing — RM is the
+            # source of truth, so an RM batch is much more likely to be the real
+            # one the production team mis-typed. Without this, two siblings like
+            # RE-881271 (RM ✓) and RE-891272 (RM ✓) both match orphan RE-881272,
+            # and the checker would pick at random; we want the RM one.
+            def orphan_key(y):
+                return ('RM Dispensing' in meta[y]['logs'], rank_key(y))
+            best = max(cands, key=orphan_key)
+            # Surface other equally-plausible siblings so a human can compare.
+            alt = [y for y in cands if y != best
+                   and ('RM Dispensing' in meta[y]['logs'])
+                   and lev(norm(x), norm(y)) == lev(norm(x), norm(best))]
+            orphans.append((x, best, alt))
 
     if not clusters and not orphans:
         print('Good news — every batch number lines up across the logs. Nothing to fix. ✅')
@@ -258,10 +270,13 @@ def main():
         print('ORPHAN BATCHES — these appear in only ONE log, have no RM Dispensing record,')
         print('and are one small slip away from a same-product batch that does exist.')
         print('Most likely the batch number was mistyped — please verify against the BMR:\n')
-        for x, best in orphans:
+        for x, best, alt in orphans:
             log_x = nice_logs(meta[x]['logs'] - {'RM Dispensing'})
             print(f'  • {main_product(x)}: "{x}" (only in {log_x}) — should this be '
                   f'"{best}" (seen in {nice_logs(meta[best]["logs"])})?')
+            if alt:
+                others = ' or '.join(f'"{a}"' for a in alt)
+                print(f'      (note: {others} also matches — please check the BMR to be sure)')
         print()
 
     return 0
