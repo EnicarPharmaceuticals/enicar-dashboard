@@ -80,6 +80,8 @@ def build_body(report_text, first_time):
 
 
 def main():
+    if os.environ.get('PAUSE_EMAILS', '').strip() in ('1', 'true', 'yes'):
+        print('⏸  PAUSE_EMAILS=1 — skipping weekly-review email send.'); return 0
     if not (SENDER and APP_PW):
         print('No email credentials available — skipping send.'); return 0
     if not os.path.exists(REPORT):
