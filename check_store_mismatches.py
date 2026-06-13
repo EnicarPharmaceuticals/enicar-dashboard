@@ -37,9 +37,11 @@ REMIND_AFTER_DAYS = 3
 TEAM = ['store@enicarpharma.com']
 
 # ─── creds ──────────────────────────────────────────────────────
-# PAUSE switch — set env var PAUSE_EMAILS=1 (or GitHub repo secret) to update
-# the state file silently without sending any SMTP.
-PAUSE_EMAILS = os.environ.get('PAUSE_EMAILS', '').strip() in ('1', 'true', 'yes')
+# Emails are OFF by default. To re-enable, set env var SEND_EMAILS=1 (or a
+# GitHub Actions secret of the same name). Check still runs + state file is
+# updated; only the SMTP send is skipped while paused.
+SEND_EMAILS = os.environ.get('SEND_EMAILS', '').strip() in ('1', 'true', 'yes')
+PAUSE_EMAILS = not SEND_EMAILS
 SENDER = os.environ.get('GMAIL_SENDER', '').strip()
 APP_PW = os.environ.get('GMAIL_APP_PASSWORD', '').strip()
 if not (SENDER and APP_PW):
