@@ -37,6 +37,9 @@ REMIND_AFTER_DAYS = 3
 TEAM = ['store@enicarpharma.com']
 
 # ─── creds ──────────────────────────────────────────────────────
+# PAUSE switch — set env var PAUSE_EMAILS=1 (or GitHub repo secret) to update
+# the state file silently without sending any SMTP.
+PAUSE_EMAILS = os.environ.get('PAUSE_EMAILS', '').strip() in ('1', 'true', 'yes')
 SENDER = os.environ.get('GMAIL_SENDER', '').strip()
 APP_PW = os.environ.get('GMAIL_APP_PASSWORD', '').strip()
 if not (SENDER and APP_PW):
@@ -303,7 +306,11 @@ def main():
         if fp not in current_fps:
             del state[fp]
 
-    if to_send:
+    if to_send and PAUSE_EMAILS:
+        print(f"⏸  PAUSE_EMAILS=1 — would have sent store-mismatch email "
+              f"({len(to_send)} item{'s' if len(to_send)!=1 else ''}, "
+              f"{'reminder' if is_reminder else 'initial'}); skipping SMTP.")
+    elif to_send:
         stamp = datetime.now().strftime('%d %b %Y')
         prefix = '[Reminder] ' if is_reminder else ''
         plural = 'fix' if len(to_send) == 1 else 'fixes'
