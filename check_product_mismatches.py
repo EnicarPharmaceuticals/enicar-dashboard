@@ -41,10 +41,11 @@ TEAM = ['packing@enicarpharma.com',
         'swaralisave@enicarpharma.com']
 
 # ─── creds ──────────────────────────────────────────────────────
-# PAUSE switch — set env var PAUSE_EMAILS=1 (or GitHub repo secret of same name)
-# to update the state file silently without sending any SMTP. Useful when the
-# user wants the checks to keep running but stop bombarding the team.
-PAUSE_EMAILS = os.environ.get('PAUSE_EMAILS', '').strip() in ('1', 'true', 'yes')
+# Emails are OFF by default. To turn the auto-send back on, set the env var
+# (or GitHub Actions secret) SEND_EMAILS=1. While SEND_EMAILS is not set, the
+# checker still runs and updates the state file silently — only SMTP is skipped.
+SEND_EMAILS = os.environ.get('SEND_EMAILS', '').strip() in ('1', 'true', 'yes')
+PAUSE_EMAILS = not SEND_EMAILS
 SENDER = os.environ.get('GMAIL_SENDER', '').strip()
 APP_PW = os.environ.get('GMAIL_APP_PASSWORD', '').strip()
 if not (SENDER and APP_PW):
