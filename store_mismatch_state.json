@@ -4,7 +4,6 @@
   "BATCH|EL2435|EL-2430": "2026-06-16",
   "BATCH|EL2436|EL-2430": "2026-06-15",
   "BATCH|GE04048|GE06048": "2026-06-15",
-  "BATCH|REO328|REO-324": "2026-06-15",
   "BATCH|REO329|REO-324": "2026-06-16",
   "BATCH|SL05402|SL05401": "2026-06-15",
   "BATCH|SL05403|SL05401": "2026-06-15",
@@ -15,7 +14,9 @@
   "PRODUCT|ET-14326|enicidsuspensionkanvid|enicidsuspension": "2026-06-16",
   "PRODUCT|ET-15327|enicidsuspensionkanvid|enicidsuspension": "2026-06-16",
   "PRODUCT|RE-011335|vhemoroxsyrup|vhemorox": "2026-06-16",
+  "PRODUCT|RE-931295|redsunjellyorangeflavour|redsunorange": "2026-06-16",
   "PRODUCT|RE-941296|redsunjellyorangeflavour|redsunorange": "2026-06-16",
+  "PRODUCT|RE-951297|redsunjellyorangeflavour|redsunorange": "2026-06-16",
   "PRODUCT|SL05401|princesheptinplussachets|princesheptinplus": "2026-06-15",
   "PRODUCT|SL05406|abytonefortesyrup|abytonefortered": "2026-06-15",
   "PRODUCT|SL05407|abytonefortesyrup|abytonefortered": "2026-06-15"
