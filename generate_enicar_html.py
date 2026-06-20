@@ -78,9 +78,38 @@ def read_log(sheet, usecols, col_names, numeric_cols):
         print(f'  Warning: could not read "{sheet}" — {e}')
         return pd.DataFrame(columns=col_names)
 
-fill_df = read_log('➕ Filling Log', 'B:J',
-    ['Date','Line','Product','PackSize','ProductType','Qty','Batch','Party','Remarks'],
-    ['Qty'])
+# Read filling by HEADER NAME instead of position — so the dashboard doesn't
+# break when the team adds or removes a column. (Same lookup-by-name fix we
+# applied to Packing after the Naked column drama.)
+_fill_raw = pd.read_excel(TEMPLATE, sheet_name='➕ Filling Log', header=3)
+
+def _fcol(*candidates):
+    norm = {re.sub(r'\s+',' ', str(c)).strip().lower(): c for c in _fill_raw.columns}
+    for cand in candidates:
+        key = re.sub(r'\s+',' ', cand).strip().lower()
+        if key in norm:
+            return _fill_raw[norm[key]]
+    return pd.Series([pd.NA]*len(_fill_raw))
+
+fill_df = pd.DataFrame({
+    'Date':        _fcol('Date'),
+    'Line':        _fcol('Packing Line','Line'),
+    'Product':     _fcol('Product Name','Product'),
+    'PackSize':    _fcol('Pack Size'),
+    'ProductType': _fcol('Product Type'),
+    'Qty':         _fcol('Qty Filled (Units)','Qty Filled','Qty'),
+    'Batch':       _fcol('Batch No.','Batch'),
+    'Party':       _fcol('Party Name','Customer','Party'),
+    'Remarks':     _fcol('Remarks'),
+})
+fill_df = fill_df.dropna(subset=['Date'])
+fill_df['Date'] = pd.to_datetime(fill_df['Date'], format='mixed', dayfirst=True, errors='coerce').dt.date
+fill_df = fill_df.dropna(subset=['Date'])
+fill_df['Qty'] = pd.to_numeric(fill_df['Qty'], errors='coerce').fillna(0)
+# When a column is missing from the sheet (e.g. Product Name was deleted),
+# the lookup returns pd.NA — convert to None so it renders as blank, not "<NA>".
+for c in ['Product','PackSize','ProductType','Batch','Party','Line','Remarks']:
+    fill_df[c] = fill_df[c].where(fill_df[c].notna(), None)
 
 def parse_packed_total(val):
     """Handles plain numbers AND text formulas like '38 x 1600= 60800' or '527x24=12648'."""
