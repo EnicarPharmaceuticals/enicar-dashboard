@@ -113,6 +113,7 @@ def find_store_issues():
     # Read RM
     try:
         rm = pd.read_excel(XLSX, sheet_name='➕ RM Dispensing Log', header=3)
+        rm.columns = [' '.join(str(c).split()) for c in rm.columns]  # collapse newlines in headers
     except Exception:
         return []
 
