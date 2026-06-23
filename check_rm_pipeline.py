@@ -42,6 +42,9 @@ def main():
     # Filtered RM set
     try:
         rm = pd.read_excel(XLSX, sheet_name='➕ RM Dispensing Log', header=3)
+        # Normalize column headers — collapse newlines / multi-spaces so names like
+        # 'DISPENSING \nDATE' match 'DISPENSING DATE'. Survives sheet-formatting tweaks.
+        rm.columns = [' '.join(str(c).split()) for c in rm.columns]
     except Exception:
         print('  No RM Dispensing Log tab yet — pipeline view unavailable.\n'); return 0
     if 'PLAN' not in rm.columns or 'DISPENSING DATE' not in rm.columns:
