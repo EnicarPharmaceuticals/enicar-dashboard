@@ -39,6 +39,7 @@ def main():
     for log, sheet, dcol in LOGS:
         try:
             df = pd.read_excel(XLSX, sheet_name=sheet, header=3)
+            df.columns = [' '.join(str(c).split()) for c in df.columns]  # collapse newlines in headers
         except Exception:
             continue
         if dcol not in df.columns:
