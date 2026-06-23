@@ -562,6 +562,7 @@ TRACKING_START = date(2026, 5, 11)
 def _monthly_summary():
     try:
         rm_all = pd.read_excel(TEMPLATE, sheet_name='➕ RM Dispensing Log', header=3)
+        rm_all.columns = [' '.join(str(c).split()) for c in rm_all.columns]  # collapse newlines
     except Exception:
         return []
     if 'PLAN' not in rm_all.columns or 'DISPENSING DATE' not in rm_all.columns:
