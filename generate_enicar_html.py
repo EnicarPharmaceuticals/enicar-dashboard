@@ -256,8 +256,8 @@ _PARTY_GROUPS = {
                                       'London United Medimpex Pvt Ltd'],
     'Yellow & Orange Pharmacy':      ['YELLOW ORANGE', 'Yellow & Orange Pharmacy',
                                       'Yellow & Orange Pharmacy.'],
-    'Tushu Pharma':                  ['TUSHU', 'Tushu Pharma'],
-    'Unichem Ghana':                 ['UNICHEM', 'Unichem Ghana'],
+    'Tushu Pharma':                  ['TUSHU', 'Tushu Pharma', 'TUSHU PHARMA SARL'],
+    'Unichem Ghana':                 ['UNICHEM', 'Unichem Ghana', 'UNICHEM (GHANA) LIMITED'],
     'Nelpa Lifescience':             ['NELPA', 'Nelpa Lifescience'],
     'Corporsano Mediaid':            ['Corporsano', 'Corporsano Mediaid',
                                       'Corporsano Media id', 'CORPORSANO',
@@ -278,6 +278,11 @@ _PARTY_GROUPS = {
                                       'Shrey Nutraceuticals', 'SHREY'],
     'RPG Life Sciences Ltd':         ['RPG Life sciences', 'RPG Life Sciences',
                                       'RPG LIFE SCIENCES LTD', 'RPG Life Sciences Ltd', 'RPG'],
+    'MVC':                            ['MVC'],
+    'PRAHEM':                         ['PRAHEM', 'Prahem'],
+    'Systopic':                       ['Systopic', 'SYSTOPIC'],
+    'Leeford Healthcare Limited':     ['Leeford Healthcare Limited', 'Leeford Healthcare',
+                                      'LEEFORD', 'Leeford'],
 }
 
 def _pkey(s):
