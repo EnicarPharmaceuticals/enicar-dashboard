@@ -276,6 +276,8 @@ _PARTY_GROUPS = {
                                       'Shrey nutraceuticals & herbals pvt ltd',
                                       'Shrey Nutraceuticals & Herbals Pvt Ltd',
                                       'Shrey Nutraceuticals', 'SHREY'],
+    'RPG Life Sciences Ltd':         ['RPG Life sciences', 'RPG Life Sciences',
+                                      'RPG LIFE SCIENCES LTD', 'RPG Life Sciences Ltd', 'RPG'],
 }
 
 def _pkey(s):
