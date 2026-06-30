@@ -4,8 +4,12 @@
   "BATCH|ALE145|ALE-141": "2026-06-29",
   "BATCH|ALF146|ALE-146": "2026-06-30",
   "BATCH|ALF147|ALE-147": "2026-06-29",
+  "BATCH|REM385|REM384": "2026-06-30",
+  "BATCH|REM386|REM384": "2026-06-30",
   "BATCH|REO336|REO-326": "2026-06-29",
   "BATCH|REO337|REO-327": "2026-06-29",
+  "BATCH|REO338|REO-328": "2026-06-30",
+  "BATCH|REO339|REO-329": "2026-06-30",
   "BATCH|SL05402|SL05401": "2026-06-29",
   "BATCH|SL05403|SL05401": "2026-06-29",
   "BATCH|SL05404|SL05401": "2026-06-29",
@@ -21,7 +25,6 @@
   "PRODUCT|ET-15327|enicidsuspensionkanvid|enicidsuspension": "2026-06-29",
   "PRODUCT|RE-011302|redsunjellymangoflavour|redsunjellymango": "2026-06-29",
   "PRODUCT|RE-011335|vhemoroxsyrup|vhemorox": "2026-06-29",
-  "PRODUCT|RE-031304|redsunjellymintflavour|redsunjellymint": "2026-06-29",
   "PRODUCT|RE-041305|redsunjellymintflavour|redsunjellymint": "2026-06-30",
   "PRODUCT|RE-051306|redsunjellymintflavour|redsunmint": "2026-06-29",
   "PRODUCT|RE-071308|redsunjellychocolateflavour|redsunjellychocolate": "2026-06-29",
@@ -35,6 +38,5 @@
   "PRODUCT|REO-334|naomitripleactioncream|naomitripleaction": "2026-06-30",
   "PRODUCT|SL05401|princesheptinplussachets|princesheptinplus": "2026-06-29",
   "PRODUCT|SL05406|abytonefortesyrup|abytonefortered": "2026-06-29",
-  "PRODUCT|SL05407|abytonefortesyrup|abytonefortered": "2026-06-29",
-  "PRODUCT|U-132|nocigel|nocigelo": "2026-06-29"
+  "PRODUCT|SL05407|abytonefortesyrup|abytonefortered": "2026-06-29"
 }
