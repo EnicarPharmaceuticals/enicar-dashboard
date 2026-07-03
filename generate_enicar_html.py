@@ -1052,40 +1052,66 @@ def _attention_lines():
         items.append('Nothing unusual — production is flowing and no batch is waiting longer than normal.')
     return items
 
-# The dispatched card shows ONE month only. Default = the latest month that
-# actually has dispatches (a brand-new month with zero dispatches yet would
-# read as an alarming "0"); the JS date-filter re-points it at whichever month
-# the selected day belongs to.
+# All unit/batch cards in the glance show ONE month only. Default = the latest
+# month that actually has dispatches (a brand-new month with zero rows yet would
+# read as an alarming "0"); the JS date-filter re-points every card at whichever
+# month the selected day belongs to.
 _disp_months  = sorted({d.strftime('%Y-%m') for d in cur(disp_df)['Date']})
 _g_mkey       = _disp_months[-1] if _disp_months else f'{YEAR}-{MONTH:02d}'
 _g_y, _g_m    = int(_g_mkey[:4]), int(_g_mkey[5:7])
 _glance_start = date(_g_y, _g_m, 1)
 _glance_end   = date(_g_y, _g_m, calendar.monthrange(_g_y, _g_m)[1])
+_g_fill       = filt(fill_df, _glance_start, _glance_end)
+_g_pack       = filt(pack_df, _glance_start, _glance_end)
 _g_disp       = filt(disp_df, _glance_start, _glance_end)
+f_month       = _g_fill['Qty'].sum()
+p_month       = _g_pack['TotalPacked'].sum()
 d_month       = _g_disp['Qty'].sum()
 d_month_cust  = sum(1 for v in _g_disp.groupby('Party')['Qty'].sum().values if v > 0)
+
+# Month-scoped batch counts, defined to match the batch-journey statuses:
+#   completed = dispatched this month AND has fill+pack records (full journey)
+#   pipeline  = fill/pack activity this month, nothing dispatched yet
+_journey_by_key = {_bkey(e['batch']): e for e in BATCH_JOURNEY}
+_g_disp_keys = {_bkey(b) for b in _g_disp['Batch'].dropna() if str(b).strip()}
+comp_month = sum(1 for k in _g_disp_keys
+                 if k in _journey_by_key
+                 and _journey_by_key[k]['filled'] > 0 and _journey_by_key[k]['packed'] > 0)
+_PIPE_STATUSES = ('Filled & packed (in stock)', 'Filled only')
+_g_act_keys = {_bkey(b) for b in list(_g_fill['Batch'].dropna()) + list(_g_pack['Batch'].dropna())
+               if str(b).strip()}
+pipe_month = sum(1 for k in _g_act_keys
+                 if _journey_by_key.get(k, {}).get('status') in _PIPE_STATUSES)
 _glance_month_label = _glance_start.strftime('%B %Y').upper()
+
+def _glance_tile(label, vid, value, sid, subtext, color):
+    return (f'<div class="tile"><div class="tlabel">{label}</div>'
+            f'<div class="tvalue" id="{vid}" style="color:{color}">{value}</div>'
+            f'<div class="tsub" id="{sid}">{subtext}</div></div>')
 
 def director_summary_html():
     cards = (
-        f'''<div class="tile">
-      <div class="tlabel">UNITS DISPATCHED — <span id="glance-disp-month">{_glance_month_label}</span></div>
-      <div class="tvalue" id="glance-disp" style="color:{C_ORG}">{n(d_month)}</div>
-      <div class="tsub" id="glance-disp-sub">sent to {d_month_cust} customers this month</div>
-    </div>'''
-      + tile('BATCHES COMPLETED', n(_bj_complete),
-             'made, packed & dispatched (since tracking began)', C_GRN)
-      + tile('BATCHES IN THE PIPELINE', n(_bj_stock),
-             'filled or packed, not yet dispatched (since tracking began)', C_SEC)
+        _glance_tile('UNITS FILLED', 'glance-fill', n(f_month),
+                     'glance-fill-sub', 'filled this month', C_SEC)
+      + _glance_tile('UNITS PACKED', 'glance-pack', n(p_month),
+                     'glance-pack-sub', 'packed this month', C_AMB)
+      + _glance_tile('UNITS DISPATCHED', 'glance-disp', n(d_month),
+                     'glance-disp-sub', f'sent to {d_month_cust} customers this month', C_ORG)
+      + _glance_tile('BATCHES COMPLETED', 'glance-comp', n(comp_month),
+                     'glance-comp-sub', 'made, packed & dispatched this month', C_GRN)
+      + _glance_tile('BATCHES IN THE PIPELINE', 'glance-pipe', n(pipe_month),
+                     'glance-pipe-sub', 'filled or packed this month, awaiting dispatch', C_SEC)
       + tile('READY IN THE STORE', n(len(IN_STOCK)),
              f'{n(IN_STOCK_UNITS)} packed units in the BSR (Bonded Store Room) awaiting dispatch — list below', C_SEC)
-      + tile('NEEDS ATTENTION', n(_attention_n),
-             'stuck or inconsistent batches — details below', C_AMB if _attention_n else C_GRN)
     )
     notes = ''.join(f'<li style="margin:3px 0">{t}</li>' for t in _attention_lines())
     return f'''
 <div class="card">
   {sec('  ━━&nbsp;&nbsp;AT &nbsp; A &nbsp; GLANCE &nbsp;━━', C_PRI)}
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
+    Month shown: <strong id="glance-month-note" style="color:{C_PRI}">{_glance_month_label}</strong>
+    — the cards follow the date picked in the filter above ("Ready in the store" is today's stock, always current).
+  </div>
   <div class="tile-row">{cards}</div>
   <ul style="margin:0 22px 14px 34px;font-size:12.5px;color:#37474F;line-height:1.5">{notes}</ul>
 </div>'''
@@ -1830,22 +1856,50 @@ function renderParties(disp, isAll) {{
   }}
 }}
 
-// ── At-a-Glance: dispatched card follows the filter, one month at a time ──
+// ── At-a-Glance: all month cards follow the filter, one month at a time ──
 const LATEST_M = '{_g_mkey}';   // latest month WITH dispatch data
 const MONTHS_FULL = ['','JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY',
                      'AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+const bkeyJS = s => String(s || '').replace(/\s+/g, '').toUpperCase();
+const JOURNEY_BY_KEY = {{}};
+(ENICAR.batches || []).forEach(b => JOURNEY_BY_KEY[bkeyJS(b.batch)] = b);
+const PIPE_STATUSES = new Set(['Filled & packed (in stock)', 'Filled only']);
+
 function updateGlance(sel) {{
-  const el = document.getElementById('glance-disp');
-  if (!el) return;
-  // Selected day → that day's month; "All Month" → the latest month.
+  if (!document.getElementById('glance-disp')) return;
+  // Selected day → that day's month; "All Month" → the latest month with dispatches.
   const mKey = (sel && sel !== 'all') ? sel.slice(0, 7) : LATEST_M;
-  const rows = ENICAR.disp.filter(r => r.date && r.date.startsWith(mKey));
-  const tot = rows.reduce((s, r) => s + (r.qty || 0), 0);
-  const parties = new Set(rows.filter(r => r.party && (r.qty || 0) > 0).map(r => r.party));
+  const inM = r => r.date && r.date.startsWith(mKey);
+  const fillR = ENICAR.fill.filter(inM), packR = ENICAR.pack.filter(inM), dispR = ENICAR.disp.filter(inM);
+
+  const fTot = fillR.reduce((s, r) => s + (r.qty || 0), 0);
+  const pTot = packR.reduce((s, r) => s + (r.totalPacked || 0), 0);
+  const dTot = dispR.reduce((s, r) => s + (r.qty || 0), 0);
+  const parties = new Set(dispR.filter(r => r.party && (r.qty || 0) > 0).map(r => r.party));
+
+  // Completed = dispatched this month with a full journey (filled + packed records).
+  const dispKeys = new Set(dispR.filter(r => r.batch).map(r => bkeyJS(r.batch)));
+  let comp = 0;
+  dispKeys.forEach(k => {{
+    const b = JOURNEY_BY_KEY[k];
+    if (b && b.filled > 0 && b.packed > 0) comp++;
+  }});
+  // Pipeline = fill/pack activity this month, nothing dispatched yet.
+  const actKeys = new Set([...fillR, ...packR].filter(r => r.batch).map(r => bkeyJS(r.batch)));
+  let pipe = 0;
+  actKeys.forEach(k => {{
+    const b = JOURNEY_BY_KEY[k];
+    if (b && PIPE_STATUSES.has(b.status)) pipe++;
+  }});
+
   const [y, m] = mKey.split('-');
-  el.textContent = fmt(tot);
-  document.getElementById('glance-disp-month').textContent = MONTHS_FULL[parseInt(m)] + ' ' + y;
+  document.getElementById('glance-month-note').textContent = MONTHS_FULL[parseInt(m)] + ' ' + y;
+  document.getElementById('glance-fill').textContent = fmt(fTot);
+  document.getElementById('glance-pack').textContent = fmt(pTot);
+  document.getElementById('glance-disp').textContent = fmt(dTot);
   document.getElementById('glance-disp-sub').textContent = `sent to ${{parties.size}} customers this month`;
+  document.getElementById('glance-comp').textContent = fmt(comp);
+  document.getElementById('glance-pipe').textContent = fmt(pipe);
 }}
 
 // ── Expand / collapse all detail sections ────────────
