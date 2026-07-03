@@ -1052,10 +1052,27 @@ def _attention_lines():
         items.append('Nothing unusual — production is flowing and no batch is waiting longer than normal.')
     return items
 
+# The dispatched card shows ONE month only. Default = the latest month that
+# actually has dispatches (a brand-new month with zero dispatches yet would
+# read as an alarming "0"); the JS date-filter re-points it at whichever month
+# the selected day belongs to.
+_disp_months  = sorted({d.strftime('%Y-%m') for d in cur(disp_df)['Date']})
+_g_mkey       = _disp_months[-1] if _disp_months else f'{YEAR}-{MONTH:02d}'
+_g_y, _g_m    = int(_g_mkey[:4]), int(_g_mkey[5:7])
+_glance_start = date(_g_y, _g_m, 1)
+_glance_end   = date(_g_y, _g_m, calendar.monthrange(_g_y, _g_m)[1])
+_g_disp       = filt(disp_df, _glance_start, _glance_end)
+d_month       = _g_disp['Qty'].sum()
+d_month_cust  = sum(1 for v in _g_disp.groupby('Party')['Qty'].sum().values if v > 0)
+_glance_month_label = _glance_start.strftime('%B %Y').upper()
+
 def director_summary_html():
     cards = (
-        tile('UNITS DISPATCHED THIS PERIOD', n(d_cur),
-             f'{PERIOD.title()} — sent to {sum(1 for v in party_cur.values if v>0)} customers', C_ORG)
+        f'''<div class="tile">
+      <div class="tlabel">UNITS DISPATCHED — <span id="glance-disp-month">{_glance_month_label}</span></div>
+      <div class="tvalue" id="glance-disp" style="color:{C_ORG}">{n(d_month)}</div>
+      <div class="tsub" id="glance-disp-sub">sent to {d_month_cust} customers this month</div>
+    </div>'''
       + tile('BATCHES COMPLETED', n(_bj_complete),
              'made, packed & dispatched (since tracking began)', C_GRN)
       + tile('BATCHES IN THE PIPELINE', n(_bj_stock),
@@ -1637,6 +1654,7 @@ function applyFilter() {{
 
   const isAll = sel === 'all';
   document.getElementById('filter-tag').textContent = isAll ? 'MONTHLY TOTAL' : 'DAILY VIEW';
+  updateGlance(sel);
 
   const fill  = isAll ? ENICAR.fill  : ENICAR.fill.filter(r => r.date === sel);
   const pack  = isAll ? ENICAR.pack  : ENICAR.pack.filter(r => r.date === sel);
@@ -1810,6 +1828,24 @@ function renderParties(disp, isAll) {{
     }});
     document.getElementById('party-rows').innerHTML = rows || '<tr><td colspan="3" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }}
+}}
+
+// ── At-a-Glance: dispatched card follows the filter, one month at a time ──
+const LATEST_M = '{_g_mkey}';   // latest month WITH dispatch data
+const MONTHS_FULL = ['','JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY',
+                     'AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+function updateGlance(sel) {{
+  const el = document.getElementById('glance-disp');
+  if (!el) return;
+  // Selected day → that day's month; "All Month" → the latest month.
+  const mKey = (sel && sel !== 'all') ? sel.slice(0, 7) : LATEST_M;
+  const rows = ENICAR.disp.filter(r => r.date && r.date.startsWith(mKey));
+  const tot = rows.reduce((s, r) => s + (r.qty || 0), 0);
+  const parties = new Set(rows.filter(r => r.party && (r.qty || 0) > 0).map(r => r.party));
+  const [y, m] = mKey.split('-');
+  el.textContent = fmt(tot);
+  document.getElementById('glance-disp-month').textContent = MONTHS_FULL[parseInt(m)] + ' ' + y;
+  document.getElementById('glance-disp-sub').textContent = `sent to ${{parties.size}} customers this month`;
 }}
 
 // ── Expand / collapse all detail sections ────────────
