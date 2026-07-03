@@ -571,6 +571,85 @@ _bj_problems = sum(1 for e in BATCH_JOURNEY if e['rank'] == 0)
 _bj_flowing  = sum(1 for e in BATCH_JOURNEY if e['status'].startswith('Filled → Packed'))
 _bj_stock    = sum(1 for e in BATCH_JOURNEY if e['rank'] == 2)
 _bj_opening  = sum(1 for e in BATCH_JOURNEY if e['rank'] == 4)
+_bj_complete = sum(1 for e in BATCH_JOURNEY if e['rank'] == 3)
+
+# ── Per-stage dates for the Batch Journey timeline ────────────────────────────
+# First/last activity date per batch per stage, plus the RM Dispensing record,
+# so the lookup can show a start-to-end timeline with elapsed days.
+def _stage_dates(df):
+    out = {}
+    for _, r in df.iterrows():
+        b = r.get('Batch')
+        if pd.isna(b) or not str(b).strip():
+            continue
+        k, d = _bkey(b), r.get('Date')
+        if d is None:
+            continue
+        e = out.setdefault(k, {'first': d, 'last': d})
+        if d < e['first']: e['first'] = d
+        if d > e['last']:  e['last']  = d
+    return out
+
+FILL_DATES = _stage_dates(fill_df)
+PACK_DATES = _stage_dates(pack_df)
+DISP_DATES = _stage_dates(disp_df)
+
+def _rm_info():
+    """Batch key → RM dispensing record (earliest date, customer, product, batch size)."""
+    info = {}
+    try:
+        rm_all = pd.read_excel(TEMPLATE, sheet_name='➕ RM Dispensing Log', header=3)
+        rm_all.columns = [' '.join(str(c).split()) for c in rm_all.columns]
+    except Exception:
+        return info
+    for _, r in rm_all.iterrows():
+        b = r.get('BATCH NUMBER')
+        if pd.isna(b) or not str(b).strip() or str(b).strip() == '-':
+            continue
+        k = _bkey(b)
+        d = pd.to_datetime(r.get('DISPENSING DATE'), errors='coerce')
+        e = info.setdefault(k, {'date': None, 'customer': None, 'product': None, 'size': 0.0})
+        if pd.notna(d) and (e['date'] is None or d.date() < e['date']):
+            e['date'] = d.date()
+        if e['customer'] is None and pd.notna(r.get('CUSTOMER')):
+            e['customer'] = str(r.get('CUSTOMER')).strip()
+        if e['product'] is None and pd.notna(r.get('NAME OF THE PRODUCT')):
+            e['product'] = str(r.get('NAME OF THE PRODUCT')).strip()
+        e['size'] += float(pd.to_numeric(r.get('BATCH SIZE'), errors='coerce') or 0)
+    return info
+
+RM_INFO = _rm_info()
+
+# ── Stuck batches ─────────────────────────────────────────────────────────────
+# A batch is "stuck" when it has sat at one stage with no movement to the next:
+#   filled but nothing packed for STUCK_FILL_DAYS+
+#   packed but nothing dispatched for STUCK_PACK_DAYS+ (dispatch waits are
+#   normal business, so this threshold is deliberately longer)
+STUCK_FILL_DAYS = 7
+STUCK_PACK_DAYS = 21
+_today = date.today()
+
+def _stuck_info(e):
+    """Return (stage_label, days_waiting) if the batch is stuck, else None."""
+    if e['rank'] in (0, 4):          # problems & opening stock handled elsewhere
+        return None
+    k = _bkey(e['batch'])
+    if e['filled'] > 0 and e['packed'] == 0 and e['dispatched'] == 0:
+        fd = FILL_DATES.get(k)
+        if fd and (_today - fd['last']).days >= STUCK_FILL_DAYS:
+            return ('Filled, waiting for packing', (_today - fd['last']).days)
+    elif e['packed'] > 0 and e['dispatched'] == 0 and not e.get('auto_cleared'):
+        pdte = PACK_DATES.get(k)
+        if pdte and (_today - pdte['last']).days >= STUCK_PACK_DAYS:
+            return ('Packed, waiting for dispatch', (_today - pdte['last']).days)
+    return None
+
+STUCK_BATCHES = []
+for _e in BATCH_JOURNEY:
+    _s = _stuck_info(_e)
+    if _s:
+        STUCK_BATCHES.append({**_e, 'stuck_stage': _s[0], 'stuck_days': _s[1]})
+STUCK_BATCHES.sort(key=lambda e: -e['stuck_days'])
 
 # ── Monthly summary (RM → Fill → Pack → Disp) ─────────────────────────────────
 # Tracking-start cutoff: dispenses before this date were from the pre-system
@@ -731,13 +810,33 @@ disp_rows = [{'date':safe(r['Date']),'product':safe(r['Product']),'packSize':saf
 staff_rows = [{'date':safe(r['Date']),'female':safe(r['Female']),'male':safe(r['Male'])}
               for _,r in cur(staff_df).iterrows()]
 
-batch_rows = [
-    {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'],
-     'party':e.get('party'), 'packSize':e.get('packsize'),
-     'filled':float(e['filled']), 'packed':float(e['packed']), 'dispatched':float(e['dispatched']),
-     'status':e['status']}
-    for e in BATCH_JOURNEY
-]
+def _stage_json(dates_map, key):
+    d = dates_map.get(key)
+    return {'first': safe(d['first']), 'last': safe(d['last'])} if d else None
+
+def _rm_json(key):
+    r = RM_INFO.get(key)
+    if not r:
+        return None
+    return {'date': safe(r['date']), 'customer': r['customer'],
+            'product': r['product'], 'size': float(r['size'])}
+
+_stuck_by_key = { _bkey(s['batch']): (s['stuck_stage'], s['stuck_days']) for s in STUCK_BATCHES }
+
+batch_rows = []
+for e in BATCH_JOURNEY:
+    k = _bkey(e['batch'])
+    st = _stuck_by_key.get(k)
+    batch_rows.append(
+        {'batch':e['batch'], 'product':e['product'], 'ptype':e['ptype'],
+         'party':e.get('party'), 'packSize':e.get('packsize'),
+         'filled':float(e['filled']), 'packed':float(e['packed']), 'dispatched':float(e['dispatched']),
+         'status':e['status'],
+         'rm': _rm_json(k),
+         'fillD': _stage_json(FILL_DATES, k),
+         'packD': _stage_json(PACK_DATES, k),
+         'dispD': _stage_json(DISP_DATES, k),
+         'stuck': {'stage': st[0], 'days': st[1]} if st else None})
 
 DATA_JSON = json.dumps({
     'fill': fill_rows, 'pack': pack_rows, 'disp': disp_rows, 'staff': staff_rows,
@@ -854,6 +953,125 @@ def line_table_rows(data_dict, total_cur, total_prv):
           <td class="td-num" style="color:{tc};font-size:16px">{trend}</td>
         </tr>'''
     return rows
+
+# ── Server-rendered initial content ──────────────────────────────────────────
+# The tiles and tables below used to ship as "—" placeholders that JavaScript
+# filled in on load. Any viewer that blocks or fails to run JS (Drive/mail
+# previews, PDF export, old WebViews) saw a wall of dashes. The generator
+# already knows every number, so render the full-period view straight into the
+# HTML; the JS date-filter simply re-renders on top of it.
+_NO_DATA = ('<tr><td colspan="{cols}" style="text-align:center;color:#90A4AE;'
+            'padding:14px">No data loaded for this period ({period}).</td></tr>')
+
+def _line_order_key(name):
+    """Same display order as the JS cmpLine(): Line No 1..5, then specials."""
+    s = str(name or '').strip()
+    m = re.match(r'^line\s*no\.?\s*0*(\d+)', s, re.I)
+    if m: return (0, int(m.group(1)), '')
+    special = {'flat sachet': 1, 'stick pack sachet': 2, 'sachet': 3,
+               'ointment': 4, 'external': 5}
+    return (1, special.get(s.lower(), 99), s.lower())
+
+def grouped_stage_rows(df, qty_field):
+    """Filling/Packing detail rows grouped by Line+Product+PackSize+Party —
+    mirrors the JS renderFilling/renderPacking grouping exactly."""
+    d = cur(df)
+    if not len(d):
+        return _NO_DATA.format(cols=5, period=PERIOD)
+    g = {}
+    for _, r in d.iterrows():
+        ln = str(r.get('Line') or '—'); pr = str(r.get('Product') or '—')
+        ps = r.get('PackSize'); ps = '—' if ps is None or (isinstance(ps, float) and pd.isna(ps)) else str(ps)
+        pa = str(r.get('Party') or '—')
+        q = float(pd.to_numeric(r.get(qty_field), errors='coerce') or 0)
+        g[(ln, pr, ps, pa)] = g.get((ln, pr, ps, pa), 0) + q
+    rows = ''
+    for i, ((ln, pr, ps, pa), q) in enumerate(sorted(
+            g.items(), key=lambda kv: (_line_order_key(kv[0][0]), kv[0][1].lower(),
+                                       kv[0][2], kv[0][3].lower()))):
+        bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
+        rows += (f'<tr style="background:{bg}"><td class="td-name">{ln}</td>'
+                 f'<td class="td-name">{pr}</td>'
+                 f'<td class="td-name" style="color:#37474F">{ps}</td>'
+                 f'<td class="td-name" style="color:#546E7A">{pa}</td>'
+                 f'<td class="td-num" style="color:{C_AMB};font-weight:700">{n(q)}</td></tr>')
+    return rows
+
+def party_mtd_rows():
+    """Party-wise dispatch rows (party + qty) — mirrors JS renderParties MTD view."""
+    if not len(cur(disp_df)):
+        return _NO_DATA.format(cols=2, period=PERIOD)
+    rows = ''
+    for i, (p, v) in enumerate(party_cur.items()):
+        if not str(p).strip():
+            continue
+        bg = '#FFF8F1' if i % 2 == 0 else '#FFFFFF'
+        rows += (f'<tr style="background:{bg}"><td class="td-name">{p}</td>'
+                 f'<td class="td-num" style="color:{C_ORG};font-weight:700">{n(v)}</td></tr>')
+    return rows or _NO_DATA.format(cols=2, period=PERIOD)
+
+def stuck_batch_rows():
+    if not STUCK_BATCHES:
+        return ('<tr><td colspan="6" style="text-align:center;color:#90A4AE;padding:14px">'
+                'No stuck batches — everything filled is moving to packing, and everything '
+                f'packed is dispatching within {STUCK_PACK_DAYS} days. ✅</td></tr>')
+    rows = ''
+    for i, s in enumerate(STUCK_BATCHES):
+        bg = '#FFF8F1' if i % 2 == 0 else '#FFFFFF'
+        qty = s['packed'] if s['packed'] > 0 else s['filled']
+        rows += (f'<tr style="background:{bg}">'
+                 f'<td class="td-name" style="font-weight:600">{s["batch"]}</td>'
+                 f'<td class="td-name">{s["product"] or "—"}</td>'
+                 f'<td class="td-name" style="color:#546E7A">{s["party"] or "—"}</td>'
+                 f'<td class="td-name">{s["stuck_stage"]}</td>'
+                 f'<td class="td-num" style="color:{C_AMB};font-weight:700">{s["stuck_days"]} days</td>'
+                 f'<td class="td-num">{n(qty)}</td></tr>')
+    return rows
+
+# ── Director summary (top-of-page headline layer) ─────────────────────────────
+_pipeline_units = IN_STOCK_UNITS   # packed, waiting in the store
+_attention_n = len(STUCK_BATCHES) + _bj_problems
+
+def _attention_lines():
+    """Up to three plain-language attention items for the summary layer."""
+    items = []
+    if STUCK_BATCHES:
+        w = STUCK_BATCHES[0]
+        items.append(f'Longest wait: batch <strong>{w["batch"]}</strong> '
+                     f'({w["product"] or "unknown product"}) has been '
+                     f'{w["stuck_stage"].lower()} for <strong>{w["stuck_days"]} days</strong>.')
+        if len(STUCK_BATCHES) > 1:
+            items.append(f'{len(STUCK_BATCHES)} batches in total are waiting longer than '
+                         f'normal ({STUCK_FILL_DAYS}+ days to pack, {STUCK_PACK_DAYS}+ days to dispatch) '
+                         '— full list in "Batches needing attention" below.')
+    if _bj_problems:
+        items.append(f'{_bj_problems} batch record(s) look inconsistent (dispatched or packed '
+                     'with no filling record, or shipped more than was made) — likely a batch-number '
+                     'typo in one of the logs. Searchable in "Find a batch" below.')
+    if not items:
+        items.append('Nothing unusual — production is flowing and no batch is waiting longer than normal.')
+    return items
+
+def director_summary_html():
+    cards = (
+        tile('UNITS DISPATCHED THIS PERIOD', n(d_cur),
+             f'{PERIOD.title()} — sent to {sum(1 for v in party_cur.values if v>0)} customers', C_ORG)
+      + tile('BATCHES COMPLETED', n(_bj_complete),
+             'made, packed & dispatched (since tracking began)', C_GRN)
+      + tile('BATCHES IN THE PIPELINE', n(_bj_stock),
+             'filled or packed, not yet dispatched (since tracking began)', C_SEC)
+      + tile('READY IN THE STORE', n(len(IN_STOCK)),
+             f'{n(IN_STOCK_UNITS)} packed units in the BSR (Bonded Store Room) awaiting dispatch — list below', C_SEC)
+      + tile('NEEDS ATTENTION', n(_attention_n),
+             'stuck or inconsistent batches — details below', C_AMB if _attention_n else C_GRN)
+    )
+    notes = ''.join(f'<li style="margin:3px 0">{t}</li>' for t in _attention_lines())
+    return f'''
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;AT &nbsp; A &nbsp; GLANCE &nbsp;━━', C_PRI)}
+  <div class="tile-row">{cards}</div>
+  <ul style="margin:0 22px 14px 34px;font-size:12.5px;color:#37474F;line-height:1.5">{notes}</ul>
+</div>'''
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ASSEMBLE HTML
@@ -1095,6 +1313,33 @@ html = f"""<!DOCTYPE html>
   .bsr-note {{ background:#FFF3E0; border-left:4px solid {C_ORG};
                padding:8px 14px; font-size:11px; color:{C_ORG}; margin:4px 14px 10px; }}
 
+  /* ── Collapsible detail sections ── */
+  details.card > summary {{ list-style:none; cursor:pointer; user-select:none; }}
+  details.card > summary::-webkit-details-marker {{ display:none; }}
+  details.card > summary .sec-hdr {{ position:relative; }}
+  details.card > summary .sec-hdr::after {{ content:'▸ show'; position:absolute; right:16px;
+      font-weight:400; font-size:11px; opacity:0.85; }}
+  details.card[open] > summary .sec-hdr::after {{ content:'▾ hide'; }}
+  .expand-bar {{ text-align:right; margin:-6px 0 10px; }}
+  .expand-bar button {{ background:#fff; border:1.5px solid {C_SEC}; color:{C_SEC};
+      border-radius:6px; padding:5px 14px; font-size:12px; font-weight:700; cursor:pointer; }}
+  .noscript-note {{ background:#FFF3E0; border-left:4px solid {C_ORG}; padding:10px 16px;
+      font-size:12px; color:{C_ORG}; margin:0 0 12px; border-radius:6px; }}
+
+  /* ── Batch journey timeline ── */
+  .bj-timeline {{ display:flex; align-items:stretch; gap:0; flex-wrap:wrap; padding:10px 14px 14px; }}
+  .bj-stage {{ flex:1; min-width:140px; border:1px solid #CFD8DC; border-radius:8px;
+      padding:10px 12px; background:#fff; }}
+  .bj-stage.missing {{ background:#FAFAFA; border-style:dashed; color:#90A4AE; }}
+  .bj-stage .bj-name {{ font-size:10px; font-weight:700; letter-spacing:0.6px;
+      text-transform:uppercase; color:{C_SEC}; margin-bottom:4px; }}
+  .bj-stage.missing .bj-name {{ color:#90A4AE; }}
+  .bj-qty {{ font-size:17px; font-weight:700; color:#263238; }}
+  .bj-date {{ font-size:11px; color:#607D8B; margin-top:3px; }}
+  .bj-gap {{ display:flex; flex-direction:column; justify-content:center; align-items:center;
+      padding:0 6px; color:#78909C; font-size:10px; min-width:52px; }}
+  .bj-gap .arrow {{ font-size:16px; color:#B0BEC5; }}
+
   /* ── Date Filter Bar ── */
   .filter-bar {{ background:#fff; border-bottom:2px solid {C_LBG}; padding:10px 28px;
                  display:flex; align-items:center; gap:14px; flex-wrap:wrap; }}
@@ -1125,6 +1370,16 @@ html = f"""<!DOCTYPE html>
 </div>
 
 <div class="container">
+
+<noscript><div class="noscript-note">Interactive date filtering is off (JavaScript disabled
+in this viewer) — the numbers below show the full period {PERIOD}.</div></noscript>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION A — AT A GLANCE (director summary layer)
+════════════════════════════════════════════════════════════ -->
+{director_summary_html()}
+
+<div class="expand-bar"><button id="expand-all-btn" onclick="toggleAllDetails()">▸ Expand all detail sections</button></div>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 00 — MONTHLY SUMMARY (RM → Fill → Pack → Disp)
@@ -1157,8 +1412,8 @@ html = f"""<!DOCTYPE html>
 <!-- ════════════════════════════════════════════════════════════
      SECTION 1 — PRODUCT TYPE BREAKDOWN
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PRODUCT &nbsp; TYPE &nbsp; BREAKDOWN &nbsp;━━')}
+<details class="card">
+  <summary>{sec('  ━━&nbsp;&nbsp;PRODUCT &nbsp; TYPE &nbsp; BREAKDOWN &nbsp;━━')}</summary>
   <div class="tbl-wrap">
     <table>
       <tr class="th-row">
@@ -1167,96 +1422,117 @@ html = f"""<!DOCTYPE html>
         <th id="pt-hdr-pack">UNITS PACKED (MTD)</th>
         <th id="pt-hdr-disp">UNITS DISPATCHED (MTD)</th>
       </tr>
-      <tbody id="pt-rows"></tbody>
+      <tbody id="pt-rows">{product_type_rows()}</tbody>
       <tr class="tot-row">
         <td class="td-name">TOTAL</td>
-        <td class="td-num" id="pt-total-fill">—</td>
-        <td class="td-num" id="pt-total-pack">—</td>
-        <td class="td-num" id="pt-total-disp">—</td>
+        <td class="td-num" id="pt-total-fill">{n(f_cur)}</td>
+        <td class="td-num" id="pt-total-pack">{n(p_cur)}</td>
+        <td class="td-num" id="pt-total-disp">{n(d_cur)}</td>
       </tr>
     </table>
   </div>
-</div>
+</details>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 2 — FILLING
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;FILLING &nbsp; PRODUCTION &nbsp;━━')}
+<details class="card">
+  <summary>{sec('  ━━&nbsp;&nbsp;FILLING &nbsp; PRODUCTION &nbsp;━━')}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL FILLED</div><div class="tvalue" id="f-total" style="color:{C_AMB}">—</div><div class="tsub">units filled</div></div>
-    <div class="tile"><div class="tlabel">FILL RECORDS</div><div class="tvalue" id="f-rec" style="color:{C_AMB}">—</div><div class="tsub">rows logged</div></div>
-    <div class="tile"><div class="tlabel">AVG UNITS / RECORD</div><div class="tvalue" id="f-avg" style="color:{C_AMB}">—</div><div class="tsub">units per entry</div></div>
-    <div class="tile"><div class="tlabel">ACTIVE LINES</div><div class="tvalue" id="f-lines" style="color:{C_AMB}">—</div><div class="tsub">lines active</div></div>
+    <div class="tile"><div class="tlabel">TOTAL FILLED</div><div class="tvalue" id="f-total" style="color:{C_AMB}">{n(f_cur)}</div><div class="tsub">units filled</div></div>
+    <div class="tile"><div class="tlabel">FILL RECORDS</div><div class="tvalue" id="f-rec" style="color:{C_AMB}">{f_rec}</div><div class="tsub">rows logged</div></div>
+    <div class="tile"><div class="tlabel">AVG UNITS / RECORD</div><div class="tvalue" id="f-avg" style="color:{C_AMB}">{n(f_avg)}</div><div class="tsub">units per entry</div></div>
+    <div class="tile"><div class="tlabel">ACTIVE LINES</div><div class="tvalue" id="f-lines" style="color:{C_AMB}">{f_lines}</div><div class="tsub">lines active</div></div>
   </div>
   <div class="tbl-wrap">
     <table>
       <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS FILLED (MTD)</th></tr></thead>
-      <tbody id="fill-line-rows"></tbody>
-      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
+      <tbody id="fill-line-rows">{grouped_stage_rows(fill_df, 'Qty')}</tbody>
+      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">{n(f_cur)}</td></tr></tfoot>
     </table>
   </div>
-</div>
+</details>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 2 — PACKING
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PACKING &nbsp; PRODUCTION &nbsp;━━')}
+<details class="card">
+  <summary>{sec('  ━━&nbsp;&nbsp;PACKING &nbsp; PRODUCTION &nbsp;━━')}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL PACKED</div><div class="tvalue" id="p-total" style="color:{C_AMB}">—</div><div class="tsub">units packed</div></div>
-    <div class="tile"><div class="tlabel">FILL → PACK RATIO</div><div class="tvalue" id="p-ratio" style="color:{C_AMB}">—</div><div class="tsub">packed ÷ filled</div></div>
+    <div class="tile"><div class="tlabel">TOTAL PACKED</div><div class="tvalue" id="p-total" style="color:{C_AMB}">{n(p_cur)}</div><div class="tsub">units packed</div></div>
+    <div class="tile"><div class="tlabel">FILL → PACK RATIO</div><div class="tvalue" id="p-ratio" style="color:{C_AMB}">{pct(p_ratio)}</div><div class="tsub">packed ÷ filled</div></div>
   </div>
   <div class="tbl-wrap">
     <table>
       <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS PACKED (MTD)</th></tr></thead>
-      <tbody id="pack-line-rows"></tbody>
-      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">—</td></tr></tfoot>
+      <tbody id="pack-line-rows">{grouped_stage_rows(pack_df, 'TotalPacked')}</tbody>
+      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">{n(p_cur)}</td></tr></tfoot>
     </table>
   </div>
-</div>
+</details>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 3 — DISPATCH & BSR STOCK
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;DISPATCH &nbsp;&amp;&nbsp; BSR &nbsp; STOCK &nbsp;━━', C_ORG)}
+<details class="card">
+  <summary>{sec('  ━━&nbsp;&nbsp;DISPATCH &nbsp;&amp;&nbsp; BSR &nbsp; STOCK &nbsp;━━', C_ORG)}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">DISPATCHED</div><div class="tvalue" id="d-total" style="color:{C_ORG}">—</div><div class="tsub">units dispatched</div></div>
-    <div class="tile"><div class="tlabel">DISPATCH / FILL</div><div class="tvalue" id="d-ratio" style="color:{C_ORG}">—</div><div class="tsub">dispatched ÷ filled</div></div>
+    <div class="tile"><div class="tlabel">DISPATCHED</div><div class="tvalue" id="d-total" style="color:{C_ORG}">{n(d_cur)}</div><div class="tsub">units dispatched</div></div>
+    <div class="tile"><div class="tlabel">DISPATCH / FILL</div><div class="tvalue" id="d-ratio" style="color:{C_ORG}">{pct(d_fill_ratio)}</div><div class="tsub">dispatched ÷ filled</div></div>
   </div>
-</div>
+</details>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 4 — STAFF
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;STAFF &nbsp;&amp;&nbsp; ATTENDANCE &nbsp;━━')}
+<details class="card">
+  <summary>{sec('  ━━&nbsp;&nbsp;STAFF &nbsp;&amp;&nbsp; ATTENDANCE &nbsp;━━')}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">FEMALE WORKERS PRESENT</div><div class="tvalue" id="s-fem" style="color:{C_AMB}">—</div><div class="tsub">packing workers</div></div>
-    <div class="tile"><div class="tlabel">MALE WORKERS PRESENT</div><div class="tvalue" id="s-male" style="color:{C_AMB}">—</div><div class="tsub">filling & loading</div></div>
+    <div class="tile"><div class="tlabel">FEMALE WORKERS PRESENT</div><div class="tvalue" id="s-fem" style="color:{C_AMB}">{s_fem:.0f} avg</div><div class="tsub">packing workers</div></div>
+    <div class="tile"><div class="tlabel">MALE WORKERS PRESENT</div><div class="tvalue" id="s-male" style="color:{C_AMB}">{s_male:.0f} avg</div><div class="tsub">filling & loading</div></div>
   </div>
-</div>
+</details>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 6 — PARTY-WISE SALES
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PARTY-WISE &nbsp; SALES &nbsp; (Dispatched) &nbsp;━━', C_ORG)}
+<details class="card">
+  <summary>{sec('  ━━&nbsp;&nbsp;PARTY-WISE &nbsp; SALES &nbsp; (Dispatched) &nbsp;━━', C_ORG)}</summary>
   <div class="tbl-wrap">
     <table>
       <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr></thead>
-      <tbody id="party-rows"></tbody>
-      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">—</td></tr></tfoot>
+      <tbody id="party-rows">{party_mtd_rows()}</tbody>
+      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">{n(d_cur)}</td></tr></tfoot>
     </table>
   </div>
-</div>
+</details>
 
 <!-- ════════════════════════════════════════════════════════════
-     SECTION 7 — PACKED & IN STOCK (not yet dispatched)
+     SECTION 7 — BATCHES NEEDING ATTENTION (stuck in the pipeline)
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
-  {sec('  ━━&nbsp;&nbsp;PACKED &nbsp;&amp;&nbsp; IN &nbsp; BSR &nbsp; STOCK &nbsp; (Not &nbsp; Yet &nbsp; Dispatched) &nbsp;━━', C_SEC)}
+<details class="card" id="stuck-card">
+  <summary>{sec(f'  ━━&nbsp;&nbsp;BATCHES &nbsp; NEEDING &nbsp; ATTENTION &nbsp; ({len(STUCK_BATCHES)} &nbsp; stuck) &nbsp;━━', C_AMB)}</summary>
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
+    A batch appears here when it has stopped moving: filled but nothing packed for
+    <strong>{STUCK_FILL_DAYS}+ days</strong>, or packed but nothing dispatched for
+    <strong>{STUCK_PACK_DAYS}+ days</strong> (dispatch normally waits on customer schedules,
+    so its threshold is longer). Days count from the batch's last activity at that stage.
+  </div>
+  <div class="tbl-wrap" style="padding-top:10px">
+    <table>
+      <thead><tr class="th-row">
+        <th>BATCH</th><th>PRODUCT</th><th>CUSTOMER</th><th>WHERE IT IS STUCK</th><th>WAITING</th><th>UNITS WAITING</th>
+      </tr></thead>
+      <tbody>{stuck_batch_rows()}</tbody>
+    </table>
+  </div>
+</details>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 8 — PACKED & IN STOCK (not yet dispatched)
+════════════════════════════════════════════════════════════ -->
+<details class="card">
+  <summary>{sec('  ━━&nbsp;&nbsp;PACKED &nbsp;&amp;&nbsp; IN &nbsp; BSR &nbsp; STOCK &nbsp; (Not &nbsp; Yet &nbsp; Dispatched) &nbsp;━━', C_SEC)}</summary>
   <div class="tile-row">
     {tile('BATCHES IN STOCK', n(len(IN_STOCK)), 'packed, awaiting dispatch', C_SEC)}
     {tile('UNITS IN STOCK', n(IN_STOCK_UNITS), 'packed & not dispatched', C_AMB)}
@@ -1269,7 +1545,7 @@ html = f"""<!DOCTYPE html>
       <tbody>{batch_journey_rows()}</tbody>
     </table>
   </div>
-</div>
+</details>
 
 </div><!-- /container -->
 
@@ -1536,13 +1812,89 @@ function renderParties(disp, isAll) {{
   }}
 }}
 
-// ── Batch / product lookup ───────────────────────────
+// ── Expand / collapse all detail sections ────────────
+function toggleAllDetails() {{
+  const all = [...document.querySelectorAll('details.card')];
+  const anyClosed = all.some(d => !d.open);
+  all.forEach(d => d.open = anyClosed);
+  document.getElementById('expand-all-btn').textContent =
+    anyClosed ? '▾ Collapse all detail sections' : '▸ Expand all detail sections';
+}}
+
+// ── Batch / product lookup + journey timeline ─────────
 const BATCHES = ENICAR.batches || [];
+let LOOKUP_HITS = [];   // hits of the current search, referenced by row index
+
+const MONTHS_SHORT = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function prettyDate(iso) {{
+  if (!iso) return null;
+  const [y,m,d] = iso.split('-');
+  return `${{parseInt(d)}} ${{MONTHS_SHORT[parseInt(m)]}} ${{y}}`;
+}}
+function daysBetween(isoA, isoB) {{
+  if (!isoA || !isoB) return null;
+  return Math.round((new Date(isoB) - new Date(isoA)) / 86400000);
+}}
+
+function bjTimeline(b) {{
+  // Build the four lifecycle stages. A stage with no record says so explicitly —
+  // we never invent a link that isn't in the logs.
+  const stages = [
+    {{name:'Raw material dispensed', present: !!(b.rm && b.rm.date),
+      date: b.rm ? b.rm.date : null, endDate: null,
+      qty: b.rm && b.rm.size ? fmt(b.rm.size)+' (batch size)' : null,
+      missing:'No record in the RM Dispensing Log'}},
+    {{name:'Filling', present: !!b.fillD,
+      date: b.fillD ? b.fillD.first : null, endDate: b.fillD ? b.fillD.last : null,
+      qty: b.filled ? fmt(b.filled)+' units' : null,
+      missing:'No record in the Filling Log'}},
+    {{name:'Packing', present: !!b.packD,
+      date: b.packD ? b.packD.first : null, endDate: b.packD ? b.packD.last : null,
+      qty: b.packed ? fmt(b.packed)+' units' : null,
+      missing:'No record in the Packing Log'}},
+    {{name:'Dispatch', present: !!b.dispD,
+      date: b.dispD ? b.dispD.first : null, endDate: b.dispD ? b.dispD.last : null,
+      qty: b.dispatched ? fmt(b.dispatched)+' units' : null,
+      missing:'No record in the Dispatch Log'}},
+  ];
+  let html = '<div class="bj-timeline">';
+  let prevDate = null;
+  stages.forEach((s, i) => {{
+    if (i > 0) {{
+      const gap = (s.present && prevDate) ? daysBetween(prevDate, s.date) : null;
+      html += `<div class="bj-gap"><span class="arrow">→</span>${{gap!==null ? `<span>${{gap}} day${{gap===1?'':'s'}}</span>` : ''}}</div>`;
+    }}
+    if (s.present) {{
+      const range = (s.endDate && s.endDate !== s.date)
+        ? `${{prettyDate(s.date)}} → ${{prettyDate(s.endDate)}}`
+        : prettyDate(s.date) || 'date unknown';
+      html += `<div class="bj-stage"><div class="bj-name">${{s.name}}</div>
+        <div class="bj-qty">${{s.qty || '—'}}</div>
+        <div class="bj-date">${{range}}</div></div>`;
+      if (s.date) prevDate = s.date;
+    }} else {{
+      html += `<div class="bj-stage missing"><div class="bj-name">${{s.name}}</div>
+        <div style="font-size:12px;margin-top:4px">${{s.missing}}</div></div>`;
+    }}
+  }});
+  html += '</div>';
+  const extras = [];
+  if (b.stuck) extras.push(`<span style="background:#FBE9E7;color:#BF360C;border-radius:4px;padding:3px 8px;font-weight:700">⏸ Stuck — ${{b.stuck.stage.toLowerCase()}} for ${{b.stuck.days}} days</span>`);
+  if (b.rm && b.rm.customer) extras.push(`<span style="color:#607D8B">RM log customer: <strong>${{b.rm.customer}}</strong></span>`);
+  extras.push(`<span style="color:#607D8B">Status: ${{b.status}}</span>`);
+  return html + `<div style="padding:0 14px 12px;font-size:12px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">${{extras.join('')}}</div>`;
+}}
+
+function toggleJourney(idx) {{
+  const row = document.getElementById('bj-detail-' + idx);
+  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+}}
+
 function lookupBatch() {{
   const q = (document.getElementById('batch-search').value || '').trim().toLowerCase();
   const out = document.getElementById('batch-search-results');
   if (!q) {{
-    out.innerHTML = '<div style="color:#90A4AE;padding:8px 4px;font-size:12px">Type a batch number or product name to see where it is in the pipeline (filled / packed / dispatched)…</div>';
+    out.innerHTML = '<div style="color:#90A4AE;padding:8px 4px;font-size:12px">Type a batch number or product name, then click a result row to see its full journey (raw material → filling → packing → dispatch) with dates and waiting time at each step…</div>';
     return;
   }}
   const hits = BATCHES.filter(b =>
@@ -1555,19 +1907,23 @@ function lookupBatch() {{
   }}
   // Sort: matching product alphabetically, then batch
   hits.sort((a,b) => (a.product||'').localeCompare(b.product||'') || (a.batch||'').localeCompare(b.batch||''));
+  LOOKUP_HITS = hits;
+  const openFirst = hits.length === 1;   // exactly one match → show its journey immediately
   let rows = '';
   hits.slice(0,80).forEach((b,i) => {{
     const bg = i%2===0 ? '#F1F8F6' : '#fff';
-    rows += `<tr style="background:${{bg}}">
+    const stuckChip = b.stuck ? ` <span style="background:#FBE9E7;color:#BF360C;border-radius:3px;padding:1px 5px;font-size:10px;font-weight:700">⏸ ${{b.stuck.days}}d</span>` : '';
+    rows += `<tr style="background:${{bg}};cursor:pointer" onclick="toggleJourney(${{i}})" title="Click to show / hide the batch journey">
       <td class="td-name">${{b.product||'—'}}</td>
       <td class="td-name" style="color:#607D8B">${{b.ptype||'—'}}</td>
       <td class="td-name" style="color:#37474F">${{b.packSize||'—'}}</td>
-      <td class="td-name" style="font-weight:600">${{b.batch}}</td>
+      <td class="td-name" style="font-weight:600">${{b.batch}}${{stuckChip}}</td>
       <td class="td-num" style="color:#00695C">${{fmt(b.filled)}}</td>
       <td class="td-num" style="color:#BF360C">${{fmt(b.packed)}}</td>
       <td class="td-num" style="color:#E65100">${{fmt(b.dispatched)}}</td>
       <td class="td-name" style="font-size:12px">${{b.status}}</td>
-    </tr>`;
+    </tr>
+    <tr id="bj-detail-${{i}}" style="display:${{openFirst?'':'none'}}"><td colspan="8" style="background:#FAFDFC;border-top:1px solid #E0F2F1;padding:0">${{bjTimeline(b)}}</td></tr>`;
   }});
   const note = hits.length>80 ? `<div style="color:#90A4AE;font-size:11px;padding:4px">Showing first 80 of ${{hits.length}} matches — refine your search.</div>` : '';
   out.innerHTML = `<div class="tbl-wrap"><table>
