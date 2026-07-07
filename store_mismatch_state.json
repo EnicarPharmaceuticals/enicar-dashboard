@@ -7,7 +7,6 @@
   "BATCH|GE22292|GE-22292": "2026-07-06",
   "BATCH|REM385|REM384": "2026-07-06",
   "BATCH|REM386|REM384": "2026-07-06",
-  "BATCH|REO340|REO-330": "2026-07-07",
   "BATCH|REO341|REO-331": "2026-07-07",
   "BATCH|REO342|REO-332": "2026-07-06",
   "BATCH|REO343|REO-333": "2026-07-06",
@@ -47,6 +46,7 @@
   "PRODUCT|S-1573|kifaru50jelly|kifaru50": "2026-07-05",
   "PRODUCT|SL05401|princesheptinplussachets|princesheptinplus": "2026-07-05",
   "PRODUCT|SL05402|princesheptinplussachets|princesheptinplus": "2026-07-07",
+  "PRODUCT|SL05403|princesheptinplussachets|princesheptinplus": "2026-07-07",
   "PRODUCT|SL05406|abytonefortesyrup|abytonefortered": "2026-07-05",
   "PRODUCT|SL05407|abytonefortesyrup|abytonefortered": "2026-07-05"
 }
