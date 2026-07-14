@@ -868,11 +868,13 @@ def sec(title, bg=C_PRI):
     return f'<div class="sec-hdr" style="background:{bg}">{title}</div>'
 
 def product_type_rows():
+    # Month-scoped (the *_m dicts) so the server-rendered default view matches
+    # the single-month scope everywhere else on the page.
     rows = ''
     for i, pt in enumerate(PRODUCT_TYPES):
-        fv = fill_by_type.get(pt, 0)
-        pv = pack_by_type.get(pt, 0)
-        dv = disp_by_type.get(pt, 0)
+        fv = fill_by_type_m.get(pt, 0)
+        pv = pack_by_type_m.get(pt, 0)
+        dv = disp_by_type_m.get(pt, 0)
         # Always show all product types, even if 0
         bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
         rows += (
@@ -974,10 +976,11 @@ def _line_order_key(name):
 
 def grouped_stage_rows(df, qty_field):
     """Filling/Packing detail rows grouped by Line+Product+PackSize+Party —
-    mirrors the JS renderFilling/renderPacking grouping exactly."""
-    d = cur(df)
+    mirrors the JS renderFilling/renderPacking grouping exactly.
+    Scoped to the default single-month view so glance and detail agree."""
+    d = filt(df, _glance_start, _glance_end)
     if not len(d):
-        return _NO_DATA.format(cols=5, period=PERIOD)
+        return _NO_DATA.format(cols=5, period=_glance_month_label)
     g = {}
     for _, r in d.iterrows():
         ln = str(r.get('Line') or '—'); pr = str(r.get('Product') or '—')
@@ -998,17 +1001,17 @@ def grouped_stage_rows(df, qty_field):
     return rows
 
 def party_mtd_rows():
-    """Party-wise dispatch rows (party + qty) — mirrors JS renderParties MTD view."""
-    if not len(cur(disp_df)):
-        return _NO_DATA.format(cols=2, period=PERIOD)
+    """Party-wise dispatch rows (party + qty), month-scoped like the default view."""
+    if not len(_g_disp):
+        return _NO_DATA.format(cols=2, period=_glance_month_label)
     rows = ''
-    for i, (p, v) in enumerate(party_cur.items()):
+    for i, (p, v) in enumerate(party_month.items()):
         if not str(p).strip():
             continue
         bg = '#FFF8F1' if i % 2 == 0 else '#FFFFFF'
         rows += (f'<tr style="background:{bg}"><td class="td-name">{p}</td>'
                  f'<td class="td-num" style="color:{C_ORG};font-weight:700">{n(v)}</td></tr>')
-    return rows or _NO_DATA.format(cols=2, period=PERIOD)
+    return rows or _NO_DATA.format(cols=2, period=_glance_month_label)
 
 def stuck_batch_rows():
     if not STUCK_BATCHES:
@@ -1083,6 +1086,30 @@ _g_act_keys = {_bkey(b) for b in list(_g_fill['Batch'].dropna()) + list(_g_pack[
 pipe_month = sum(1 for k in _g_act_keys
                  if _journey_by_key.get(k, {}).get('status') in _PIPE_STATUSES)
 _glance_month_label = _glance_start.strftime('%B %Y').upper()
+
+# ── ONE PERIOD STORY ──────────────────────────────────────────────────────────
+# The DEFAULT page view is one month (the glance month above) so the summary
+# cards and the detail sections always agree. The date filter offers each month,
+# "both months", and single days; the JS re-renders every section to the same
+# scope. Month-scoped values below are what the server renders initially.
+f_rec_m   = len(_g_fill)
+f_avg_m   = f_month / f_rec_m if f_rec_m else 0
+f_lines_m = _g_fill['Line'].nunique()
+p_ratio_m = p_month / f_month if f_month else 0
+d_ratio_m = d_month / f_month if f_month else 0
+_g_staff  = filt(staff_df, _glance_start, _glance_end)
+s_fem_m   = _g_staff['Female'].mean() if len(_g_staff) else 0
+s_male_m  = _g_staff['Male'].mean()   if len(_g_staff) else 0
+party_month = _g_disp.groupby('Party')['Qty'].sum().sort_values(ascending=False)
+fill_by_type_m = _g_fill.groupby('ProductType')['Qty'].sum()
+pack_by_type_m = _g_pack.groupby('ProdType')['TotalPacked'].sum()
+disp_by_type_m = _g_disp.groupby('ProductType')['Qty'].sum()
+
+# ── ONE STOCK STORY ───────────────────────────────────────────────────────────
+# Two clearly-named stock figures (both all-time, independent of the filter):
+#   packed stock  = packed, not yet dispatched  (matches the stock list section)
+#   filling WIP   = filled, not yet packed (work in progress on the floor)
+WIP_UNITS = sum(max(e['filled'] - e['packed'], 0) for e in BATCH_JOURNEY)
 
 def _glance_tile(label, vid, value, sid, subtext, color):
     return (f'<div class="tile"><div class="tlabel">{label}</div>'
@@ -1326,7 +1353,10 @@ html = f"""<!DOCTYPE html>
   .tsub {{ font-size:9px; color:#90A4AE; margin-top:5px; font-style:italic; }}
 
   /* ── Tables ── */
-  .tbl-wrap {{ padding:0 14px 14px; }}
+  /* Horizontal scroll on phones — tables keep readable column widths and the
+     wrapper scrolls sideways instead of squishing 5-8 columns into 375px. */
+  .tbl-wrap {{ padding:0 14px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }}
+  .tbl-wrap table {{ min-width:600px; }}
   table {{ width:100%; border-collapse:collapse; font-size:12px; }}
   .th-row th {{ background:{C_SEC}; color:#fff; padding:8px 10px; font-size:10px;
                 font-weight:700; letter-spacing:0.5px; }}
@@ -1405,17 +1435,15 @@ html = f"""<!DOCTYPE html>
 <div class="period-bar">PRODUCTION &nbsp; DASHBOARD &nbsp;&nbsp;|&nbsp;&nbsp; {PERIOD}</div>
 
 <div class="filter-bar">
-  <label>📅 VIEW BY DATE:</label>
-  <select id="date-filter" onchange="applyFilter()">
-    <option value="all">All Month (MTD) — {PERIOD}</option>
-  </select>
-  <span class="filter-tag" id="filter-tag">MONTHLY TOTAL</span>
+  <label>📅 VIEW:</label>
+  <select id="date-filter" onchange="applyFilter()"></select>
+  <span class="filter-tag" id="filter-tag">{_glance_month_label}</span>
 </div>
 
 <div class="container">
 
 <noscript><div class="noscript-note">Interactive date filtering is off (JavaScript disabled
-in this viewer) — the numbers below show the full period {PERIOD}.</div></noscript>
+in this viewer) — the numbers below show {_glance_month_label}.</div></noscript>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION A — AT A GLANCE (director summary layer)
@@ -1461,16 +1489,16 @@ in this viewer) — the numbers below show the full period {PERIOD}.</div></nosc
     <table>
       <tr class="th-row">
         <th>PRODUCT TYPE</th>
-        <th id="pt-hdr-fill">UNITS FILLED (MTD)</th>
-        <th id="pt-hdr-pack">UNITS PACKED (MTD)</th>
-        <th id="pt-hdr-disp">UNITS DISPATCHED (MTD)</th>
+        <th id="pt-hdr-fill">UNITS FILLED ({_glance_month_label})</th>
+        <th id="pt-hdr-pack">UNITS PACKED ({_glance_month_label})</th>
+        <th id="pt-hdr-disp">UNITS DISPATCHED ({_glance_month_label})</th>
       </tr>
       <tbody id="pt-rows">{product_type_rows()}</tbody>
       <tr class="tot-row">
         <td class="td-name">TOTAL</td>
-        <td class="td-num" id="pt-total-fill">{n(f_cur)}</td>
-        <td class="td-num" id="pt-total-pack">{n(p_cur)}</td>
-        <td class="td-num" id="pt-total-disp">{n(d_cur)}</td>
+        <td class="td-num" id="pt-total-fill">{n(f_month)}</td>
+        <td class="td-num" id="pt-total-pack">{n(p_month)}</td>
+        <td class="td-num" id="pt-total-disp">{n(d_month)}</td>
       </tr>
     </table>
   </div>
@@ -1482,16 +1510,16 @@ in this viewer) — the numbers below show the full period {PERIOD}.</div></nosc
 <details class="card">
   <summary>{sec('  ━━&nbsp;&nbsp;FILLING &nbsp; PRODUCTION &nbsp;━━')}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL FILLED</div><div class="tvalue" id="f-total" style="color:{C_AMB}">{n(f_cur)}</div><div class="tsub">units filled</div></div>
-    <div class="tile"><div class="tlabel">FILL RECORDS</div><div class="tvalue" id="f-rec" style="color:{C_AMB}">{f_rec}</div><div class="tsub">rows logged</div></div>
-    <div class="tile"><div class="tlabel">AVG UNITS / RECORD</div><div class="tvalue" id="f-avg" style="color:{C_AMB}">{n(f_avg)}</div><div class="tsub">units per entry</div></div>
-    <div class="tile"><div class="tlabel">ACTIVE LINES</div><div class="tvalue" id="f-lines" style="color:{C_AMB}">{f_lines}</div><div class="tsub">lines active</div></div>
+    <div class="tile"><div class="tlabel">TOTAL FILLED</div><div class="tvalue" id="f-total" style="color:{C_AMB}">{n(f_month)}</div><div class="tsub">units filled</div></div>
+    <div class="tile"><div class="tlabel">FILL RECORDS</div><div class="tvalue" id="f-rec" style="color:{C_AMB}">{f_rec_m}</div><div class="tsub">rows logged</div></div>
+    <div class="tile"><div class="tlabel">AVG UNITS / RECORD</div><div class="tvalue" id="f-avg" style="color:{C_AMB}">{n(f_avg_m)}</div><div class="tsub">units per entry</div></div>
+    <div class="tile"><div class="tlabel">ACTIVE LINES</div><div class="tvalue" id="f-lines" style="color:{C_AMB}">{f_lines_m}</div><div class="tsub">lines active</div></div>
   </div>
   <div class="tbl-wrap">
     <table>
-      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS FILLED (MTD)</th></tr></thead>
+      <thead id="fill-thead"><tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS FILLED ({_glance_month_label})</th></tr></thead>
       <tbody id="fill-line-rows">{grouped_stage_rows(fill_df, 'Qty')}</tbody>
-      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">{n(f_cur)}</td></tr></tfoot>
+      <tfoot id="fill-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">{n(f_month)}</td></tr></tfoot>
     </table>
   </div>
 </details>
@@ -1502,14 +1530,14 @@ in this viewer) — the numbers below show the full period {PERIOD}.</div></nosc
 <details class="card">
   <summary>{sec('  ━━&nbsp;&nbsp;PACKING &nbsp; PRODUCTION &nbsp;━━')}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">TOTAL PACKED</div><div class="tvalue" id="p-total" style="color:{C_AMB}">{n(p_cur)}</div><div class="tsub">units packed</div></div>
-    <div class="tile"><div class="tlabel">FILL → PACK RATIO</div><div class="tvalue" id="p-ratio" style="color:{C_AMB}">{pct(p_ratio)}</div><div class="tsub">packed ÷ filled</div></div>
+    <div class="tile"><div class="tlabel">TOTAL PACKED</div><div class="tvalue" id="p-total" style="color:{C_AMB}">{n(p_month)}</div><div class="tsub">units packed</div></div>
+    <div class="tile"><div class="tlabel">FILL → PACK RATIO</div><div class="tvalue" id="p-ratio" style="color:{C_AMB}">{pct(p_ratio_m)}</div><div class="tsub">packed ÷ filled</div></div>
   </div>
   <div class="tbl-wrap">
     <table>
-      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS PACKED (MTD)</th></tr></thead>
+      <thead id="pack-thead"><tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS PACKED ({_glance_month_label})</th></tr></thead>
       <tbody id="pack-line-rows">{grouped_stage_rows(pack_df, 'TotalPacked')}</tbody>
-      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">{n(p_cur)}</td></tr></tfoot>
+      <tfoot id="pack-tfoot"><tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">{n(p_month)}</td></tr></tfoot>
     </table>
   </div>
 </details>
@@ -1520,9 +1548,14 @@ in this viewer) — the numbers below show the full period {PERIOD}.</div></nosc
 <details class="card">
   <summary>{sec('  ━━&nbsp;&nbsp;DISPATCH &nbsp;&amp;&nbsp; BSR &nbsp; STOCK &nbsp;━━', C_ORG)}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">DISPATCHED</div><div class="tvalue" id="d-total" style="color:{C_ORG}">{n(d_cur)}</div><div class="tsub">units dispatched</div></div>
-    <div class="tile"><div class="tlabel">DISPATCH / FILL</div><div class="tvalue" id="d-ratio" style="color:{C_ORG}">{pct(d_fill_ratio)}</div><div class="tsub">dispatched ÷ filled</div></div>
+    <div class="tile"><div class="tlabel">DISPATCHED</div><div class="tvalue" id="d-total" style="color:{C_ORG}">{n(d_month)}</div><div class="tsub">units dispatched (follows the date filter)</div></div>
+    <div class="tile"><div class="tlabel">DISPATCH / FILL</div><div class="tvalue" id="d-ratio" style="color:{C_ORG}">{pct(d_ratio_m)}</div><div class="tsub">dispatched ÷ filled</div></div>
+    {tile('PACKED STOCK IN BSR', n(IN_STOCK_UNITS),
+          'packed, not yet dispatched — today, all batches; full list in the stock section below', C_SEC)}
+    {tile('FILLED, AWAITING PACKING', n(WIP_UNITS),
+          'work in progress on the floor — filled but not yet packed (today, all batches)', C_SEC)}
   </div>
+  {f'<div style="font-size:11px;color:#90A4AE;padding:0 16px 12px">Note: {AUTO_CLEARED_COUNT} old batch(es) with small leftovers ({n(AUTO_CLEARED_TOTAL)} units, untouched 60+ days after their last dispatch) are auto-cleared from stock as samples/shrinkage.</div>' if AUTO_CLEARED_TOTAL else ''}
 </details>
 
 <!-- ════════════════════════════════════════════════════════════
@@ -1531,8 +1564,8 @@ in this viewer) — the numbers below show the full period {PERIOD}.</div></nosc
 <details class="card">
   <summary>{sec('  ━━&nbsp;&nbsp;STAFF &nbsp;&amp;&nbsp; ATTENDANCE &nbsp;━━')}</summary>
   <div class="tile-row">
-    <div class="tile"><div class="tlabel">FEMALE WORKERS PRESENT</div><div class="tvalue" id="s-fem" style="color:{C_AMB}">{s_fem:.0f} avg</div><div class="tsub">packing workers</div></div>
-    <div class="tile"><div class="tlabel">MALE WORKERS PRESENT</div><div class="tvalue" id="s-male" style="color:{C_AMB}">{s_male:.0f} avg</div><div class="tsub">filling & loading</div></div>
+    <div class="tile"><div class="tlabel">FEMALE WORKERS PRESENT</div><div class="tvalue" id="s-fem" style="color:{C_AMB}">{s_fem_m:.0f} avg</div><div class="tsub">packing workers</div></div>
+    <div class="tile"><div class="tlabel">MALE WORKERS PRESENT</div><div class="tvalue" id="s-male" style="color:{C_AMB}">{s_male_m:.0f} avg</div><div class="tsub">filling & loading</div></div>
   </div>
 </details>
 
@@ -1543,9 +1576,9 @@ in this viewer) — the numbers below show the full period {PERIOD}.</div></nosc
   <summary>{sec('  ━━&nbsp;&nbsp;PARTY-WISE &nbsp; SALES &nbsp; (Dispatched) &nbsp;━━', C_ORG)}</summary>
   <div class="tbl-wrap">
     <table>
-      <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr></thead>
+      <thead id="party-thead"><tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED ({_glance_month_label})</th></tr></thead>
       <tbody id="party-rows">{party_mtd_rows()}</tbody>
-      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">{n(d_cur)}</td></tr></tfoot>
+      <tfoot id="party-tfoot"><tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">{n(d_month)}</td></tr></tfoot>
     </table>
   </div>
 </details>
@@ -1623,30 +1656,78 @@ function cmpLine(a,b) {{
   return ka[0]-kb[0] || ka[1]-kb[1] || String(a).localeCompare(String(b));
 }}
 
+// ── Scope helpers ─────────────────────────────────────
+// ONE PERIOD STORY: the page shows exactly one scope at a time — a single
+// month (default: the latest month with dispatches), "both months", or a
+// single day. Every section, including the At-a-Glance cards, follows it.
+const DEFAULT_M = '{_g_mkey}';
+const MONTHS_ABBR = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function dataMonths() {{
+  const s = new Set();
+  [...ENICAR.fill, ...ENICAR.pack, ...ENICAR.disp].forEach(r => {{ if (r.date) s.add(r.date.slice(0,7)); }});
+  return [...s].sort().reverse();
+}}
+function monthName(mkey, full) {{
+  const [y, m] = mkey.split('-');
+  const names = full
+    ? ['','JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER']
+    : MONTHS_ABBR.map(x => x.toUpperCase());
+  return names[parseInt(m)] + ' ' + y;
+}}
+// Resolve a filter selection into {{rows-per-log, short label, tag, isDaily}}
+function resolveScope(sel) {{
+  if (sel === 'all') {{
+    const label = dataMonths().slice().reverse().map(m => monthName(m, false)).join(' + ');
+    return {{ match: r => true, label: label, tag: 'BOTH MONTHS', isDaily: false }};
+  }}
+  if (sel.startsWith('month:')) {{
+    const mk = sel.slice(6);
+    return {{ match: r => r.date && r.date.startsWith(mk), label: monthName(mk, false),
+             tag: monthName(mk, true), isDaily: false }};
+  }}
+  // daily
+  const [y, m, d] = sel.split('-');
+  return {{ match: r => r.date === sel, label: `${{parseInt(d)}} ${{MONTHS_ABBR[parseInt(m)].toUpperCase()}}`,
+           tag: 'DAILY VIEW', isDaily: true }};
+}}
+
 // ── Build date dropdown ───────────────────────────────
 (function buildDropdown() {{
   const sel = document.getElementById('date-filter');
-  const monthsAbbr = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  // Monthly Summary options at the top — one per available month, served by the server
+  // 1. One option per month with data (newest first) — the default view
+  dataMonths().forEach(mk => {{
+    const opt = document.createElement('option');
+    opt.value = 'month:' + mk;
+    const [y, mo] = mk.split('-');
+    opt.text = `${{MONTHS_ABBR[parseInt(mo)]}} ${{y}} — full month`;
+    sel.appendChild(opt);
+  }});
+  // 2. Both months combined
+  const optAll = document.createElement('option');
+  optAll.value = 'all';
+  optAll.text = 'Both months combined';
+  sel.appendChild(optAll);
+  // 3. Monthly Summary views (RM → Fill → Pack → Disp funnels)
   const monthBlocks = document.querySelectorAll('#monthly-summary-card .monthly-block');
   monthBlocks.forEach(blk => {{
     const m = blk.id.replace('monthly-block-','');
     const [y, mo] = m.split('-');
     const opt = document.createElement('option');
     opt.value = 'monthly:' + m;
-    opt.text = `📊 ${{monthsAbbr[parseInt(mo)]}} ${{y}} — Monthly Summary view`;
+    opt.text = `📊 ${{MONTHS_ABBR[parseInt(mo)]}} ${{y}} — Monthly Summary view`;
     sel.appendChild(opt);
   }});
-  // Daily date options
+  // 4. Single days (newest first)
   const dates = new Set();
   [...ENICAR.fill, ...ENICAR.pack, ...ENICAR.disp].forEach(r => {{ if(r.date) dates.add(r.date); }});
   [...dates].sort().reverse().forEach(d => {{
     const opt = document.createElement('option');
     opt.value = d;
     const [y,m,day] = d.split('-');
-    opt.text = `${{parseInt(day)}} ${{monthsAbbr[parseInt(m)]}} ${{y}}`;
+    opt.text = `${{parseInt(day)}} ${{MONTHS_ABBR[parseInt(m)]}} ${{y}}`;
     sel.appendChild(opt);
   }});
+  sel.value = 'month:' + DEFAULT_M;   // default = latest month with dispatches
 }})();
 
 // ── Main render ───────────────────────────────────────
@@ -1678,15 +1759,15 @@ function applyFilter() {{
     document.querySelectorAll('.container > .card').forEach(card => {{ card.style.display = ''; }});
   }}
 
-  const isAll = sel === 'all';
-  document.getElementById('filter-tag').textContent = isAll ? 'MONTHLY TOTAL' : 'DAILY VIEW';
+  const scope = resolveScope(sel);
+  document.getElementById('filter-tag').textContent = scope.tag;
   updateGlance(sel);
 
-  const fill  = isAll ? ENICAR.fill  : ENICAR.fill.filter(r => r.date === sel);
-  const pack  = isAll ? ENICAR.pack  : ENICAR.pack.filter(r => r.date === sel);
-  const disp  = isAll ? ENICAR.disp  : ENICAR.disp.filter(r => r.date === sel);
-  const staff = isAll ? ENICAR.staff : ENICAR.staff.filter(r => r.date === sel);
-  const label = isAll ? 'MTD' : 'TODAY';
+  const fill  = ENICAR.fill.filter(scope.match);
+  const pack  = ENICAR.pack.filter(scope.match);
+  const disp  = ENICAR.disp.filter(scope.match);
+  const staff = ENICAR.staff.filter(scope.match);
+  const label = scope.label;
 
   // Update product type breakdown column headers
   document.getElementById('pt-hdr-fill').textContent = `UNITS FILLED (${{label}})`;
@@ -1694,11 +1775,11 @@ function applyFilter() {{
   document.getElementById('pt-hdr-disp').textContent = `UNITS DISPATCHED (${{label}})`;
 
   renderProductTypes(fill, pack, disp);
-  renderFilling(fill, isAll);
-  renderPacking(pack, fill, isAll);
+  renderFilling(fill, label);
+  renderPacking(pack, fill, label);
   renderDispatch(disp, fill);
-  renderStaff(staff, isAll);
-  renderParties(disp, isAll);
+  renderStaff(staff, scope.isDaily);
+  renderParties(disp, scope.isDaily, label);
 }}
 
 // ── Product Type Breakdown ────────────────────────────
@@ -1737,7 +1818,7 @@ function renderProductTypes(fill, pack, disp) {{
 }}
 
 // ── Filling ───────────────────────────────────────────
-function renderFilling(fill, isAll) {{
+function renderFilling(fill, label) {{
   const tot = fill.reduce((s,r)=>s+(r.qty||0),0);
   const rec = fill.length;
   const lines = new Set(fill.map(r=>r.line).filter(Boolean)).size;
@@ -1747,8 +1828,7 @@ function renderFilling(fill, isAll) {{
   document.getElementById('f-lines').textContent = lines;
 
   let rows = ''; let i = 0;
-  const label = isAll ? 'MTD' : 'TODAY';
-  // Group by line + product + packSize + party in both MTD and Daily views.
+  // Group by line + product + packSize + party in every view.
   document.getElementById('fill-thead').innerHTML = `<tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS FILLED (${{label}})</th></tr>`;
   document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
   const byKey = {{}};
@@ -1769,15 +1849,14 @@ function renderFilling(fill, isAll) {{
 }}
 
 // ── Packing ───────────────────────────────────────────
-function renderPacking(pack, fill, isAll) {{
+function renderPacking(pack, fill, label) {{
   const tot = pack.reduce((s,r)=>s+(r.totalPacked||0),0);
   const fTot = fill.reduce((s,r)=>s+(r.qty||0),0);
   document.getElementById('p-total').textContent = fmt(tot);
   document.getElementById('p-ratio').textContent = fTot ? (tot/fTot*100).toFixed(1)+'%' : '—';
 
   let rows = ''; let i = 0;
-  const label = isAll ? 'MTD' : 'TODAY';
-  // Group by line + product + packSize + party in both MTD and Daily views.
+  // Group by line + product + packSize + party in every view.
   document.getElementById('pack-thead').innerHTML = `<tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS PACKED (${{label}})</th></tr>`;
   document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
   const byKey = {{}};
@@ -1806,7 +1885,7 @@ function renderDispatch(disp, fill) {{
 }}
 
 // ── Staff ─────────────────────────────────────────────
-function renderStaff(staff, isAll) {{
+function renderStaff(staff, isDaily) {{
   if (!staff.length) {{
     document.getElementById('s-fem').textContent = '—';
     document.getElementById('s-male').textContent = '—';
@@ -1814,7 +1893,7 @@ function renderStaff(staff, isAll) {{
   }}
   const fem  = staff.reduce((s,r)=>s+(r.female||0),0);
   const male = staff.reduce((s,r)=>s+(r.male||0),0);
-  if (isAll) {{
+  if (!isDaily) {{
     document.getElementById('s-fem').textContent  = (fem/staff.length).toFixed(0) + ' avg';
     document.getElementById('s-male').textContent = (male/staff.length).toFixed(0) + ' avg';
   }} else {{
@@ -1824,12 +1903,12 @@ function renderStaff(staff, isAll) {{
 }}
 
 // ── Party-wise ────────────────────────────────────────
-function renderParties(disp, isAll) {{
+function renderParties(disp, isDaily, label) {{
   const tot = disp.reduce((s,r)=>s+(r.qty||0),0);
   let rows = ''; let i = 0;
-  if (isAll) {{
-    // MTD: group by party only
-    document.getElementById('party-thead').innerHTML = '<tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (MTD)</th></tr>';
+  if (!isDaily) {{
+    // Month / both-months: group by party only
+    document.getElementById('party-thead').innerHTML = `<tr class="th-row"><th>PARTY NAME</th><th>DISPATCHED (${{label}})</th></tr>`;
     document.getElementById('party-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name">TOTAL ALL PARTIES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byParty = {{}};
     disp.forEach(r => {{ if(r.party) byParty[r.party] = (byParty[r.party]||0)+(r.qty||0); }});
@@ -1840,7 +1919,7 @@ function renderParties(disp, isAll) {{
     document.getElementById('party-rows').innerHTML = rows || '<tr><td colspan="2" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
   }} else {{
     // Daily: group by party + product
-    document.getElementById('party-thead').innerHTML = '<tr class="th-row"><th>PARTY NAME</th><th>PRODUCT NAME</th><th>DISPATCHED (TODAY)</th></tr>';
+    document.getElementById('party-thead').innerHTML = `<tr class="th-row"><th>PARTY NAME</th><th>PRODUCT NAME</th><th>DISPATCHED (${{label}})</th></tr>`;
     document.getElementById('party-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="2">TOTAL ALL PARTIES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
     const byPartyProd = {{}};
     disp.forEach(r => {{
@@ -1856,10 +1935,7 @@ function renderParties(disp, isAll) {{
   }}
 }}
 
-// ── At-a-Glance: all month cards follow the filter, one month at a time ──
-const LATEST_M = '{_g_mkey}';   // latest month WITH dispatch data
-const MONTHS_FULL = ['','JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY',
-                     'AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+// ── At-a-Glance: the cards follow the SAME scope as every detail section ──
 const bkeyJS = s => String(s || '').replace(/\s+/g, '').toUpperCase();
 const JOURNEY_BY_KEY = {{}};
 (ENICAR.batches || []).forEach(b => JOURNEY_BY_KEY[bkeyJS(b.batch)] = b);
@@ -1867,10 +1943,13 @@ const PIPE_STATUSES = new Set(['Filled & packed (in stock)', 'Filled only']);
 
 function updateGlance(sel) {{
   if (!document.getElementById('glance-disp')) return;
-  // Selected day → that day's month; "All Month" → the latest month with dispatches.
-  const mKey = (sel && sel !== 'all') ? sel.slice(0, 7) : LATEST_M;
-  const inM = r => r.date && r.date.startsWith(mKey);
-  const fillR = ENICAR.fill.filter(inM), packR = ENICAR.pack.filter(inM), dispR = ENICAR.disp.filter(inM);
+  // A selected DAY scopes the glance to that day's whole month (daily batch
+  // counts would be meaningless); month and both-months scopes pass through.
+  const gsel = (!sel.startsWith('month:') && sel !== 'all') ? 'month:' + sel.slice(0, 7) : sel;
+  const scope = resolveScope(gsel);
+  const phrase = gsel === 'all' ? 'across both months' : 'this month';
+  const noteLabel = gsel === 'all' ? scope.label + ' (BOTH MONTHS)' : scope.tag;
+  const fillR = ENICAR.fill.filter(scope.match), packR = ENICAR.pack.filter(scope.match), dispR = ENICAR.disp.filter(scope.match);
 
   const fTot = fillR.reduce((s, r) => s + (r.qty || 0), 0);
   const pTot = packR.reduce((s, r) => s + (r.totalPacked || 0), 0);
@@ -1892,14 +1971,17 @@ function updateGlance(sel) {{
     if (b && PIPE_STATUSES.has(b.status)) pipe++;
   }});
 
-  const [y, m] = mKey.split('-');
-  document.getElementById('glance-month-note').textContent = MONTHS_FULL[parseInt(m)] + ' ' + y;
+  document.getElementById('glance-month-note').textContent = noteLabel;
   document.getElementById('glance-fill').textContent = fmt(fTot);
+  document.getElementById('glance-fill-sub').textContent = `filled ${{phrase}}`;
   document.getElementById('glance-pack').textContent = fmt(pTot);
+  document.getElementById('glance-pack-sub').textContent = `packed ${{phrase}}`;
   document.getElementById('glance-disp').textContent = fmt(dTot);
-  document.getElementById('glance-disp-sub').textContent = `sent to ${{parties.size}} customers this month`;
+  document.getElementById('glance-disp-sub').textContent = `sent to ${{parties.size}} customers ${{phrase}}`;
   document.getElementById('glance-comp').textContent = fmt(comp);
+  document.getElementById('glance-comp-sub').textContent = `made, packed & dispatched ${{phrase}}`;
   document.getElementById('glance-pipe').textContent = fmt(pipe);
+  document.getElementById('glance-pipe-sub').textContent = `filled or packed ${{phrase}}, awaiting dispatch`;
 }}
 
 // ── Expand / collapse all detail sections ────────────
