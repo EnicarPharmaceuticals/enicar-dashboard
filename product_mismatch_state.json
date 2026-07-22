@@ -1,6 +1,5 @@
 {
   "-|party|shalinalaboratoriespvtltd|enicarpharmaceuticalpvtltd": "2026-07-22",
-  "-|party|shalinalaboratoriespvtltd|indocoremediesltd": "2026-07-21",
   "-|party|shalinalaboratoriespvtltd|nelpalifescience": "2026-07-22",
   "-|party|shalinalaboratoriespvtltd|ronakeximpvtltd": "2026-07-21",
   "-|party|shalinalaboratoriespvtltd|socomedpharmapvtltd": "2026-07-21",
@@ -8,7 +7,6 @@
   "-|product|polygelsuspensionsachet|princesheptinplussachets": "2026-07-22",
   "-|product|polygelsuspensionsachet|redsunjelly": "2026-07-21",
   "-|product|polygelsuspensionsachet|redsunjellybananaflavour": "2026-07-21",
-  "-|product|polygelsuspensionsachet|viscid": "2026-07-21",
   "-|product|polygelsuspensionsachet|vitasaph": "2026-07-22",
   "26CH0031|product|tuspresscoughsuppressant|tuspresscough": "2026-07-21",
   "26CH0036|party|indocoremediesltd|indocoremedies": "2026-07-22",
@@ -49,6 +47,7 @@
   "EL-2471|party|londonunitedmedimpexpvtltd|londonunitedexportsltd": "2026-07-20",
   "EL-2474|party|yelloworangepharmacy|pharmatrustltd": "2026-07-21",
   "EL-2474|product|apetabonyelloworange|apetabon": "2026-07-22",
+  "EL-2477|product|anticidplus|ferrolexsyrupmelonflavour": "2026-07-22",
   "EL-2479|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-07-20",
   "EL-2480|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-07-20",
   "EL-2481|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-07-21",
@@ -187,5 +186,6 @@
   "SL05406|product|abytonefortesyrup|abytonefortered": "2026-07-21",
   "SL05407|party|socomedpharmapvtltd|socomedpharma": "2026-07-20",
   "SL05408|party|socomedpharmapvtltd|socomedpharma": "2026-07-21",
-  "U-132|product|nocigel|nocigelo": "2026-07-20"
+  "U-132|product|nocigel|nocigelo": "2026-07-20",
+  "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-07-22"
 }
