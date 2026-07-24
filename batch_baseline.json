@@ -1,6 +1,6 @@
 {
   "created": "2026-05-23",
-  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable). | 2026-06-03: added RE-601241, RE-851268 (Redsun batches filled before tracking \u2014 user confirmed). | 2026-06-05: added ALE-139, ALE-140 (Alaize) and RE-011329 (Ronfit cold D) \u2014 filled before 13 May tracking start. | 2026-06-05: added ALE-143 (Alaize, same pre-tracking pattern as 139/140).",
+  "note": "Frozen opening-stock baseline. Batches made before filling-log tracking began (no fill record, or dispatched far more than the small new fill logged). Treated as opening stock, never flagged. New mismatches after this date are real and will be flagged.  | Updated 2026-06-01: added 18 pre-13-May legacy batches. | 2026-06-01: added 39 pre-25-May RM-dispensed batches (user-confirmed done; mostly P&G dual-numbering, cross-reference unavailable). | 2026-06-03: added RE-601241, RE-851268 (Redsun batches filled before tracking \u2014 user confirmed). | 2026-06-05: added ALE-139, ALE-140 (Alaize) and RE-011329 (Ronfit cold D) \u2014 filled before 13 May tracking start. | 2026-06-05: added ALE-143 (Alaize, same pre-tracking pattern as 139/140). | 2026-07-24: added 16 export-confirmed pre-tracking batches (REO-31x series, ME samples, RE-961318, GE94289, 26CH0028, ALE-134) \u2014 manufactured before dashboard tracking began, dispatched from old stock.",
   "batches": [
     "4186539",
     "4188214",
@@ -113,6 +113,22 @@
     "U-135",
     "SL-05376",
     "SL05367",
-    "SL05388"
+    "SL05388",
+    "REO-314",
+    "REO-315",
+    "REO-316",
+    "REO-319",
+    "REO-320",
+    "REO-321",
+    "REO-322",
+    "REO-323",
+    "ME-04565",
+    "ME-05566",
+    "RE-961318",
+    "GE94289",
+    "26CH0028",
+    "ALE-134",
+    "ME-01558",
+    "ME-02559"
   ]
 }
