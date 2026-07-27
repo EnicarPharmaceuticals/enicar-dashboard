@@ -1868,8 +1868,8 @@ function applyFilter() {{
   document.getElementById('pt-hdr-disp').textContent = `UNITS DISPATCHED (${{label}})`;
 
   renderProductTypes(fill, pack, disp);
-  renderFilling(fill, label);
-  renderPacking(pack, fill, label);
+  renderFilling(fill, label, scope.isDaily);
+  renderPacking(pack, fill, label, scope.isDaily);
   renderDispatch(disp, fill);
   renderStaff(staff, scope.isDaily);
   renderParties(disp, scope.isDaily, label);
@@ -1911,7 +1911,7 @@ function renderProductTypes(fill, pack, disp) {{
 }}
 
 // ── Filling ───────────────────────────────────────────
-function renderFilling(fill, label) {{
+function renderFilling(fill, label, isDaily) {{
   const tot = fill.reduce((s,r)=>s+(r.qty||0),0);
   const rec = fill.length;
   const lines = new Set(fill.map(r=>r.line).filter(Boolean)).size;
@@ -1921,14 +1921,20 @@ function renderFilling(fill, label) {{
   document.getElementById('f-lines').textContent = lines;
 
   let rows = ''; let i = 0;
-  // Group by line + product + packSize + party in every view.
-  document.getElementById('fill-thead').innerHTML = `<tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS FILLED (${{label}})</th></tr>`;
-  document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
+  // Month/both views: grouped by line+product+packSize+party.
+  // Daily view: also grouped by BATCH, with the batch's running total across
+  // all days — so today's row shows yesterday's progress too.
+  const batchCol = isDaily ? '<th>BATCH</th>' : '';
+  const totCol   = isDaily ? '<th>BATCH TOTAL (ALL DAYS)</th>' : '';
+  const nCols    = isDaily ? 7 : 5;
+  document.getElementById('fill-thead').innerHTML = `<tr class="th-row"><th>FILLING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th>${{batchCol}}<th>UNITS FILLED (${{label}})</th>${{totCol}}</tr>`;
+  document.getElementById('fill-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="${{nCols-1-(isDaily?1:0)}}">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td>${{isDaily?'<td></td>':''}}</tr>`;
   const byKey = {{}};
   fill.forEach(r => {{
     const ln = r.line||'—', pr = r.product||'—', ps = (r.packSize===null||r.packSize===undefined||r.packSize==='')?'—':String(r.packSize), pa = r.party||'—';
-    const k = ln + '|||' + pr + '|||' + ps + '|||' + pa;
-    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, packSize:ps, party:pa, qty:0}};
+    const bt = isDaily ? (r.batch||'—') : '';
+    const k = ln + '|||' + pr + '|||' + ps + '|||' + pa + '|||' + bt;
+    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, packSize:ps, party:pa, batch:bt, qty:0}};
     byKey[k].qty += (r.qty||0);
   }});
   Object.values(byKey).sort((a,b) => cmpLine(a.line,b.line)
@@ -1936,27 +1942,39 @@ function renderFilling(fill, label) {{
                                   || String(a.packSize).localeCompare(String(b.packSize))
                                   || a.party.localeCompare(b.party)).forEach(d => {{
     const bg = i++%2===0 ? '#F1F8F6':'#fff';
-    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#37474F">${{d.packSize}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
+    let extra1 = '', extra2 = '';
+    if (isDaily) {{
+      const j = JOURNEY_BY_KEY[bkeyJS(d.batch)];
+      const bTot = j ? j.filled : 0;
+      extra1 = `<td class="td-name" style="font-weight:600">${{d.batch}}</td>`;
+      extra2 = `<td class="td-num" style="color:#00695C;font-weight:700">${{bTot?fmt(bTot):'—'}}</td>`;
+    }}
+    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#37474F">${{d.packSize}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td>${{extra1}}<td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td>${{extra2}}</tr>`;
   }});
-  document.getElementById('fill-line-rows').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+  document.getElementById('fill-line-rows').innerHTML = rows || `<tr><td colspan="${{nCols}}" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>`;
 }}
 
 // ── Packing ───────────────────────────────────────────
-function renderPacking(pack, fill, label) {{
+function renderPacking(pack, fill, label, isDaily) {{
   const tot = pack.reduce((s,r)=>s+(r.totalPacked||0),0);
   const fTot = fill.reduce((s,r)=>s+(r.qty||0),0);
   document.getElementById('p-total').textContent = fmt(tot);
   document.getElementById('p-ratio').textContent = fTot ? (tot/fTot*100).toFixed(1)+'%' : '—';
 
   let rows = ''; let i = 0;
-  // Group by line + product + packSize + party in every view.
-  document.getElementById('pack-thead').innerHTML = `<tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th><th>UNITS PACKED (${{label}})</th></tr>`;
-  document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="4">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td></tr>`;
+  // Month/both views: grouped by line+product+packSize+party.
+  // Daily view: also grouped by BATCH with the batch's running packed total.
+  const batchCol = isDaily ? '<th>BATCH</th>' : '';
+  const totCol   = isDaily ? '<th>BATCH TOTAL (ALL DAYS)</th>' : '';
+  const nCols    = isDaily ? 7 : 5;
+  document.getElementById('pack-thead').innerHTML = `<tr class="th-row"><th>PACKING LINE</th><th>PRODUCT NAME</th><th>PACK SIZE</th><th>PARTY</th>${{batchCol}}<th>UNITS PACKED (${{label}})</th>${{totCol}}</tr>`;
+  document.getElementById('pack-tfoot').innerHTML = `<tr class="tot-row"><td class="td-name" colspan="${{nCols-1-(isDaily?1:0)}}">TOTAL ALL LINES</td><td class="td-num">${{fmt(tot)}}</td>${{isDaily?'<td></td>':''}}</tr>`;
   const byKey = {{}};
   pack.forEach(r => {{
     const ln = r.line||'—', pr = r.product||'—', ps = (r.packSize===null||r.packSize===undefined||r.packSize==='')?'—':String(r.packSize), pa = r.party||'—';
-    const k = ln + '|||' + pr + '|||' + ps + '|||' + pa;
-    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, packSize:ps, party:pa, qty:0}};
+    const bt = isDaily ? (r.batch||'—') : '';
+    const k = ln + '|||' + pr + '|||' + ps + '|||' + pa + '|||' + bt;
+    if (!byKey[k]) byKey[k] = {{line:ln, product:pr, packSize:ps, party:pa, batch:bt, qty:0}};
     byKey[k].qty += (r.totalPacked||0);
   }});
   Object.values(byKey).sort((a,b) => cmpLine(a.line,b.line)
@@ -1964,9 +1982,16 @@ function renderPacking(pack, fill, label) {{
                                   || String(a.packSize).localeCompare(String(b.packSize))
                                   || a.party.localeCompare(b.party)).forEach(d => {{
     const bg = i++%2===0 ? '#F1F8F6':'#fff';
-    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#37474F">${{d.packSize}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td><td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td></tr>`;
+    let extra1 = '', extra2 = '';
+    if (isDaily) {{
+      const j = JOURNEY_BY_KEY[bkeyJS(d.batch)];
+      const bTot = j ? j.packed : 0;
+      extra1 = `<td class="td-name" style="font-weight:600">${{d.batch}}</td>`;
+      extra2 = `<td class="td-num" style="color:#00695C;font-weight:700">${{bTot?fmt(bTot):'—'}}</td>`;
+    }}
+    rows += `<tr style="background:${{bg}}"><td class="td-name">${{d.line}}</td><td class="td-name">${{d.product}}</td><td class="td-name" style="color:#37474F">${{d.packSize}}</td><td class="td-name" style="color:#546E7A">${{d.party}}</td>${{extra1}}<td class="td-num" style="color:#BF360C;font-weight:700">${{fmt(d.qty)}}</td>${{extra2}}</tr>`;
   }});
-  document.getElementById('pack-line-rows').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>';
+  document.getElementById('pack-line-rows').innerHTML = rows || `<tr><td colspan="${{nCols}}" style="text-align:center;color:#90A4AE;padding:12px">No data</td></tr>`;
 }}
 
 // ── Dispatch ──────────────────────────────────────────
