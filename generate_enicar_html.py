@@ -651,6 +651,232 @@ for _e in BATCH_JOURNEY:
         STUCK_BATCHES.append({**_e, 'stuck_stage': _s[0], 'stuck_days': _s[1]})
 STUCK_BATCHES.sort(key=lambda e: -e['stuck_days'])
 
+# ══════════════════════════════════════════════════════════════════════════════
+# MONTHLY PRODUCTION PLAN  (plan vs actual)
+# ──────────────────────────────────────────────────────────────────────────────
+# Source of truth: a sheet tab whose name contains "PLAN" (so the Plant Head
+# edits the plan directly in the Google Sheet — columns: PRODUCT NAME, PARTY,
+# PLANNED QTY (UNITS), PACK SIZE, PRIORITY, REMARKS). Until that tab exists,
+# falls back to the bundled plan JSON extracted from the Director's docx.
+# Matching against actuals is deliberately DATE-TOLERANT: an item's status
+# comes from what actually happened for that product+party from the plan
+# window onward, no matter which exact day it happened.
+# ══════════════════════════════════════════════════════════════════════════════
+PLAN_MONTH       = '2026-08'
+PLAN_TITLE       = 'AUGUST 2026 PLAN'
+PLAN_WINDOW_FROM = date(2026, 8, 1)    # fill/pack/disp counted from here
+PLAN_RM_FROM     = date(2026, 7, 25)   # RM dispensing may start a few days early
+_PLAN_JSON       = os.path.join(HERE, 'plan_aug_2026.json')
+
+def _pcanon(s):
+    return re.sub(r'[^a-z0-9]', '', str(s or '').lower())
+
+# Plan-sheet short party names → canonical dashboard customers
+_PLAN_PARTY_SHORT = {
+    'luex': 'London United Exports Ltd', 'p&g': 'Procter & Gamble',
+    'aura/stanmark': 'Aura Pharmaceuticals Pvt Ltd', 'workcell': 'Workcell Solution',
+    'careth corporation': 'Careth Corporation', 'zieva/enicar': 'Enicar Pharmaceutical Pvt Ltd',
+    'laso': 'Laso', 'bliss': 'Bliss GVS', 'galaxy': 'Galaxy Pharma',
+    'ronak': 'Ronak Exim pvt Ltd', 'tushu': 'Tushu Pharma', 'unique': 'Unique Pharma',
+    'sapphire': 'Sapphire Lifescience Pvt. Ltd.', 'indoco': 'Indoco Remedies',
+    'shalina': 'Shalina Laboratories Pvt Ltd', 'rpg': 'RPG Life Sciences Ltd',
+    'group': 'Group Pharma', 'pharmatrust': 'Pharmatrust Ltd', 'socomed': 'Socomed Pharma',
+    'lesanto': 'Lesanto Laboratories', 'nelpa': 'Nelpa Lifescience',
+    'blue map': 'Blue Map Pharmachem', 'kamal': 'Kamal', 'medico': 'Medico',
+}
+def _plan_party_canon(p):
+    raw = ' '.join(str(p or '').strip().split())
+    short = _PLAN_PARTY_SHORT.get(raw.lower())
+    if short:
+        return normalise_party(short)
+    n = normalise_party(raw)
+    if n != raw:
+        return n
+    # last resort: prefix-contains against canonical names
+    pk = _pkey(raw)
+    for canon_name in _PARTY_GROUPS:
+        if pk and (pk in _pkey(canon_name) or _pkey(canon_name).startswith(pk)):
+            return canon_name
+    return raw
+
+def _load_plan():
+    """Returns (items, source_label). Sheet tab wins; bundled JSON is fallback."""
+    try:
+        import openpyxl as _ox
+        _sheets = pd.ExcelFile(TEMPLATE).sheet_names
+        _tab = next((s for s in _sheets if 'PLAN' in s.upper() and 'DISPENS' not in s.upper()), None)
+    except Exception:
+        _tab = None
+    if _tab:
+        try:
+            pdf = pd.read_excel(TEMPLATE, sheet_name=_tab, header=0)
+            pdf.columns = [' '.join(str(c).split()).upper() for c in pdf.columns]
+            def _c(*names):
+                return next((c for c in pdf.columns if any(n in c for n in names)), None)
+            cp, cparty = _c('PRODUCT'), _c('PARTY', 'CUSTOMER')
+            cq, cpack, cprio = _c('QTY', 'PLANNED'), _c('PACK'), _c('PRIORITY')
+            items = []
+            for _, r in pdf.iterrows():
+                prod = r.get(cp)
+                if pd.isna(prod) or not str(prod).strip():
+                    continue
+                items.append({'product': str(prod).strip(),
+                              'party': str(r.get(cparty) or '').strip(),
+                              'planned_units': float(pd.to_numeric(r.get(cq), errors='coerce') or 0),
+                              'pack': str(r.get(cpack) or '').strip(),
+                              'priority': int(pd.to_numeric(r.get(cprio), errors='coerce') or 0) or None})
+            if items:
+                return items, f'sheet tab “{_tab}” (live — edit there)'
+        except Exception as _e:
+            print(f'  Plan tab unreadable ({_e}) — using bundled plan.')
+    try:
+        _pj = json.load(open(_PLAN_JSON))
+        return _pj.get('items', []), 'bundled plan (docx 31 Jul) — add an “AUG PLAN” tab to the sheet to edit live'
+    except Exception:
+        return [], 'no plan found'
+
+def _build_plan_view():
+    raw_items, source = _load_plan()
+    if not raw_items:
+        return [], source, {}
+    # Merge duplicate product+party+pack lines (e.g. two lots) so actuals are
+    # never double-counted, keeping lot count for display.
+    merged = {}
+    for it in raw_items:
+        key = (_pcanon(it['product']), _pcanon(_plan_party_canon(it['party'])), _pcanon(it.get('pack')))
+        m = merged.setdefault(key, {**it, 'party_canon': _plan_party_canon(it['party']),
+                                    'planned_units': 0, 'lots': 0, 'prio_list': []})
+        m['planned_units'] += float(it.get('planned_units') or 0)
+        m['lots'] += 1
+        if it.get('priority'):
+            m['prio_list'].append(it['priority'])
+    items = list(merged.values())
+    for it in items:
+        it['priority'] = min(it['prio_list']) if it['prio_list'] else None
+
+    # Actuals in the plan window, grouped by product-canon
+    def _win_rows(df, qty_col, from_date):
+        out = []
+        for _, r in df.iterrows():
+            d = r.get('Date')
+            if d is None or d < from_date:
+                continue
+            out.append((_pcanon(r.get('Product')), _pcanon(r.get('Party')),
+                        _pcanon(r.get('PackSize')),
+                        float(pd.to_numeric(r.get(qty_col), errors='coerce') or 0)))
+        return out
+    f_rows = _win_rows(fill_df, 'Qty', PLAN_WINDOW_FROM)
+    p_rows = _win_rows(pack_df, 'TotalPacked', PLAN_WINDOW_FROM)
+    d_rows = _win_rows(disp_df, 'Qty', PLAN_WINDOW_FROM)
+    rm_rows = [(_pcanon(v['product']), _pcanon(v['customer']))
+               for v in RM_INFO.values()
+               if v.get('date') and v['date'] >= PLAN_RM_FROM]
+
+    def _match(rows, it):
+        pc, yc, kc = _pcanon(it['product']), _pcanon(it['party_canon']), _pcanon(it.get('pack'))
+        hits = []
+        for rc, ry, rk, q in rows:
+            if len(rc) < 4 or not (pc in rc or rc in pc):
+                continue
+            if yc and ry and not (yc in ry or ry in yc):
+                continue
+            hits.append((rk, q))
+        if kc:
+            packed_specific = [q for rk, q in hits if rk and (kc in rk or rk in kc)]
+            if packed_specific:
+                return sum(packed_specific)
+        return sum(q for _, q in hits)
+
+    for it in items:
+        it['filled']     = _match(f_rows, it)
+        it['packed']     = _match(p_rows, it)
+        it['dispatched'] = _match(d_rows, it)
+        pc, yc = _pcanon(it['product']), _pcanon(it['party_canon'])
+        it['rm'] = any((pc in rc or rc in pc) and (not yc or not ry or yc in ry or ry in yc)
+                       for rc, ry in rm_rows if len(rc) >= 4)
+        plan_q = it['planned_units'] or 0
+        if plan_q and it['dispatched'] >= plan_q * 0.95:
+            it['status'], it['srank'] = '✅ Done (dispatched)', 5
+        elif it['dispatched'] > 0:
+            it['status'], it['srank'] = '🟠 Dispatching', 4
+        elif it['packed'] > 0:
+            it['status'], it['srank'] = '🟡 Packed', 3
+        elif it['filled'] > 0:
+            it['status'], it['srank'] = '🔵 Filling', 2
+        elif it['rm']:
+            it['status'], it['srank'] = '🟤 RM dispensed', 1
+        else:
+            it['status'], it['srank'] = '⚪ Not started', 0
+        it['pct'] = min(100.0, (it['filled'] / plan_q * 100) if plan_q else 0)
+
+    items.sort(key=lambda x: (x['priority'] or 9, -(x['planned_units'] or 0)))
+    summary = {
+        'items': len(items),
+        'units': sum(x['planned_units'] or 0 for x in items),
+        'started': sum(1 for x in items if x['srank'] > 0),
+        'done': sum(1 for x in items if x['srank'] == 5),
+        'filled': sum(x['filled'] for x in items),
+    }
+    return items, source, summary
+
+PLAN_ITEMS, PLAN_SOURCE, PLAN_SUMMARY = _build_plan_view()
+
+def plan_section_html():
+    if not PLAN_ITEMS:
+        return ''
+    s = PLAN_SUMMARY
+    pct_started = (s['started'] / s['items'] * 100) if s['items'] else 0
+    tiles = (
+        tile('PLAN ITEMS', n(s['items']), f'{n(s["units"])} units planned in total', C_PRI)
+      + tile('STARTED', f"{s['started']} / {s['items']}", f'{pct_started:.0f}% of plan items have begun', C_SEC)
+      + tile('COMPLETED', n(s['done']), 'items fully dispatched (≥95% of plan)', C_GRN)
+      + tile('UNITS FILLED VS PLAN', n(s['filled']), f'of {n(s["units"])} planned', C_AMB)
+    )
+    rows = ''
+    for i, it in enumerate(PLAN_ITEMS):
+        bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
+        prio = it['priority'] or '—'
+        lots = f' <span style="color:#90A4AE;font-size:10px">({it["lots"]} lots)</span>' if it['lots'] > 1 else ''
+        bar = (f'<div style="background:#ECEFF1;border-radius:3px;height:6px;min-width:70px">'
+               f'<div style="background:{C_SEC};height:6px;border-radius:3px;width:{it["pct"]:.0f}%"></div></div>')
+        rows += (f'<tr style="background:{bg}" data-prio="{it["priority"] or 0}" data-srank="{it["srank"]}">'
+                 f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
+                 f'<td class="td-name">{it["product"]}{lots}</td>'
+                 f'<td class="td-name" style="color:#546E7A">{it["party_canon"]}</td>'
+                 f'<td class="td-name" style="color:#37474F">{it.get("pack") or "—"}</td>'
+                 f'<td class="td-num" style="font-weight:700">{n(it["planned_units"])}</td>'
+                 f'<td class="td-num" style="color:{C_SEC}">{n(it["filled"]) if it["filled"] else "—"}</td>'
+                 f'<td class="td-num" style="color:{C_AMB}">{n(it["packed"]) if it["packed"] else "—"}</td>'
+                 f'<td class="td-num" style="color:{C_ORG}">{n(it["dispatched"]) if it["dispatched"] else "—"}</td>'
+                 f'<td>{bar}</td>'
+                 f'<td class="td-name" style="font-size:12px;white-space:nowrap">{it["status"]}</td>'
+                 f'</tr>')
+    chips = ''.join(
+        f'<span class="chip" onclick="planFilter(this,{p})">{lbl}</span>'
+        for p, lbl in [(-1, 'ALL'), (1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
+                       (4, 'PRIORITY 4'), (-2, 'NOT STARTED'), (-3, 'IN PROGRESS')])
+    return f'''
+<details class="card" id="plan-card">
+  <summary>{sec(f'  ━━&nbsp;&nbsp;🗓 {PLAN_TITLE} &nbsp;—&nbsp; PLANNED &nbsp; vs &nbsp; ACTUAL &nbsp;━━', C_PRI)}</summary>
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
+    Plan source: <strong>{PLAN_SOURCE}</strong>. Status is matched by product + customer against
+    actual production from {PLAN_WINDOW_FROM.strftime('%d %b')} (RM from {PLAN_RM_FROM.strftime('%d %b')}) —
+    dates can shift freely without breaking the tracking. The Plant Head edits the plan in the
+    sheet's AUG PLAN tab; any change is automatically emailed to the store team within 15 minutes.
+  </div>
+  <div class="tile-row">{tiles}</div>
+  <div class="chip-row" style="padding:0 16px 10px">{chips}</div>
+  <div class="tbl-wrap">
+    <table style="min-width:860px">
+      <thead><tr class="th-row">
+        <th>P</th><th>PRODUCT</th><th>CUSTOMER</th><th>PACK</th><th>PLANNED</th>
+        <th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th>STATUS</th>
+      </tr></thead>
+      <tbody id="plan-rows">{rows}</tbody>
+    </table>
+  </div>
+</details>'''
+
 # ── Monthly summary (RM → Fill → Pack → Disp) ─────────────────────────────────
 # Tracking-start cutoff: dispenses before this date were from the pre-system
 # era and are excluded so they don't pollute the monthly numbers.
@@ -1514,6 +1740,11 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 </div>
 
 <!-- ════════════════════════════════════════════════════════════
+     SECTION 0b — MONTHLY PRODUCTION PLAN (planned vs actual)
+════════════════════════════════════════════════════════════ -->
+{plan_section_html()}
+
+<!-- ════════════════════════════════════════════════════════════
      SECTION 1 — PRODUCT TYPE BREAKDOWN
 ════════════════════════════════════════════════════════════ -->
 <details class="card">
@@ -2281,6 +2512,21 @@ function lookupBatch() {{
     </tr></thead>
     <tbody>${{rows}}</tbody>
   </table></div>${{note}}${{actHtml}}`;
+}}
+
+// ── Plan card: priority / status filter chips ─────────
+function planFilter(chipEl, p) {{
+  document.querySelectorAll('#plan-card .chip-row .chip').forEach(c => c.classList.remove('active'));
+  if (chipEl) chipEl.classList.add('active');
+  document.querySelectorAll('#plan-rows tr').forEach(tr => {{
+    const prio = parseInt(tr.getAttribute('data-prio') || '0');
+    const srank = parseInt(tr.getAttribute('data-srank') || '0');
+    let show = true;
+    if (p >= 1) show = (prio === p);
+    else if (p === -2) show = (srank === 0);
+    else if (p === -3) show = (srank > 0 && srank < 5);
+    tr.style.display = show ? '' : 'none';
+  }});
 }}
 
 // ── Init on load ──────────────────────────────────────
