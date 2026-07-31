@@ -1,0 +1,1223 @@
+{
+ "month": "2026-08",
+ "title": "AUG 2026 Production Plan",
+ "source": "AUG_PLAN_2026.docx (31 Jul 2026)",
+ "items": [
+  {
+   "product": "Paediatric Cotrimoxazole Oral Suspension BP (Kanvid)",
+   "party": "Tushu",
+   "priority": 1,
+   "planned_units": 50000,
+   "pack": "100 ml",
+   "qty_raw": "50000 x 100 ml"
+  },
+  {
+   "product": "PA-C",
+   "party": "Unique",
+   "priority": 1,
+   "planned_units": 40000,
+   "pack": "100 ml",
+   "qty_raw": "40000 x 100 ml"
+  },
+  {
+   "product": "Carbocisteine Syrup 5% W/V (Kanvid)",
+   "party": "Tushu",
+   "priority": 1,
+   "planned_units": 125000,
+   "pack": "100 ml",
+   "qty_raw": "125000 x 100 ml"
+  },
+  {
+   "product": "Nocigel-O",
+   "party": "Unique",
+   "priority": 1,
+   "planned_units": 20000,
+   "pack": "200 ml",
+   "qty_raw": "20000 x 200 ml"
+  },
+  {
+   "product": "Multivitamin Syrup (Kanvid)",
+   "party": "Tushu",
+   "priority": 1,
+   "planned_units": 75000,
+   "pack": "200 ml",
+   "qty_raw": "75000 x 200 ml"
+  },
+  {
+   "product": "Q-Enzy",
+   "party": "Unique",
+   "priority": 1,
+   "planned_units": 20000,
+   "pack": "200 ml",
+   "qty_raw": "20000 x 200 ml"
+  },
+  {
+   "product": "Nystatin Oral Suspension USP (Kanvid)",
+   "party": "Tushu",
+   "priority": 1,
+   "planned_units": 45000,
+   "pack": "60 ml",
+   "qty_raw": "45000 x 60 ml"
+  },
+  {
+   "product": "Q-Amino",
+   "party": "Unique",
+   "priority": 1,
+   "planned_units": 50000,
+   "pack": "200 ml",
+   "qty_raw": "50000 x 200 ml"
+  },
+  {
+   "product": "Albendazole Oral Suspension USP (Kanvid)",
+   "party": "Tushu",
+   "priority": 1,
+   "planned_units": 40000,
+   "pack": "10 ml",
+   "qty_raw": "40000 x 10 ml"
+  },
+  {
+   "product": "Amylase",
+   "party": "Unique",
+   "priority": 1,
+   "planned_units": 50000,
+   "pack": "200 ml",
+   "qty_raw": "50000 x 200 ml"
+  },
+  {
+   "product": "Analgin Syrup (Kanvid)",
+   "party": "Tushu",
+   "priority": 1,
+   "planned_units": 20000,
+   "pack": "100 ml",
+   "qty_raw": "20000 x 100 ml"
+  },
+  {
+   "product": "Nocigel (Sachet)",
+   "party": "Unique",
+   "priority": 1,
+   "planned_units": 5000,
+   "pack": "24 x 15 ml",
+   "qty_raw": "5000 x 24 x 15 ml"
+  },
+  {
+   "product": "Ibuprofen Oral Suspension BP (Kanvid)",
+   "party": "Tushu",
+   "priority": 1,
+   "planned_units": 40000,
+   "pack": "100 ml",
+   "qty_raw": "40000 x 100 ml"
+  },
+  {
+   "product": "Cyproplex-Plus",
+   "party": "Unique",
+   "priority": 1,
+   "planned_units": 100000,
+   "pack": "15 ml",
+   "qty_raw": "100000 x 15 ml"
+  },
+  {
+   "product": "B.OVERGREENS ABC TEETHING MIXTURE",
+   "party": "Menzbek",
+   "priority": 4,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "Bromovan Plus",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "B.OVERGREENS ABC ORAL PARACETAMOL SUSPENSION",
+   "party": "Menzbek",
+   "priority": 4,
+   "planned_units": 9900,
+   "pack": "100 ml",
+   "qty_raw": "9900 x 100 ml"
+  },
+  {
+   "product": "Kaonique",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 30000,
+   "pack": "100 ml",
+   "qty_raw": "30000 x 100 ml"
+  },
+  {
+   "product": "B.OVERGREENS ABC BABY COUGH SYRUP",
+   "party": "Menzbek",
+   "priority": 4,
+   "planned_units": 7000,
+   "pack": "100 ml",
+   "qty_raw": "7000 x 100 ml"
+  },
+  {
+   "product": "MON-LC",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "B.OVERGREENS ABC METRONIDAZOLE+FURAZOLIDONE SUSPENSION",
+   "party": "Menzbek",
+   "priority": 4,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "Perfac C",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 20000,
+   "pack": "100 ml",
+   "qty_raw": "20000 x 100 ml"
+  },
+  {
+   "product": "Magdox Antacid",
+   "party": "Menzbek",
+   "priority": 4,
+   "planned_units": 10000,
+   "pack": "200 ml",
+   "qty_raw": "10000 x 200 ml"
+  },
+  {
+   "product": "Unisang Tonic",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 20000,
+   "pack": "200 ml",
+   "qty_raw": "20000 x 200 ml"
+  },
+  {
+   "product": "ABC Cold Syrup",
+   "party": "Menzbek",
+   "priority": 4,
+   "planned_units": 1000,
+   "pack": "100 ml",
+   "qty_raw": "1000 x 100 ml"
+  },
+  {
+   "product": "Uniforce Tonic",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 150000,
+   "pack": "200 ml",
+   "qty_raw": "150000 x 200 ml"
+  },
+  {
+   "product": "ABC Loratdine",
+   "party": "Menzbek",
+   "priority": 4,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "PH-Alka",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 10000,
+   "pack": "120 ml",
+   "qty_raw": "10000 x 120 ml"
+  },
+  {
+   "product": "Ronanutra Forte",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 12000,
+   "pack": "60 ml",
+   "qty_raw": "12000 x 60 ml"
+  },
+  {
+   "product": "Sortoux",
+   "party": "Unique",
+   "priority": 2,
+   "planned_units": 10000,
+   "pack": "120 ml",
+   "qty_raw": "10000 x 120 ml"
+  },
+  {
+   "product": "Ronvit Extra (POLL010)",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 15000,
+   "pack": "200 ml",
+   "qty_raw": "15000 x 200 ml"
+  },
+  {
+   "product": "Fortomega",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 100 ml"
+  },
+  {
+   "product": "Ronaktone",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 9000,
+   "pack": "200 ml",
+   "qty_raw": "9000 x 200 ml"
+  },
+  {
+   "product": "Worminix",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 300000,
+   "pack": "10 ml",
+   "qty_raw": "300000 x 10 ml"
+  },
+  {
+   "product": "Ronaktone",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 9000,
+   "pack": "60 ml",
+   "qty_raw": "9000 x 60 ml"
+  },
+  {
+   "product": "Nocigel Sachet",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 5000,
+   "pack": "24 x 15 ml",
+   "qty_raw": "5000 x 24 x 15 ml"
+  },
+  {
+   "product": "Ronak Multivitamin",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 20000,
+   "pack": "100 ml",
+   "qty_raw": "20000 x 100 ml"
+  },
+  {
+   "product": "Unicaine",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 5000,
+   "pack": "50 ml",
+   "qty_raw": "5000 x 50 ml"
+  },
+  {
+   "product": "Ronak Multivitamin",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 10000,
+   "pack": "200 ml",
+   "qty_raw": "10000 x 200 ml"
+  },
+  {
+   "product": "Ibuprofen Oral Suspension BP 100 mg/5 ml (Umedica)",
+   "party": "Umedica",
+   "priority": 1,
+   "planned_units": 25000,
+   "pack": "60 ml",
+   "qty_raw": "25000 x 60 ml"
+  },
+  {
+   "product": "Ronvit Drops",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 25000,
+   "pack": "60 ml",
+   "qty_raw": "25000 x 60 ml"
+  },
+  {
+   "product": "Unidakt Gel Oral",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 10000,
+   "pack": "10 gm",
+   "qty_raw": "10000 x 10 gm"
+  },
+  {
+   "product": "Ronvit Drops",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 50000,
+   "pack": "30 ml",
+   "qty_raw": "50000 x 30 ml"
+  },
+  {
+   "product": "Cyproplex-Plus",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 150000,
+   "pack": "15 ml",
+   "qty_raw": "150000 x 15 ml"
+  },
+  {
+   "product": "Ronfit Cold-W",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 30000,
+   "pack": "100 ml",
+   "qty_raw": "30000 x 100 ml"
+  },
+  {
+   "product": "Nocold Dx",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 100000,
+   "pack": "7 ml",
+   "qty_raw": "100000 x 7 ml"
+  },
+  {
+   "product": "Picron Baby Cold Cough & Fever Syrup",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 30000,
+   "pack": "100 ml",
+   "qty_raw": "30000 xx 100 ml"
+  },
+  {
+   "product": "Megalax",
+   "party": "Unique",
+   "priority": 3,
+   "planned_units": 50000,
+   "pack": "200 ml",
+   "qty_raw": "50000 x 200 ml"
+  },
+  {
+   "product": "Picron Baby Cold Cough & Fever Syrup",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 40000,
+   "pack": "60 ml",
+   "qty_raw": "40000 xx 60 ml"
+  },
+  {
+   "product": "Nilworm Suspension",
+   "party": "Galaxy",
+   "priority": 2,
+   "planned_units": 595200,
+   "pack": "10 ml",
+   "qty_raw": "595200 x 10 ml"
+  },
+  {
+   "product": "Ronfit cold forte ( LL034)",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 3000,
+   "pack": "100 ml",
+   "qty_raw": "3000 x 100 ml"
+  },
+  {
+   "product": "Cypro B Plus",
+   "party": "Galaxy",
+   "priority": 2,
+   "planned_units": 77000,
+   "pack": "200 ml",
+   "qty_raw": "77000 x 200 ml"
+  },
+  {
+   "product": "Ronanutra Forte",
+   "party": "Ronak",
+   "priority": 3,
+   "planned_units": 12000,
+   "pack": "200 ml",
+   "qty_raw": "12000 x 200 ml"
+  },
+  {
+   "product": "Cypro B Plus",
+   "party": "Galaxy",
+   "priority": 2,
+   "planned_units": 88000,
+   "pack": "200 ml",
+   "qty_raw": "88000 x 200 ml"
+  },
+  {
+   "product": "Cosome Cough Syrup",
+   "party": "P&G",
+   "priority": 3,
+   "planned_units": 50000,
+   "pack": "100 ml",
+   "qty_raw": "50000 x 100 ml"
+  },
+  {
+   "product": "Ibumed",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 30000,
+   "pack": "100 ml",
+   "qty_raw": "30000 x 100 ml"
+  },
+  {
+   "product": "Polybion Lc",
+   "party": "P&G",
+   "priority": 1,
+   "planned_units": 200000,
+   "pack": "150 ml",
+   "qty_raw": "200000 x 150 ml"
+  },
+  {
+   "product": "Ferrolife Syrup",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 5000,
+   "pack": "100 ml",
+   "qty_raw": "5000 x 100 ml"
+  },
+  {
+   "product": "Polybion Lc",
+   "party": "P&G",
+   "priority": 2,
+   "planned_units": 33300,
+   "pack": "300 ml",
+   "qty_raw": "33300 x 300 ml"
+  },
+  {
+   "product": "Ferrolife Syrup",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 5000,
+   "pack": "200 ml",
+   "qty_raw": "5000 x 200 ml"
+  },
+  {
+   "product": "Polybion Lc",
+   "party": "P&G",
+   "priority": 3,
+   "planned_units": 50000,
+   "pack": "400 ml",
+   "qty_raw": "50000 x 400 ml"
+  },
+  {
+   "product": "Gelucid O",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 7500,
+   "pack": "200 ml",
+   "qty_raw": "7500 x 200 ml"
+  },
+  {
+   "product": "Osto-Polybion (Suspension of Calcium with Vitamin D3 & Vitamin B12)",
+   "party": "P&G",
+   "priority": 2,
+   "planned_units": 33300,
+   "pack": "300 ml",
+   "qty_raw": "33300 x 300 ml"
+  },
+  {
+   "product": "Gelucid O",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 7500,
+   "pack": "100 ml",
+   "qty_raw": "7500 x 100 ml"
+  },
+  {
+   "product": "Polybion Active",
+   "party": "P&G",
+   "priority": 1,
+   "planned_units": 66600,
+   "pack": "150 ml",
+   "qty_raw": "66600 x 150 ml"
+  },
+  {
+   "product": "Trustymin Syrup",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 7500,
+   "pack": "200 ml",
+   "qty_raw": "7500 x 200 ml"
+  },
+  {
+   "product": "Polybion Active",
+   "party": "P&G",
+   "priority": 2,
+   "planned_units": 33300,
+   "pack": "300 ml",
+   "qty_raw": "33300 x 300 ml"
+  },
+  {
+   "product": "Trustymin Syrup",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 7500,
+   "pack": "100 ml",
+   "qty_raw": "7500 x 100 ml"
+  },
+  {
+   "product": "Livogen Iron",
+   "party": "P&G",
+   "priority": 1,
+   "planned_units": 150000,
+   "pack": "200 ml",
+   "qty_raw": "150000 x 200 ml"
+  },
+  {
+   "product": "Gelucid",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 7500,
+   "pack": "200 ml",
+   "qty_raw": "7500 x 200 ml"
+  },
+  {
+   "product": "Bioforce Tonic",
+   "party": "Sapphire",
+   "priority": 1,
+   "planned_units": 15000,
+   "pack": "200 ml",
+   "qty_raw": "15000 x 200 ml"
+  },
+  {
+   "product": "Gelucid",
+   "party": "Pharmatrust",
+   "priority": 3,
+   "planned_units": 7500,
+   "pack": "100 ml",
+   "qty_raw": "7500 x 100 ml"
+  },
+  {
+   "product": "Nutrisang Tonic",
+   "party": "Sapphire",
+   "priority": 1,
+   "planned_units": 20000,
+   "pack": "200 ml",
+   "qty_raw": "20000 x 200 ml"
+  },
+  {
+   "product": "Bonaplex Syrup",
+   "party": "CARETH CORPORATION",
+   "priority": 4,
+   "planned_units": 74000,
+   "pack": "250 ml",
+   "qty_raw": "74000 x 250 ml"
+  },
+  {
+   "product": "Nutrisang Tonic",
+   "party": "Sapphire",
+   "priority": 2,
+   "planned_units": 15000,
+   "pack": "200 ml",
+   "qty_raw": "15000 x 200 ml"
+  },
+  {
+   "product": "Lexofen Suspension",
+   "party": "LUEX",
+   "priority": 1,
+   "planned_units": 40000,
+   "pack": "150 ml",
+   "qty_raw": "40000 x 150 ml"
+  },
+  {
+   "product": "Alaize",
+   "party": "Sapphire",
+   "priority": 2,
+   "planned_units": 30000,
+   "pack": "200 ml",
+   "qty_raw": "30000 x 200 ml"
+  },
+  {
+   "product": "Asthalex Syrup",
+   "party": "LUEX",
+   "priority": 1,
+   "planned_units": 12000,
+   "pack": "100 ml",
+   "qty_raw": "12000 x 100 ml"
+  },
+  {
+   "product": "Mebox Suspension",
+   "party": "Sapphire",
+   "priority": 4,
+   "planned_units": 50000,
+   "pack": "30 ml",
+   "qty_raw": "50000 x 30 ml"
+  },
+  {
+   "product": "Anticid Plus",
+   "party": "LUEX",
+   "priority": 4,
+   "planned_units": 48000,
+   "pack": "200 ml",
+   "qty_raw": "48000 x 200 ml"
+  },
+  {
+   "product": "Mucoril Expectorant",
+   "party": "Sapphire",
+   "priority": 1,
+   "planned_units": 45000,
+   "pack": "100 ml",
+   "qty_raw": "45000 x 100 ml"
+  },
+  {
+   "product": "Lexofen Plus Junior Suspension",
+   "party": "LUEX",
+   "priority": 1,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "Nutrisang Tonic",
+   "party": "Sapphire",
+   "priority": 4,
+   "planned_units": 25000,
+   "pack": "200 ml",
+   "qty_raw": "25000 x 200 ml"
+  },
+  {
+   "product": "Ferrolex Syrup",
+   "party": "LUEX",
+   "priority": 4,
+   "planned_units": 24000,
+   "pack": "200 ml",
+   "qty_raw": "24000 x 200 ml"
+  },
+  {
+   "product": "Topicidal",
+   "party": "Sapphire",
+   "priority": 4,
+   "planned_units": 25000,
+   "pack": "175 ml",
+   "qty_raw": "25000 x 175 ml"
+  },
+  {
+   "product": "Gasstop",
+   "party": "Ryvis",
+   "priority": 2,
+   "planned_units": 28750,
+   "pack": "200 ml",
+   "qty_raw": "28750 x 200 ml"
+  },
+  {
+   "product": "Becatone-L Syrup",
+   "party": "Navketan",
+   "priority": 1,
+   "planned_units": 20000,
+   "pack": "100 ml",
+   "qty_raw": "20000 x100 ml"
+  },
+  {
+   "product": "Gasstop",
+   "party": "Ryvis",
+   "priority": 2,
+   "planned_units": 7700,
+   "pack": "60 ml",
+   "qty_raw": "7700 x 60 ml"
+  },
+  {
+   "product": "Tempact-250 Suspension",
+   "party": "Navketan",
+   "priority": 1,
+   "planned_units": 650000,
+   "pack": "60 ml",
+   "qty_raw": "650000 x 60 ml"
+  },
+  {
+   "product": "Gasstop",
+   "party": "Ryvis",
+   "priority": 2,
+   "planned_units": 1000,
+   "pack": "60 ml",
+   "qty_raw": "1000 x 60 ml"
+  },
+  {
+   "product": "Funbact",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 70000,
+   "pack": "50 ml",
+   "qty_raw": "70000 x 50 ml"
+  },
+  {
+   "product": "Funbact",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 12000,
+   "pack": "250 ml",
+   "qty_raw": "12000 x 250 ml"
+  },
+  {
+   "product": "Funbact",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 40000,
+   "pack": "100 ml",
+   "qty_raw": "40000 x 100 ml"
+  },
+  {
+   "product": "Funbact",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 8600,
+   "pack": "500 ml",
+   "qty_raw": "8600 x 500 ml"
+  },
+  {
+   "product": "PROMILASE",
+   "party": "Aura/Stanmark",
+   "priority": null,
+   "planned_units": 30000,
+   "pack": "150 ml",
+   "qty_raw": "30,000 x 150 ml"
+  },
+  {
+   "product": "Funbact",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 9100,
+   "pack": "1000 ml",
+   "qty_raw": "9100 x 1000 ml"
+  },
+  {
+   "product": "Maxilog",
+   "party": "Aura/Stanmark",
+   "priority": null,
+   "planned_units": 13000,
+   "pack": "150 ml",
+   "qty_raw": "13000 x 150 ml"
+  },
+  {
+   "product": "TELOVA SYRUP",
+   "party": "Laso",
+   "priority": null,
+   "planned_units": 33000,
+   "pack": "60 ml",
+   "qty_raw": "33000 x 60 ml"
+  },
+  {
+   "product": "Loratadine Oral Solution USP",
+   "party": "Medico",
+   "priority": null,
+   "planned_units": 35000,
+   "pack": "100 ml",
+   "qty_raw": "35,000 x 100 ml"
+  },
+  {
+   "product": "Rynstatin",
+   "party": "Nelpa",
+   "priority": null,
+   "planned_units": 7000,
+   "pack": "30 ml",
+   "qty_raw": "7000 x 30 ml"
+  },
+  {
+   "product": "Gastro End",
+   "party": "Medico",
+   "priority": null,
+   "planned_units": 10000,
+   "pack": "200 ml",
+   "qty_raw": "10,000 x 200 ml"
+  },
+  {
+   "product": "Zinc Syrup",
+   "party": "Nelpa",
+   "priority": null,
+   "planned_units": 20000,
+   "pack": "60 ml",
+   "qty_raw": "20000 x 60 ml"
+  },
+  {
+   "product": "Tuspel Cough Syrup",
+   "party": "Indoco",
+   "priority": null,
+   "planned_units": 23935,
+   "pack": "60 ml",
+   "qty_raw": "23935 x 60 ml"
+  },
+  {
+   "product": "Algicore",
+   "party": "Nelpa",
+   "priority": null,
+   "planned_units": 300000,
+   "pack": "10 ml",
+   "qty_raw": "300000 x 10 ml"
+  },
+  {
+   "product": "Tuspel Plus Cough Syrup",
+   "party": "Indoco",
+   "priority": null,
+   "planned_units": 23500,
+   "pack": "100 ml",
+   "qty_raw": "23500 x 100 ml"
+  },
+  {
+   "product": "Loratadine Oral Solution USP",
+   "party": "Medico",
+   "priority": null,
+   "planned_units": 35000,
+   "pack": "100 ml",
+   "qty_raw": "35000 x 100 ml"
+  },
+  {
+   "product": "Tuspress Cough Suppressant",
+   "party": "Indoco",
+   "priority": null,
+   "planned_units": 24460,
+   "pack": "60 ml",
+   "qty_raw": "24460 x 60 ml"
+  },
+  {
+   "product": "Gastro End",
+   "party": "Medico",
+   "priority": null,
+   "planned_units": 10000,
+   "pack": "200 ml",
+   "qty_raw": "10000 x 200 ml"
+  },
+  {
+   "product": "Tuspress Cough Suppressant PS",
+   "party": "Indoco",
+   "priority": null,
+   "planned_units": 580,
+   "pack": "60 ml",
+   "qty_raw": "580 x 60 ml"
+  },
+  {
+   "product": "Albendazole Suspension 400 mg/10 ml (Umedica)",
+   "party": "Umedica",
+   "priority": null,
+   "planned_units": 180000,
+   "pack": "10 ml",
+   "qty_raw": "180000 x 10 ml"
+  },
+  {
+   "product": "Viscid",
+   "party": "Indoco",
+   "priority": null,
+   "planned_units": 1500000,
+   "pack": "15 ml",
+   "qty_raw": "1500000 x 15 ml"
+  },
+  {
+   "product": "Vardavit",
+   "party": "Vardhman",
+   "priority": null,
+   "planned_units": 20000,
+   "pack": "100 ml",
+   "qty_raw": "20000 x 100 ml"
+  },
+  {
+   "product": "Tanzol Suspension",
+   "party": "Shalina",
+   "priority": null,
+   "planned_units": 200000,
+   "pack": "10 ml",
+   "qty_raw": "200000 x 10 ml"
+  },
+  {
+   "product": "Go Coff Cough Syrup",
+   "party": "Vardhman",
+   "priority": null,
+   "planned_units": 40000,
+   "pack": "100 ml",
+   "qty_raw": "40000 x 100 ml"
+  },
+  {
+   "product": "Setflow Oral Solution",
+   "party": "Macleods",
+   "priority": null,
+   "planned_units": 100000,
+   "pack": "200 ml",
+   "qty_raw": "100000 x 200 ml"
+  },
+  {
+   "product": "Princes Heptin Plus",
+   "party": "Socomed",
+   "priority": null,
+   "planned_units": 34000,
+   "pack": "200 ml",
+   "qty_raw": "34000 x200 ml"
+  },
+  {
+   "product": "Ibu-100 Suspension",
+   "party": "Vardhman",
+   "priority": null,
+   "planned_units": 20000,
+   "pack": "120 ml",
+   "qty_raw": "20000 x 120 ml"
+  },
+  {
+   "product": "Procal Syrup",
+   "party": "Lesanto",
+   "priority": null,
+   "planned_units": 25000,
+   "pack": "200 ml",
+   "qty_raw": "25000 x 200 ml"
+  },
+  {
+   "product": "Powerfil 50 (Orange)",
+   "party": "Vardhman",
+   "priority": null,
+   "planned_units": 100000,
+   "pack": "5 gm",
+   "qty_raw": "100000 x 5 gm"
+  },
+  {
+   "product": "Napo Gas Out Forte Plus",
+   "party": "Napo",
+   "priority": null,
+   "planned_units": 20000,
+   "pack": "250 ml",
+   "qty_raw": "20000 x 250 ml"
+  },
+  {
+   "product": "Powerfil 50 strawberry",
+   "party": "Vardhman",
+   "priority": null,
+   "planned_units": 55000,
+   "pack": "5 gm",
+   "qty_raw": "55000 x 5 gm"
+  },
+  {
+   "product": "K-VITA PLUS",
+   "party": "Blue Map",
+   "priority": null,
+   "planned_units": 10000,
+   "pack": "200 ml",
+   "qty_raw": "10000 x 200 ml"
+  },
+  {
+   "product": "Powerfil 50 Mint",
+   "party": "Vardhman",
+   "priority": null,
+   "planned_units": 55000,
+   "pack": "5 gm",
+   "qty_raw": "55000 x 5 gm"
+  },
+  {
+   "product": "ANTAGEL",
+   "party": "Blue Map",
+   "priority": null,
+   "planned_units": 9900,
+   "pack": "200 ml",
+   "qty_raw": "9900 x 200 ml"
+  },
+  {
+   "product": "MinMin PS",
+   "party": "RPG",
+   "priority": null,
+   "planned_units": 50000,
+   "pack": "100 ml",
+   "qty_raw": "50000 x 100 ml"
+  },
+  {
+   "product": "ABEE-400",
+   "party": "Blue Map",
+   "priority": null,
+   "planned_units": 71040,
+   "pack": "20 ml",
+   "qty_raw": "71040 x 20 ml"
+  },
+  {
+   "product": "Tricaine AR Gel",
+   "party": "RPG",
+   "priority": null,
+   "planned_units": 15000,
+   "pack": "220 ml",
+   "qty_raw": "15000 x 220 ml"
+  },
+  {
+   "product": "MULTIMINO",
+   "party": "Blue Map",
+   "priority": null,
+   "planned_units": 10020,
+   "pack": "200 ml",
+   "qty_raw": "10020 x 200 ml"
+  },
+  {
+   "product": "DASLIN-NF",
+   "party": "RPG",
+   "priority": null,
+   "planned_units": 25000,
+   "pack": "100 ml",
+   "qty_raw": "25000 x 100 ml"
+  },
+  {
+   "product": "Nystatin Oral Suspension USP",
+   "party": "Blue Map",
+   "priority": null,
+   "planned_units": 132000,
+   "pack": "30 ml",
+   "qty_raw": "132000 x 30 ml"
+  },
+  {
+   "product": "EUROVIT",
+   "party": "MVC",
+   "priority": null,
+   "planned_units": 25000,
+   "pack": "25 ml",
+   "qty_raw": "25000 x 25 ml"
+  },
+  {
+   "product": "ANAFERROUS-Z",
+   "party": "Bohra",
+   "priority": null,
+   "planned_units": 25000,
+   "pack": "200 ml",
+   "qty_raw": "25000 x 200 ml"
+  },
+  {
+   "product": "Proliser",
+   "party": "Group",
+   "priority": null,
+   "planned_units": 15000,
+   "pack": "200 ml",
+   "qty_raw": "15000 x 200 ml"
+  },
+  {
+   "product": "Anatamin",
+   "party": "Bohra",
+   "priority": null,
+   "planned_units": 45000,
+   "pack": "200 ml",
+   "qty_raw": "45000 x 200 ml"
+  },
+  {
+   "product": "Proliser",
+   "party": "Group",
+   "priority": null,
+   "planned_units": 15000,
+   "pack": "100 ml",
+   "qty_raw": "15000 x 100 ml"
+  },
+  {
+   "product": "MAGASCON (Magaldrate & Simethicone Oral Suspension USP)",
+   "party": "Socomed",
+   "priority": null,
+   "planned_units": 120000,
+   "pack": "15 ml",
+   "qty_raw": "120000 x 15 ml"
+  },
+  {
+   "product": "Cremoaid Plus SF",
+   "party": "Workcell",
+   "priority": null,
+   "planned_units": 13000,
+   "pack": "170 ml",
+   "qty_raw": "13000 x 170 ml"
+  },
+  {
+   "product": "Princes Heptin Plus (Sachets)",
+   "party": "Socomed",
+   "priority": null,
+   "planned_units": 250000,
+   "pack": "15 ml",
+   "qty_raw": "250000 x 15 ml"
+  },
+  {
+   "product": "Paediatric Cotrimoxazole Oral Suspension BP (Self Care)",
+   "party": "kamal",
+   "priority": null,
+   "planned_units": 20000,
+   "pack": "100 ml",
+   "qty_raw": "20000 x 100 ml"
+  },
+  {
+   "product": "Kifaru Jelly 100mg",
+   "party": "Shalina",
+   "priority": null,
+   "planned_units": 200000,
+   "pack": "5 gm",
+   "qty_raw": "200000 x 5 gm"
+  },
+  {
+   "product": "Chloramphenicol Palmitate Oral Suspension USP (Self Care)",
+   "party": "Kamal",
+   "priority": null,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "Amitone",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 35000,
+   "pack": "200 ml",
+   "qty_raw": "35000 x 200 ml"
+  },
+  {
+   "product": "Ambroxol Hydrochloride Syrup 15mg/5ml (Flamingo)",
+   "party": "Flamingo",
+   "priority": null,
+   "planned_units": 75000,
+   "pack": "120 ml",
+   "qty_raw": "75000 x 120 ml"
+  },
+  {
+   "product": "Amitone",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 10000,
+   "pack": "100 ml",
+   "qty_raw": "10000 x 100 ml"
+  },
+  {
+   "product": "Funbact Cream",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 600000,
+   "pack": "15 gm",
+   "qty_raw": "600000 x 15 gm"
+  },
+  {
+   "product": "Bliscal",
+   "party": "Bliss",
+   "priority": null,
+   "planned_units": 10000,
+   "pack": "200 ml",
+   "qty_raw": "10000 x 200 ml"
+  },
+  {
+   "product": "Vardacort Cream",
+   "party": "Vardhman",
+   "priority": null,
+   "planned_units": 30000,
+   "pack": "15 gm",
+   "qty_raw": "30000 x 15 gm"
+  },
+  {
+   "product": "Alaize",
+   "party": "Sapphire",
+   "priority": null,
+   "planned_units": 400000,
+   "pack": "15 ml",
+   "qty_raw": "400000 x 15 ml"
+  },
+  {
+   "product": "Selfcare Hyzol Ointment",
+   "party": "Kamal",
+   "priority": null,
+   "planned_units": 15000,
+   "pack": "30 gm",
+   "qty_raw": "15000 x 30 gm"
+  },
+  {
+   "product": "Alaize",
+   "party": "Sapphire",
+   "priority": null,
+   "planned_units": 375000,
+   "pack": "15 ml",
+   "qty_raw": "375000 x 15 ml"
+  },
+  {
+   "product": "Climax Nystatin Oral Suspension",
+   "party": "Om Export",
+   "priority": null,
+   "planned_units": 286200,
+   "pack": "30 ml",
+   "qty_raw": "286200 x 30 ml"
+  },
+  {
+   "product": "BISNOVA",
+   "party": "Zieva/Enicar",
+   "priority": null,
+   "planned_units": 20000,
+   "pack": "150 ml",
+   "qty_raw": "20000 x 150 ml"
+  }
+ ]
+}
