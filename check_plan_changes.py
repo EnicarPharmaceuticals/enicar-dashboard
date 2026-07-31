@@ -45,6 +45,8 @@ def load_plan_rows():
                 return next((c for c in df.columns if any(n in c for n in names)), None)
             cp, cparty = col('PRODUCT'), col('PARTY', 'CUSTOMER')
             cq, cpack, cprio = col('QTY', 'PLANNED'), col('PACK'), col('PRIORITY')
+            cstat, cdate = col('RM STATUS', 'STATUS'), col('RM DATE', 'DISPENSE DATE')
+            cbatch = col('BATCH')
             def _num(v):
                 x = pd.to_numeric(v, errors='coerce')
                 return 0.0 if pd.isna(x) else float(x)
@@ -61,7 +63,10 @@ def load_plan_rows():
                              'party': _txt(r.get(cparty)),
                              'units': _num(r.get(cq)),
                              'pack': _txt(r.get(cpack)),
-                             'priority': str(int(pr)) if pr else ''})
+                             'priority': str(int(pr)) if pr else '',
+                             'status': _txt(r.get(cstat)) if cstat else '',
+                             'date': _txt(r.get(cdate)) if cdate else '',
+                             'batch': _txt(r.get(cbatch)) if cbatch else ''})
             if rows:
                 return rows, f'sheet tab "{tab}"'
     except Exception as e:
@@ -70,7 +75,8 @@ def load_plan_rows():
         pj = json.load(open(PLAN_JSON))
         rows = [{'product': i['product'], 'party': i['party'],
                  'units': float(i.get('planned_units') or 0),
-                 'pack': str(i.get('pack') or ''), 'priority': str(i.get('priority') or '')}
+                 'pack': str(i.get('pack') or ''), 'priority': str(i.get('priority') or ''),
+                 'status': '', 'date': '', 'batch': ''}
                 for i in pj.get('items', [])]
         return rows, 'bundled plan JSON'
     except Exception:
@@ -89,8 +95,13 @@ def fingerprint(rows):
     for r in rows:
         k = key_of(r)
         e = fp.setdefault(k, {'product': r['product'], 'party': r['party'],
-                              'pack': r['pack'], 'units': 0.0, 'priority': r['priority']})
+                              'pack': r['pack'], 'units': 0.0, 'priority': r['priority'],
+                              'status': r.get('status', ''), 'date': r.get('date', ''),
+                              'batch': r.get('batch', '')})
         e['units'] += r['units']
+        for fld in ('status', 'date', 'batch'):
+            if r.get(fld) and not e.get(fld):
+                e[fld] = r[fld]
     return fp
 
 
@@ -118,9 +129,14 @@ def main():
     old_fp = old.get('fp', {})
     added   = [new_fp[k] for k in new_fp if k not in old_fp]
     removed = [old_fp[k] for k in old_fp if k not in new_fp]
-    changed = [(old_fp[k], new_fp[k]) for k in new_fp
-               if k in old_fp and (abs(new_fp[k]['units'] - old_fp[k]['units']) > 0.5
-                                   or str(new_fp[k]['priority']) != str(old_fp[k]['priority']))]
+    def _differs(a, b):
+        if abs(b['units'] - a['units']) > 0.5:
+            return True
+        for fld in ('priority', 'status', 'date', 'batch'):
+            if str(b.get(fld, '')) != str(a.get(fld, '')):
+                return True
+        return False
+    changed = [(old_fp[k], new_fp[k]) for k in new_fp if k in old_fp and _differs(old_fp[k], new_fp[k])]
 
     if not (added or removed or changed):
         print('  No plan changes.')
@@ -130,8 +146,8 @@ def main():
     print(f'  PLAN CHANGED: +{len(added)} added, -{len(removed)} removed, ~{len(changed)} modified')
 
     lines = ['Store team,', '',
-             f'The {os.path.basename(PLAN_JSON)[5:13].upper()} production plan was updated '
-             f'({source}). Changes below — please adjust RM dispensing preparation accordingly.', '']
+             f'The production plan was updated ({source}). Changes below — please adjust '
+             f'RM dispensing preparation accordingly. Items marked "Dispense next" are needed first.', '']
     if added:
         lines.append(f'ADDED TO PLAN ({len(added)}):')
         for e in added:
@@ -148,9 +164,15 @@ def main():
         for o, nw in changed:
             bits = []
             if abs(nw['units'] - o['units']) > 0.5:
-                bits.append(f"qty {o['units']:,.0f} → {nw['units']:,.0f}")
+                bits.append(f"qty {o['units']:,.0f} -> {nw['units']:,.0f}")
             if str(nw['priority']) != str(o['priority']):
-                bits.append(f"priority {o['priority'] or '—'} → {nw['priority'] or '—'}")
+                bits.append(f"priority {o['priority'] or '-'} -> {nw['priority'] or '-'}")
+            if str(nw.get('status', '')) != str(o.get('status', '')):
+                bits.append(f"STATUS {o.get('status') or '-'} -> {nw.get('status') or '-'}")
+            if str(nw.get('date', '')) != str(o.get('date', '')):
+                bits.append(f"date {o.get('date') or '-'} -> {nw.get('date') or '-'}")
+            if str(nw.get('batch', '')) != str(o.get('batch', '')):
+                bits.append(f"batch {o.get('batch') or '-'} -> {nw.get('batch') or '-'}")
             lines.append(f"   ~ {nw['product']}  |  {nw['party']}  |  " + ', '.join(bits))
         lines.append('')
     lines += ['This is an automatic notification from the production dashboard '
