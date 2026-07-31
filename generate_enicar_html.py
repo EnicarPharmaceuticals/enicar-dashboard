@@ -715,6 +715,10 @@ def _load_plan():
                 return next((c for c in pdf.columns if any(n in c for n in names)), None)
             cp, cparty = _c('PRODUCT'), _c('PARTY', 'CUSTOMER')
             cq, cpack, cprio = _c('QTY', 'PLANNED'), _c('PACK'), _c('PRIORITY')
+            # Store-writable columns (optional — added by RM / Plant Head)
+            cstat, cdate = _c('RM STATUS', 'STATUS'), _c('RM DATE', 'DISPENSE DATE')
+            cbatch, cby = _c('BATCH'), _c('UPDATED BY', 'BY')
+            crem = _c('REMARK', 'NOTE')
             def _num(v):
                 x = pd.to_numeric(v, errors='coerce')
                 return 0.0 if pd.isna(x) else float(x)
@@ -725,18 +729,26 @@ def _load_plan():
                 prod = r.get(cp)
                 if pd.isna(prod) or not str(prod).strip():
                     continue
+                _d = pd.to_datetime(r.get(cdate), dayfirst=True, errors='coerce') if cdate else None
                 items.append({'product': str(prod).strip(),
                               'party': _txt(r.get(cparty)),
                               'planned_units': _num(r.get(cq)),
                               'pack': _txt(r.get(cpack)),
-                              'priority': int(_num(r.get(cprio))) or None})
+                              'priority': int(_num(r.get(cprio))) or None,
+                              'rm_status': _txt(r.get(cstat)) if cstat else '',
+                              'rm_date': (_d.date() if _d is not None and pd.notna(_d) else None),
+                              'rm_batch': _txt(r.get(cbatch)) if cbatch else '',
+                              'updated_by': _txt(r.get(cby)) if cby else '',
+                              'remark': _txt(r.get(crem)) if crem else ''})
             if items:
                 return items, f'sheet tab “{_tab}” (live — edit there)'
         except Exception as _e:
             print(f'  Plan tab unreadable ({_e}) — using bundled plan.')
     try:
         _pj = json.load(open(_PLAN_JSON))
-        return _pj.get('items', []), 'bundled plan (docx 31 Jul) — add an “AUG PLAN” tab to the sheet to edit live'
+        _fb = [{**i, 'rm_status': '', 'rm_date': None, 'rm_batch': '',
+                'updated_by': '', 'remark': ''} for i in _pj.get('items', [])]
+        return _fb, 'bundled plan (docx 31 Jul) — add an “AUG PLAN” tab to the sheet to edit live'
     except Exception:
         return [], 'no plan found'
 
@@ -770,6 +782,12 @@ def _build_plan_view():
         m['lots'] += 1
         if it.get('priority'):
             m['prio_list'].append(it['priority'])
+        # Store-written fields: keep the most informative value across merged lots
+        for fld in ('rm_status', 'rm_batch', 'updated_by', 'remark'):
+            if it.get(fld) and not m.get(fld):
+                m[fld] = it[fld]
+        if it.get('rm_date') and not m.get('rm_date'):
+            m['rm_date'] = it['rm_date']
     items = list(merged.values())
     for it in items:
         it['priority'] = min(it['prio_list']) if it['prio_list'] else None
@@ -782,8 +800,20 @@ def _build_plan_view():
         return len(A) >= 4 and len(B) >= 4 and (A in B or B in A)
 
     for it in items:
-        # ── Link plan → RM by PRODUCT ONLY (party may legitimately differ) ──
-        hits = [b for b in rmw if prod_match(it['product'], b['product'])]
+        # ── Link plan → RM ──
+        # If the store wrote a batch number in the plan row, that is definitive
+        # (it also rescues items whose product wording differs from the plan).
+        # Otherwise match on PRODUCT ONLY — party may legitimately differ.
+        wanted = {_bkey(x) for x in re.split(r'[,/;]+', it.get('rm_batch') or '') if x.strip()}
+        if wanted:
+            hits = [b for b in rmw if b['key'] in wanted]
+            it['linked_by'] = 'batch written by store'
+            for w in wanted:                       # batch typed but not in RM log yet
+                if not any(b['key'] == w for b in rmw):
+                    it.setdefault('missing_batches', []).append(w)
+        else:
+            hits = [b for b in rmw if prod_match(it['product'], b['product'])]
+            it['linked_by'] = 'product name'
         batches = []
         for b in hits:
             used_keys.add(b['key'])
@@ -808,9 +838,20 @@ def _build_plan_view():
             (_pcanon(it['party_canon']) in _pcanon(c) or _pcanon(c) in _pcanon(it['party_canon']))
             for c in rm_customers)
 
+        # Reconcile what the store wrote against what the logs actually show
+        _st = (it.get('rm_status') or '').strip().lower()
+        it['flag'] = ''
+        if _st.startswith('dispensed') and not batches:
+            it['flag'] = 'Marked dispensed, but no RM log entry found — please add the RM row'
+        elif batches and _st and not _st.startswith(('dispens', 'done', 'complete')):
+            it['flag'] = f'RM has already dispensed {len(batches)} batch(es) — status can be updated'
+        if it.get('missing_batches'):
+            it['flag'] = ('Batch ' + ', '.join(it['missing_batches'])
+                          + ' written here is not in the RM log yet')
+
         plan_q = it['planned_units'] or 0
         if not batches:
-            it['status'], it['srank'] = '⚪ Not started', 0
+            it['status'], it['srank'] = ('🟣 ' + it['rm_status'], 0) if it.get('rm_status') else ('⚪ Not started', 0)
         elif plan_q and it['dispatched'] >= plan_q * 0.95:
             it['status'], it['srank'] = '✅ Done (dispatched)', 5
         elif it['dispatched'] > 0:
@@ -834,6 +875,10 @@ def _build_plan_view():
         'filled': sum(x['filled'] for x in items),
         'batches': sum(len(x['batches']) for x in items),
         'off_plan': len(off_plan),
+        'written': sum(1 for x in items if x.get('rm_status')),
+        'flags': sum(1 for x in items if x.get('flag')),
+        'next': sum(1 for x in items if 'next' in (x.get('rm_status') or '').lower()
+                    or 'tomorrow' in (x.get('rm_status') or '').lower()),
     }
     return items, source, summary, off_plan
 
@@ -961,7 +1006,7 @@ def name_conflict_html():
 def _plan_batch_detail(it, idx):
     """Hidden row shown when a plan line is clicked — the verification view."""
     if not it['batches']:
-        return (f'<tr id="plan-d-{idx}" style="display:none"><td colspan="10" '
+        return (f'<tr id="plan-d-{idx}" style="display:none"><td colspan="11" '
                 f'style="background:#FAFDFC;padding:10px 16px;color:#90A4AE;font-size:12px">'
                 f'No RM dispensing recorded yet for this item. Once the store dispenses it, the '
                 f'batch number appears here automatically and filling / packing / dispatch follow it.'
@@ -983,7 +1028,7 @@ def _plan_batch_detail(it, idx):
                 f'margin-bottom:8px;font-size:12px;color:#E65100">Company differs: plan says '
                 f'<strong>{it["party_canon"]}</strong>, RM says <strong>{", ".join(it["rm_customers"])}</strong>'
                 f' — normal for loan-licence / P2P work. The RM name is treated as correct.</div>')
-    return (f'<tr id="plan-d-{idx}" style="display:none"><td colspan="10" style="background:#FAFDFC;padding:10px 14px">'
+    return (f'<tr id="plan-d-{idx}" style="display:none"><td colspan="11" style="background:#FAFDFC;padding:10px 14px">'
             f'{warn}'
             f'<div style="font-size:12px;font-weight:700;color:{C_PRI};margin-bottom:5px">'
             f'Batches dispensed by RM for this plan item — verified chain</div>'
@@ -1002,6 +1047,9 @@ def plan_section_html():
       + tile('STARTED', f"{s['started']} / {s['items']}", f'{pct_started:.0f}% begun · {s["batches"]} RM batches linked', C_SEC)
       + tile('COMPLETED', n(s['done']), 'items fully dispatched (≥95% of plan)', C_GRN)
       + tile('UNITS FILLED VS PLAN', n(s['filled']), f'of {n(s["units"])} planned', C_AMB)
+      + tile('MARKED BY RM / PLANT HEAD', n(s['written']),
+             (f'{s["next"]} marked to dispense next · {s["flags"]} need attention'
+              if s['written'] else 'add the RM STATUS column to the plan tab to use this'), '#7B1FA2')
     )
     rows = ''
     for i, it in enumerate(PLAN_ITEMS):
@@ -1014,10 +1062,26 @@ def plan_section_html():
         pflag = (f' <span style="background:#FFF3E0;color:#E65100;border-radius:3px;padding:1px 5px;'
                  f'font-size:10px;font-weight:700" title="Plan company differs from RM — loan licence / P2P">'
                  f'⇄ {it["rm_customers"][0]}</span>') if it['party_differs'] else ''
+        # what the store / Plant Head wrote in the sheet
+        _stt = it.get('rm_status') or ''
+        _sl = _stt.lower()
+        _scol = (C_GRN if _sl.startswith(('dispens', 'done', 'complete')) else
+                 C_ORG if ('next' in _sl or 'tomorrow' in _sl) else
+                 '#7B1FA2' if _sl else '#90A4AE')
+        wrote = (f'<span style="background:#F3E5F5;color:{_scol};border-radius:3px;padding:2px 7px;'
+                 f'font-size:11px;font-weight:700">{_stt}</span>') if _stt else '<span style="color:#CFD8DC">—</span>'
+        if it.get('rm_date'):
+            wrote += f'<div style="font-size:10px;color:#90A4AE">{it["rm_date"].strftime("%d %b")}</div>'
+        if it.get('updated_by'):
+            wrote += f'<div style="font-size:10px;color:#B0BEC5">{it["updated_by"]}</div>'
+        flagchip = (f'<div style="font-size:10px;color:{C_AMB};margin-top:3px">⚠ {it["flag"]}</div>'
+                    ) if it.get('flag') else ''
         bar = (f'<div style="background:#ECEFF1;border-radius:3px;height:6px;min-width:70px">'
                f'<div style="background:{C_SEC};height:6px;border-radius:3px;width:{it["pct"]:.0f}%"></div></div>')
+        _isnext = 1 if ('next' in _sl or 'tomorrow' in _sl) else 0
         rows += (f'<tr style="background:{bg};cursor:pointer" data-prio="{it["priority"] or 0}" '
-                 f'data-srank="{it["srank"]}" onclick="togglePlan({i})" title="Click to verify the RM batches behind this item">'
+                 f'data-srank="{it["srank"]}" data-next="{_isnext}" data-flag="{1 if it.get("flag") else 0}" '
+                 f'onclick="togglePlan({i})" title="Click to verify the RM batches behind this item">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
                  f'<td class="td-name">{it["product"]}{lots} {badge}</td>'
                  f'<td class="td-name" style="color:#546E7A">{it["party_canon"]}{pflag}</td>'
@@ -1027,13 +1091,15 @@ def plan_section_html():
                  f'<td class="td-num" style="color:{C_AMB}">{n(it["packed"]) if it["packed"] else "—"}</td>'
                  f'<td class="td-num" style="color:{C_ORG}">{n(it["dispatched"]) if it["dispatched"] else "—"}</td>'
                  f'<td>{bar}</td>'
-                 f'<td class="td-name" style="font-size:12px;white-space:nowrap">{it["status"]}</td>'
+                 f'<td class="td-name" style="font-size:12px;white-space:nowrap">{it["status"]}{flagchip}</td>'
+                 f'<td class="td-name">{wrote}</td>'
                  f'</tr>')
         rows += _plan_batch_detail(it, i)
     chips = ''.join(
         f'<span class="chip" onclick="event.stopPropagation();planFilter(this,{p})">{lbl}</span>'
         for p, lbl in [(-1, 'ALL'), (1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
-                       (4, 'PRIORITY 4'), (-2, 'NOT STARTED'), (-3, 'IN PROGRESS')])
+                       (4, 'PRIORITY 4'), (-2, 'NOT STARTED'), (-3, 'IN PROGRESS'),
+                       (-4, '🟣 DISPENSE NEXT'), (-5, '⚠ NEEDS ATTENTION')])
     off = ''
     if PLAN_OFF:
         orows = ''.join(
@@ -1057,6 +1123,9 @@ def plan_section_html():
     and the <strong>batch number and company name are taken from RM</strong> (under loan-licence / P2P the plan
     company can differ; that is marked ⇄, not treated as an error). Filling, packing and dispatch are then
     tracked by batch number, so shifting dates never break the tracking.
+    <br><strong>RM store / Mr. Verma write directly in the plan tab</strong> (RM STATUS, RM DATE, BATCH NO.,
+    UPDATED BY) — those entries show in the last column, are reconciled against the logs, and any change is
+    emailed to the store team automatically.
   </div>
   <div class="tile-row">{tiles}</div>
   <div class="chip-row" style="padding:0 16px 10px">{chips}</div>
@@ -1064,7 +1133,8 @@ def plan_section_html():
     <table style="min-width:880px">
       <thead><tr class="th-row">
         <th>P</th><th>PRODUCT</th><th>CUSTOMER</th><th>PACK</th><th>PLANNED</th>
-        <th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th>STATUS</th>
+        <th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th>TRACKED STATUS</th>
+        <th>RM / PLANT HEAD ENTRY</th>
       </tr></thead>
       <tbody id="plan-rows">{rows}</tbody>
     </table>
@@ -2724,10 +2794,14 @@ function planFilter(chipEl, p) {{
   document.querySelectorAll('#plan-rows tr[data-prio]').forEach(tr => {{
     const prio = parseInt(tr.getAttribute('data-prio') || '0');
     const srank = parseInt(tr.getAttribute('data-srank') || '0');
+    const isnext = tr.getAttribute('data-next') === '1';
+    const isflag = tr.getAttribute('data-flag') === '1';
     let show = true;
     if (p >= 1) show = (prio === p);
     else if (p === -2) show = (srank === 0);
     else if (p === -3) show = (srank > 0 && srank < 5);
+    else if (p === -4) show = isnext;
+    else if (p === -5) show = isflag;
     tr.style.display = show ? '' : 'none';
     const det = tr.nextElementSibling;                 // paired detail row
     if (det && det.id && det.id.startsWith('plan-d-')) det.style.display = 'none';
