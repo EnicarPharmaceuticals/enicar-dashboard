@@ -280,7 +280,12 @@ def main():
                 is_reminder = True
 
     # Drop fingerprints that are no longer in current data (corrected).
+    # Keys starting with '_' are foreign state (e.g. the plan-change watcher's
+    # snapshot) stored in this file because the cloud workflow commits it —
+    # never prune those.
     for fp in list(state):
+        if fp.startswith('_'):
+            continue
         if fp not in current_fps:
             del state[fp]
 
