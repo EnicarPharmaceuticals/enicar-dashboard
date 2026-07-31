@@ -104,6 +104,18 @@ def main():
     except Exception as e:
         print(f'store-mismatch checker skipped: {e}')
 
+    # ── Plan-change watcher: emails store@ when the Plant Head edits the plan tab ──
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(HERE, 'check_plan_changes.py')],
+            env=env, capture_output=True, text=True, timeout=60
+        )
+        if r.stdout: print(r.stdout.strip())
+        if r.returncode and r.stderr:
+            print('plan-change checker stderr:', r.stderr.strip())
+    except Exception as e:
+        print(f'plan-change checker skipped: {e}')
+
     return 0
 
 
