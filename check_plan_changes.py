@@ -45,16 +45,23 @@ def load_plan_rows():
                 return next((c for c in df.columns if any(n in c for n in names)), None)
             cp, cparty = col('PRODUCT'), col('PARTY', 'CUSTOMER')
             cq, cpack, cprio = col('QTY', 'PLANNED'), col('PACK'), col('PRIORITY')
+            def _num(v):
+                x = pd.to_numeric(v, errors='coerce')
+                return 0.0 if pd.isna(x) else float(x)
+            def _txt(v):
+                # NaN is truthy in Python — never use `v or ''` on sheet cells
+                return '' if v is None or (not isinstance(v, str) and pd.isna(v)) else str(v).strip()
             rows = []
             for _, r in df.iterrows():
                 prod = r.get(cp)
                 if pd.isna(prod) or not str(prod).strip():
                     continue
+                pr = _num(r.get(cprio))
                 rows.append({'product': str(prod).strip(),
-                             'party': str(r.get(cparty) or '').strip(),
-                             'units': float(pd.to_numeric(r.get(cq), errors='coerce') or 0),
-                             'pack': str(r.get(cpack) or '').strip(),
-                             'priority': str(r.get(cprio) or '').strip()})
+                             'party': _txt(r.get(cparty)),
+                             'units': _num(r.get(cq)),
+                             'pack': _txt(r.get(cpack)),
+                             'priority': str(int(pr)) if pr else ''})
             if rows:
                 return rows, f'sheet tab "{tab}"'
     except Exception as e:
