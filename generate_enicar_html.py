@@ -1901,6 +1901,13 @@ def _pt_and_customer_html(s):
     '''
     return pt_html + cust_html
 
+# Company logo, embedded as a data URI so the page stays a single file.
+try:
+    LOGO_URI = ('data:image/png;base64,'
+                + base64.b64encode(open(os.path.join(HERE, 'logo.png'), 'rb').read()).decode('ascii'))
+except Exception:
+    LOGO_URI = ''
+
 generated_at = datetime.now().strftime('%d %b %Y, %I:%M %p')
 
 html = f"""<!DOCTYPE html>
@@ -2044,8 +2051,13 @@ html = f"""<!DOCTYPE html>
 
 <!-- HEADER -->
 <div class="header">
-  <h1>ENICAR</h1>
-  <div class="header-sub">PRODUCTION DASHBOARD &nbsp;|&nbsp; Generated {generated_at}</div>
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    {f'<img src="{LOGO_URI}" alt="Enicar Pharmaceuticals" style="height:52px;width:auto;background:#fff;border-radius:8px;padding:4px 8px">' if LOGO_URI else ''}
+    <div>
+      <h1>ENICAR</h1>
+      <div class="header-sub">PRODUCTION DASHBOARD &nbsp;|&nbsp; Generated {generated_at}</div>
+    </div>
+  </div>
 </div>
 <div class="period-bar">PRODUCTION &nbsp; DASHBOARD &nbsp;&nbsp;|&nbsp;&nbsp; {PERIOD}</div>
 
