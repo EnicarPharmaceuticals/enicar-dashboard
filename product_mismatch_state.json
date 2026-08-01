@@ -229,1008 +229,1437 @@
   "_plan_snapshot": {
     "fp": {
       "abccoldsyrup|menzbek|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
         "priority": "4",
         "product": "ABC Cold Syrup",
+        "status": "",
         "units": 1000.0
       },
       "abcloratdine|menzbek|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
         "priority": "4",
         "product": "ABC Loratdine",
+        "status": "",
         "units": 10000.0
       },
       "abee400|bluemap|20ml": {
+        "batch": "",
+        "date": "",
         "pack": "20 ml",
         "party": "Blue Map",
         "priority": "",
         "product": "ABEE-400",
+        "status": "",
         "units": 71040.0
       },
       "alaize|sapphire|15ml": {
+        "batch": "",
+        "date": "",
         "pack": "15 ml",
         "party": "Sapphire",
         "priority": "",
         "product": "Alaize",
+        "status": "",
         "units": 775000.0
       },
       "alaize|sapphire|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Sapphire",
         "priority": "2",
         "product": "Alaize",
+        "status": "",
         "units": 30000.0
       },
       "albendazoleoralsuspensionuspkanvid|tushu|10ml": {
+        "batch": "",
+        "date": "",
         "pack": "10 ml",
         "party": "Tushu",
         "priority": "1",
         "product": "Albendazole Oral Suspension USP (Kanvid)",
+        "status": "",
         "units": 40000.0
       },
       "albendazolesuspension400mg10mlumedica|umedica|10ml": {
+        "batch": "",
+        "date": "",
         "pack": "10 ml",
         "party": "Umedica",
         "priority": "",
         "product": "Albendazole Suspension 400 mg/10 ml (Umedica)",
+        "status": "",
         "units": 180000.0
       },
       "algicore|nelpa|10ml": {
+        "batch": "",
+        "date": "",
         "pack": "10 ml",
         "party": "Nelpa",
         "priority": "",
         "product": "Algicore",
+        "status": "",
         "units": 300000.0
       },
       "ambroxolhydrochloridesyrup15mg5mlflamingo|flamingo|120ml": {
+        "batch": "",
+        "date": "",
         "pack": "120 ml",
         "party": "Flamingo",
         "priority": "",
         "product": "Ambroxol Hydrochloride Syrup 15mg/5ml (Flamingo)",
+        "status": "",
         "units": 75000.0
       },
       "amitone|bliss|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Amitone",
+        "status": "",
         "units": 10000.0
       },
       "amitone|bliss|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Amitone",
+        "status": "",
         "units": 35000.0
       },
       "amylase|unique|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Amylase",
+        "status": "",
         "units": 50000.0
       },
       "anaferrousz|bohra|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Bohra",
         "priority": "",
         "product": "ANAFERROUS-Z",
+        "status": "",
         "units": 25000.0
       },
       "analginsyrupkanvid|tushu|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Tushu",
         "priority": "1",
         "product": "Analgin Syrup (Kanvid)",
+        "status": "",
         "units": 20000.0
       },
       "anatamin|bohra|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Bohra",
         "priority": "",
         "product": "Anatamin",
+        "status": "",
         "units": 45000.0
       },
       "antagel|bluemap|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Blue Map",
         "priority": "",
         "product": "ANTAGEL",
+        "status": "",
         "units": 9900.0
       },
       "anticidplus|luex|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "LUEX",
         "priority": "4",
         "product": "Anticid Plus",
+        "status": "",
         "units": 48000.0
       },
       "asthalexsyrup|luex|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "LUEX",
         "priority": "1",
         "product": "Asthalex Syrup",
+        "status": "",
         "units": 12000.0
       },
       "becatonelsyrup|navketan|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Navketan",
         "priority": "1",
         "product": "Becatone-L Syrup",
+        "status": "",
         "units": 20000.0
       },
       "bioforcetonic|sapphire|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Sapphire",
         "priority": "1",
         "product": "Bioforce Tonic",
+        "status": "",
         "units": 15000.0
       },
       "bisnova|zievaenicar|150ml": {
+        "batch": "",
+        "date": "",
         "pack": "150 ml",
         "party": "Zieva/Enicar",
         "priority": "",
         "product": "BISNOVA",
+        "status": "",
         "units": 20000.0
       },
       "bliscal|bliss|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Bliscal",
+        "status": "",
         "units": 10000.0
       },
-      "bonaplexsyrup|carethcorporation|250ml": {
+      "bonaplexsyrup|unichemghanalimited|250ml": {
+        "batch": "",
+        "date": "",
         "pack": "250 ml",
-        "party": "CARETH CORPORATION",
+        "party": "UNICHEM (GHANA) LIMITED",
         "priority": "4",
         "product": "Bonaplex Syrup",
+        "status": "",
         "units": 74000.0
       },
       "bovergreensabcbabycoughsyrup|menzbek|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
         "priority": "4",
         "product": "B.OVERGREENS ABC BABY COUGH SYRUP",
+        "status": "",
         "units": 7000.0
       },
       "bovergreensabcmetronidazolefurazolidonesuspension|menzbek|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
         "priority": "4",
         "product": "B.OVERGREENS ABC METRONIDAZOLE+FURAZOLIDONE SUSPENSION",
+        "status": "",
         "units": 10000.0
       },
       "bovergreensabcoralparacetamolsuspension|menzbek|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
         "priority": "4",
         "product": "B.OVERGREENS ABC ORAL PARACETAMOL SUSPENSION",
+        "status": "",
         "units": 9900.0
       },
       "bovergreensabcteethingmixture|menzbek|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
         "priority": "4",
         "product": "B.OVERGREENS ABC TEETHING MIXTURE",
+        "status": "",
         "units": 10000.0
       },
       "bromovanplus|unique|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Unique",
         "priority": "2",
         "product": "Bromovan Plus",
+        "status": "",
         "units": 10000.0
       },
       "carbocisteinesyrup5wvkanvid|tushu|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Tushu",
         "priority": "1",
         "product": "Carbocisteine Syrup 5% W/V (Kanvid)",
+        "status": "",
         "units": 125000.0
       },
       "chloramphenicolpalmitateoralsuspensionuspselfcare|kamal|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Kamal",
         "priority": "",
         "product": "Chloramphenicol Palmitate Oral Suspension USP (Self Care)",
+        "status": "",
         "units": 10000.0
       },
       "climaxnystatinoralsuspension|omexport|30ml": {
+        "batch": "",
+        "date": "",
         "pack": "30 ml",
         "party": "Om Export",
         "priority": "",
         "product": "Climax Nystatin Oral Suspension",
+        "status": "",
         "units": 286200.0
       },
       "cosomecoughsyrup|pg|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "P&G",
         "priority": "3",
         "product": "Cosome Cough Syrup",
+        "status": "",
         "units": 50000.0
       },
       "cremoaidplussf|workcell|170ml": {
+        "batch": "",
+        "date": "",
         "pack": "170 ml",
         "party": "Workcell",
         "priority": "",
         "product": "Cremoaid Plus SF",
+        "status": "",
         "units": 13000.0
       },
       "cyprobplus|galaxy|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Galaxy",
         "priority": "2",
         "product": "Cypro B Plus",
+        "status": "",
         "units": 165000.0
       },
       "cyproplexplus|unique|15ml": {
+        "batch": "",
+        "date": "",
         "pack": "15 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Cyproplex-Plus",
+        "status": "",
         "units": 250000.0
       },
       "daslinnf|rpg|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "RPG",
         "priority": "",
         "product": "DASLIN-NF",
+        "status": "",
         "units": 25000.0
       },
       "eurovit|mvc|25ml": {
+        "batch": "",
+        "date": "",
         "pack": "25 ml",
         "party": "MVC",
         "priority": "",
         "product": "EUROVIT",
+        "status": "",
         "units": 25000.0
       },
       "ferrolexsyrup|luex|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "LUEX",
         "priority": "4",
         "product": "Ferrolex Syrup",
+        "status": "",
         "units": 24000.0
       },
       "ferrolifesyrup|pharmatrust|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Ferrolife Syrup",
+        "status": "",
         "units": 5000.0
       },
       "ferrolifesyrup|pharmatrust|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Ferrolife Syrup",
+        "status": "",
         "units": 5000.0
       },
       "fortomega|unique|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Unique",
         "priority": "3",
         "product": "Fortomega",
+        "status": "",
         "units": 10000.0
       },
       "funbactcream|bliss|15gm": {
+        "batch": "",
+        "date": "",
         "pack": "15 gm",
         "party": "Bliss",
         "priority": "",
         "product": "Funbact Cream",
+        "status": "",
         "units": 600000.0
       },
       "funbact|bliss|1000ml": {
+        "batch": "",
+        "date": "",
         "pack": "1000 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Funbact",
+        "status": "",
         "units": 9100.0
       },
       "funbact|bliss|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Funbact",
+        "status": "",
         "units": 40000.0
       },
       "funbact|bliss|250ml": {
+        "batch": "",
+        "date": "",
         "pack": "250 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Funbact",
+        "status": "",
         "units": 12000.0
       },
       "funbact|bliss|500ml": {
+        "batch": "",
+        "date": "",
         "pack": "500 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Funbact",
+        "status": "",
         "units": 8600.0
       },
       "funbact|bliss|50ml": {
+        "batch": "",
+        "date": "",
         "pack": "50 ml",
         "party": "Bliss",
         "priority": "",
         "product": "Funbact",
+        "status": "",
         "units": 70000.0
       },
       "gasstop|ryvis|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Ryvis",
         "priority": "2",
         "product": "Gasstop",
+        "status": "",
         "units": 28750.0
       },
       "gasstop|ryvis|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Ryvis",
         "priority": "2",
         "product": "Gasstop",
+        "status": "",
         "units": 8700.0
       },
       "gastroend|medico|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Medico",
         "priority": "",
         "product": "Gastro End",
+        "status": "",
         "units": 20000.0
       },
       "gelucido|pharmatrust|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Gelucid O",
+        "status": "",
         "units": 7500.0
       },
       "gelucido|pharmatrust|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Gelucid O",
+        "status": "",
         "units": 7500.0
       },
       "gelucid|pharmatrust|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Gelucid",
+        "status": "",
         "units": 7500.0
       },
       "gelucid|pharmatrust|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Gelucid",
+        "status": "",
         "units": 7500.0
       },
       "gocoffcoughsyrup|vardhman|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Vardhman",
         "priority": "",
         "product": "Go Coff Cough Syrup",
+        "status": "",
         "units": 40000.0
       },
       "ibu100suspension|vardhman|120ml": {
+        "batch": "",
+        "date": "",
         "pack": "120 ml",
         "party": "Vardhman",
         "priority": "",
         "product": "Ibu-100 Suspension",
+        "status": "",
         "units": 20000.0
       },
       "ibumed|pharmatrust|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Ibumed",
+        "status": "",
         "units": 30000.0
       },
       "ibuprofenoralsuspensionbp100mg5mlumedica|umedica|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Umedica",
         "priority": "1",
         "product": "Ibuprofen Oral Suspension BP 100 mg/5 ml (Umedica)",
+        "status": "",
         "units": 25000.0
       },
       "ibuprofenoralsuspensionbpkanvid|tushu|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Tushu",
         "priority": "1",
         "product": "Ibuprofen Oral Suspension BP (Kanvid)",
+        "status": "",
         "units": 40000.0
       },
       "kaonique|unique|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Unique",
         "priority": "2",
         "product": "Kaonique",
+        "status": "",
         "units": 30000.0
       },
       "kifarujelly100mg|shalina|5gm": {
+        "batch": "",
+        "date": "",
         "pack": "5 gm",
         "party": "Shalina",
         "priority": "",
         "product": "Kifaru Jelly 100mg",
+        "status": "",
         "units": 200000.0
       },
       "kvitaplus|bluemap|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Blue Map",
         "priority": "",
         "product": "K-VITA PLUS",
+        "status": "",
         "units": 10000.0
       },
       "lexofenplusjuniorsuspension|luex|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "LUEX",
         "priority": "1",
         "product": "Lexofen Plus Junior Suspension",
+        "status": "",
         "units": 10000.0
       },
       "lexofensuspension|luex|150ml": {
+        "batch": "",
+        "date": "",
         "pack": "150 ml",
         "party": "LUEX",
         "priority": "1",
         "product": "Lexofen Suspension",
+        "status": "",
         "units": 40000.0
       },
       "livogeniron|pg|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "P&G",
         "priority": "1",
         "product": "Livogen Iron",
+        "status": "",
         "units": 150000.0
       },
       "loratadineoralsolutionusp|medico|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Medico",
         "priority": "",
         "product": "Loratadine Oral Solution USP",
+        "status": "",
         "units": 70000.0
       },
       "magasconmagaldratesimethiconeoralsuspensionusp|socomed|15ml": {
+        "batch": "",
+        "date": "",
         "pack": "15 ml",
         "party": "Socomed",
         "priority": "",
         "product": "MAGASCON (Magaldrate & Simethicone Oral Suspension USP)",
+        "status": "",
         "units": 120000.0
       },
       "magdoxantacid|menzbek|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Menzbek",
         "priority": "4",
         "product": "Magdox Antacid",
+        "status": "",
         "units": 10000.0
       },
       "maxilog|aurastanmark|150ml": {
+        "batch": "",
+        "date": "",
         "pack": "150 ml",
         "party": "Aura/Stanmark",
         "priority": "",
         "product": "Maxilog",
+        "status": "",
         "units": 13000.0
       },
       "meboxsuspension|sapphire|30ml": {
+        "batch": "",
+        "date": "",
         "pack": "30 ml",
         "party": "Sapphire",
         "priority": "4",
         "product": "Mebox Suspension",
+        "status": "",
         "units": 50000.0
       },
       "megalax|unique|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Unique",
         "priority": "3",
         "product": "Megalax",
+        "status": "",
         "units": 50000.0
       },
       "minminps|rpg|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "RPG",
         "priority": "",
         "product": "MinMin PS",
+        "status": "",
         "units": 50000.0
       },
       "monlc|unique|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Unique",
         "priority": "2",
         "product": "MON-LC",
+        "status": "",
         "units": 10000.0
       },
       "mucorilexpectorant|sapphire|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Sapphire",
         "priority": "1",
         "product": "Mucoril Expectorant",
+        "status": "",
         "units": 45000.0
       },
       "multimino|bluemap|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Blue Map",
         "priority": "",
         "product": "MULTIMINO",
+        "status": "",
         "units": 10020.0
       },
       "multivitaminsyrupkanvid|tushu|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Tushu",
         "priority": "1",
         "product": "Multivitamin Syrup (Kanvid)",
+        "status": "",
         "units": 75000.0
       },
       "napogasoutforteplus|napo|250ml": {
+        "batch": "",
+        "date": "",
         "pack": "250 ml",
         "party": "Napo",
         "priority": "",
         "product": "Napo Gas Out Forte Plus",
+        "status": "",
         "units": 20000.0
       },
       "nilwormsuspension|galaxy|10ml": {
+        "batch": "",
+        "date": "",
         "pack": "10 ml",
         "party": "Galaxy",
         "priority": "2",
         "product": "Nilworm Suspension",
+        "status": "",
         "units": 595200.0
       },
       "nocigelo|unique|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Nocigel-O",
+        "status": "",
         "units": 20000.0
       },
       "nocigelsachet|unique|24x15ml": {
+        "batch": "",
+        "date": "",
         "pack": "24 x 15 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Nocigel (Sachet)",
+        "status": "",
         "units": 10000.0
       },
       "nocolddx|unique|7ml": {
+        "batch": "",
+        "date": "",
         "pack": "7 ml",
         "party": "Unique",
         "priority": "3",
         "product": "Nocold Dx",
+        "status": "",
         "units": 100000.0
       },
       "nutrisangtonic|sapphire|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Sapphire",
         "priority": "1",
         "product": "Nutrisang Tonic",
+        "status": "",
         "units": 60000.0
       },
       "nystatinoralsuspensionuspkanvid|tushu|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Tushu",
         "priority": "1",
         "product": "Nystatin Oral Suspension USP (Kanvid)",
+        "status": "",
         "units": 45000.0
       },
       "nystatinoralsuspensionusp|bluemap|30ml": {
+        "batch": "",
+        "date": "",
         "pack": "30 ml",
         "party": "Blue Map",
         "priority": "",
         "product": "Nystatin Oral Suspension USP",
+        "status": "",
         "units": 132000.0
       },
       "ostopolybionsuspensionofcalciumwithvitamind3vitaminb12|pg|300ml": {
+        "batch": "",
+        "date": "",
         "pack": "300 ml",
         "party": "P&G",
         "priority": "2",
         "product": "Osto-Polybion (Suspension of Calcium with Vitamin D3 & Vitamin B12)",
+        "status": "",
         "units": 33300.0
       },
       "pac|unique|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Unique",
         "priority": "1",
         "product": "PA-C",
+        "status": "",
         "units": 40000.0
       },
       "paediatriccotrimoxazoleoralsuspensionbpkanvid|tushu|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Tushu",
         "priority": "1",
         "product": "Paediatric Cotrimoxazole Oral Suspension BP (Kanvid)",
+        "status": "",
         "units": 50000.0
       },
       "paediatriccotrimoxazoleoralsuspensionbpselfcare|kamal|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "kamal",
         "priority": "",
         "product": "Paediatric Cotrimoxazole Oral Suspension BP (Self Care)",
+        "status": "",
         "units": 20000.0
       },
       "perfacc|unique|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Unique",
         "priority": "2",
         "product": "Perfac C",
+        "status": "",
         "units": 20000.0
       },
       "phalka|unique|120ml": {
+        "batch": "",
+        "date": "",
         "pack": "120 ml",
         "party": "Unique",
         "priority": "2",
         "product": "PH-Alka",
+        "status": "",
         "units": 10000.0
       },
       "picronbabycoldcoughfeversyrup|ronak|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Picron Baby Cold Cough & Fever Syrup",
+        "status": "",
         "units": 30000.0
       },
       "picronbabycoldcoughfeversyrup|ronak|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Picron Baby Cold Cough & Fever Syrup",
+        "status": "",
         "units": 40000.0
       },
       "polybionactive|pg|150ml": {
+        "batch": "",
+        "date": "",
         "pack": "150 ml",
         "party": "P&G",
         "priority": "1",
         "product": "Polybion Active",
+        "status": "",
         "units": 66600.0
       },
       "polybionactive|pg|300ml": {
+        "batch": "",
+        "date": "",
         "pack": "300 ml",
         "party": "P&G",
         "priority": "2",
         "product": "Polybion Active",
+        "status": "",
         "units": 33300.0
       },
       "polybionlc|pg|150ml": {
+        "batch": "",
+        "date": "",
         "pack": "150 ml",
         "party": "P&G",
         "priority": "1",
         "product": "Polybion Lc",
+        "status": "",
         "units": 200000.0
       },
       "polybionlc|pg|300ml": {
+        "batch": "",
+        "date": "",
         "pack": "300 ml",
         "party": "P&G",
         "priority": "2",
         "product": "Polybion Lc",
+        "status": "",
         "units": 33300.0
       },
       "polybionlc|pg|400ml": {
+        "batch": "",
+        "date": "",
         "pack": "400 ml",
         "party": "P&G",
         "priority": "3",
         "product": "Polybion Lc",
+        "status": "",
         "units": 50000.0
       },
       "powerfil50mint|vardhman|5gm": {
+        "batch": "",
+        "date": "",
         "pack": "5 gm",
         "party": "Vardhman",
         "priority": "",
         "product": "Powerfil 50 Mint",
+        "status": "",
         "units": 55000.0
       },
       "powerfil50orange|vardhman|5gm": {
+        "batch": "",
+        "date": "",
         "pack": "5 gm",
         "party": "Vardhman",
         "priority": "",
         "product": "Powerfil 50 (Orange)",
+        "status": "",
         "units": 100000.0
       },
       "powerfil50strawberry|vardhman|5gm": {
+        "batch": "",
+        "date": "",
         "pack": "5 gm",
         "party": "Vardhman",
         "priority": "",
         "product": "Powerfil 50 strawberry",
+        "status": "",
         "units": 55000.0
       },
       "princesheptinplussachets|socomed|15ml": {
+        "batch": "",
+        "date": "",
         "pack": "15 ml",
         "party": "Socomed",
         "priority": "",
         "product": "Princes Heptin Plus (Sachets)",
+        "status": "",
         "units": 250000.0
       },
       "princesheptinplus|socomed|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Socomed",
         "priority": "",
         "product": "Princes Heptin Plus",
+        "status": "",
         "units": 34000.0
       },
       "procalsyrup|lesanto|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Lesanto",
         "priority": "",
         "product": "Procal Syrup",
+        "status": "",
         "units": 25000.0
       },
       "proliser|group|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Group",
         "priority": "",
         "product": "Proliser",
+        "status": "",
         "units": 15000.0
       },
       "proliser|group|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Group",
         "priority": "",
         "product": "Proliser",
+        "status": "",
         "units": 15000.0
       },
       "promilase|aurastanmark|150ml": {
+        "batch": "",
+        "date": "",
         "pack": "150 ml",
         "party": "Aura/Stanmark",
         "priority": "",
         "product": "PROMILASE",
+        "status": "",
         "units": 30000.0
       },
       "qamino|unique|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Q-Amino",
+        "status": "",
         "units": 50000.0
       },
       "qenzy|unique|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Q-Enzy",
+        "status": "",
         "units": 20000.0
       },
       "ronakmultivitamin|ronak|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronak Multivitamin",
+        "status": "",
         "units": 20000.0
       },
       "ronakmultivitamin|ronak|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronak Multivitamin",
+        "status": "",
         "units": 10000.0
       },
       "ronaktone|ronak|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronaktone",
+        "status": "",
         "units": 9000.0
       },
       "ronaktone|ronak|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronaktone",
+        "status": "",
         "units": 9000.0
       },
       "ronanutraforte|ronak|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronanutra Forte",
+        "status": "",
         "units": 12000.0
       },
       "ronanutraforte|ronak|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronanutra Forte",
+        "status": "",
         "units": 12000.0
       },
       "ronfitcoldfortell034|ronak|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronfit cold forte ( LL034)",
+        "status": "",
         "units": 3000.0
       },
       "ronfitcoldw|ronak|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronfit Cold-W",
+        "status": "",
         "units": 30000.0
       },
       "ronvitdrops|ronak|30ml": {
+        "batch": "",
+        "date": "",
         "pack": "30 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronvit Drops",
+        "status": "",
         "units": 50000.0
       },
       "ronvitdrops|ronak|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronvit Drops",
+        "status": "",
         "units": 25000.0
       },
       "ronvitextrapoll010|ronak|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Ronak",
         "priority": "3",
         "product": "Ronvit Extra (POLL010)",
+        "status": "",
         "units": 15000.0
       },
       "rynstatin|nelpa|30ml": {
+        "batch": "",
+        "date": "",
         "pack": "30 ml",
         "party": "Nelpa",
         "priority": "",
         "product": "Rynstatin",
+        "status": "",
         "units": 7000.0
       },
       "selfcarehyzolointment|kamal|30gm": {
+        "batch": "",
+        "date": "",
         "pack": "30 gm",
         "party": "Kamal",
         "priority": "",
         "product": "Selfcare Hyzol Ointment",
+        "status": "",
         "units": 15000.0
       },
       "setfloworalsolution|macleods|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Macleods",
         "priority": "",
         "product": "Setflow Oral Solution",
+        "status": "",
         "units": 100000.0
       },
       "sortoux|unique|120ml": {
+        "batch": "",
+        "date": "",
         "pack": "120 ml",
         "party": "Unique",
         "priority": "2",
         "product": "Sortoux",
+        "status": "",
         "units": 10000.0
       },
       "tanzolsuspension|shalina|10ml": {
+        "batch": "",
+        "date": "",
         "pack": "10 ml",
         "party": "Shalina",
         "priority": "",
         "product": "Tanzol Suspension",
+        "status": "",
         "units": 200000.0
       },
       "telovasyrup|laso|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Laso",
         "priority": "",
         "product": "TELOVA SYRUP",
+        "status": "",
         "units": 33000.0
       },
       "tempact250suspension|navketan|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Navketan",
         "priority": "1",
         "product": "Tempact-250 Suspension",
+        "status": "",
         "units": 650000.0
       },
       "topicidal|sapphire|175ml": {
+        "batch": "",
+        "date": "",
         "pack": "175 ml",
         "party": "Sapphire",
         "priority": "4",
         "product": "Topicidal",
+        "status": "",
         "units": 25000.0
       },
       "tricaineargel|rpg|220ml": {
+        "batch": "",
+        "date": "",
         "pack": "220 ml",
         "party": "RPG",
         "priority": "",
         "product": "Tricaine AR Gel",
+        "status": "",
         "units": 15000.0
       },
       "trustyminsyrup|pharmatrust|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Trustymin Syrup",
+        "status": "",
         "units": 7500.0
       },
       "trustyminsyrup|pharmatrust|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust",
         "priority": "3",
         "product": "Trustymin Syrup",
+        "status": "",
         "units": 7500.0
       },
       "tuspelcoughsyrup|indoco|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Indoco",
         "priority": "",
         "product": "Tuspel Cough Syrup",
+        "status": "",
         "units": 23935.0
       },
       "tuspelpluscoughsyrup|indoco|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Indoco",
         "priority": "",
         "product": "Tuspel Plus Cough Syrup",
+        "status": "",
         "units": 23500.0
       },
       "tuspresscoughsuppressantps|indoco|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Indoco",
         "priority": "",
         "product": "Tuspress Cough Suppressant PS",
+        "status": "",
         "units": 580.0
       },
       "tuspresscoughsuppressant|indoco|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Indoco",
         "priority": "",
         "product": "Tuspress Cough Suppressant",
+        "status": "",
         "units": 24460.0
       },
       "unicaine|unique|50ml": {
+        "batch": "",
+        "date": "",
         "pack": "50 ml",
         "party": "Unique",
         "priority": "3",
         "product": "Unicaine",
+        "status": "",
         "units": 5000.0
       },
       "unidaktgeloral|unique|10gm": {
+        "batch": "",
+        "date": "",
         "pack": "10 gm",
         "party": "Unique",
         "priority": "3",
         "product": "Unidakt Gel Oral",
+        "status": "",
         "units": 10000.0
       },
       "uniforcetonic|unique|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Unique",
         "priority": "2",
         "product": "Uniforce Tonic",
+        "status": "",
         "units": 150000.0
       },
       "unisangtonic|unique|200ml": {
+        "batch": "",
+        "date": "",
         "pack": "200 ml",
         "party": "Unique",
         "priority": "2",
         "product": "Unisang Tonic",
+        "status": "",
         "units": 20000.0
       },
       "vardacortcream|vardhman|15gm": {
+        "batch": "",
+        "date": "",
         "pack": "15 gm",
         "party": "Vardhman",
         "priority": "",
         "product": "Vardacort Cream",
+        "status": "",
         "units": 30000.0
       },
       "vardavit|vardhman|100ml": {
+        "batch": "",
+        "date": "",
         "pack": "100 ml",
         "party": "Vardhman",
         "priority": "",
         "product": "Vardavit",
+        "status": "",
         "units": 20000.0
       },
       "viscid|indoco|15ml": {
+        "batch": "",
+        "date": "",
         "pack": "15 ml",
         "party": "Indoco",
         "priority": "",
         "product": "Viscid",
+        "status": "",
         "units": 1500000.0
       },
       "worminix|unique|10ml": {
+        "batch": "",
+        "date": "",
         "pack": "10 ml",
         "party": "Unique",
         "priority": "3",
         "product": "Worminix",
+        "status": "",
         "units": 300000.0
       },
       "zincsyrup|nelpa|60ml": {
+        "batch": "",
+        "date": "",
         "pack": "60 ml",
         "party": "Nelpa",
         "priority": "",
         "product": "Zinc Syrup",
+        "status": "",
         "units": 20000.0
       }
     },
-    "source": "bundled plan JSON",
-    "ts": "2026-07-31T11:35:39"
+    "source": "sheet tab \"AUG PLAN\"",
+    "ts": "2026-08-01T10:30:51"
   }
 }
