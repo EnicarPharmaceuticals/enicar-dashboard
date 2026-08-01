@@ -885,8 +885,19 @@ def _build_plan_view():
     items.sort(key=lambda x: (_BUCKET_ORDER[x['due_bucket']],
                               x['due_days'] if x['due_days'] is not None else 9999,
                               x['priority'] or 9, -(x['planned_units'] or 0)))
-    # RM batches dispensed in the window that no plan line claims
-    off_plan = sorted([b for b in rmw if b['key'] not in used_keys], key=lambda b: b['date'])
+    # RM batches dispensed in the window that no plan line claims.
+    # July carry-over is NOT off-plan: if filling already started before the
+    # plan month began, the batch belongs to last month's plan and is excluded
+    # here (it is still tracked normally everywhere else on the dashboard).
+    def _is_prev_month_work(key):
+        fd = FILL_DATES.get(key)
+        return bool(fd and fd['first'] < PLAN_WINDOW_FROM)
+    off_plan = sorted([b for b in rmw
+                       if b['key'] not in used_keys and not _is_prev_month_work(b['key'])],
+                      key=lambda b: b['date'])
+    _today_op = date.today()
+    for b in off_plan:
+        b['future'] = b['date'] > _today_op
     summary = {
         'items': len(items),
         'units': sum(x['planned_units'] or 0 for x in items),
@@ -1198,15 +1209,19 @@ def plan_section_html():
                        (-4, '🟣 DISPENSE NEXT'), (-5, '⚠ NEEDS ATTENTION')])
     off = ''
     if PLAN_OFF:
+        _futwarn = (' <span style="background:#FBE9E7;color:#BF360C;border-radius:3px;'
+                    'padding:1px 5px;font-size:10px;font-weight:700">⚠ future date — check RM entry</span>')
         orows = ''.join(
             f'<tr><td class="td-name" style="font-weight:600">{b["batch"]}</td>'
-            f'<td class="td-name">{b["date"].strftime("%d %b")}</td>'
+            f'<td class="td-name">{b["date"].strftime("%d %b")}{_futwarn if b.get("future") else ""}</td>'
             f'<td class="td-name">{b["product"] or "—"}</td>'
             f'<td class="td-name" style="color:#546E7A">{b["customer"] or "—"}</td></tr>'
             for b in PLAN_OFF)
         off = (f'<div style="padding:10px 16px 0;font-size:12px;font-weight:700;color:{C_AMB}">'
                f'⚠ Dispensed by RM but not matched to any plan line ({len(PLAN_OFF)}) — '
-               f'either extra production, or the product name differs from the plan</div>'
+               f'either extra production, or the product name differs from the plan. '
+               f'Batches whose filling already began before {PLAN_WINDOW_FROM.strftime("%d %b")} are '
+               f'last month\'s work and are not listed here.</div>'
                f'<div class="tbl-wrap"><table style="min-width:520px"><thead><tr class="th-row">'
                f'<th>BATCH</th><th>RM DATE</th><th>PRODUCT (RM)</th><th>COMPANY (RM)</th></tr></thead>'
                f'<tbody>{orows}</tbody></table></div>')
