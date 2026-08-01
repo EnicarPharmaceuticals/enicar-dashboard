@@ -116,6 +116,19 @@ def main():
     except Exception as e:
         print(f'plan-change checker skipped: {e}')
 
+    # ── Off-plan production alerts: immediate + 15th/month-end digest ──
+    # (management-requested, 1 Aug 2026)
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(HERE, 'check_offplan_production.py')],
+            env=env, capture_output=True, text=True, timeout=120
+        )
+        if r.stdout: print(r.stdout.strip())
+        if r.returncode and r.stderr:
+            print('off-plan alerter stderr:', r.stderr.strip())
+    except Exception as e:
+        print(f'off-plan alerter skipped: {e}')
+
     return 0
 
 
