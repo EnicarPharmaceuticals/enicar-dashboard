@@ -886,14 +886,19 @@ def _build_plan_view():
                               x['due_days'] if x['due_days'] is not None else 9999,
                               x['priority'] or 9, -(x['planned_units'] or 0)))
     # RM batches dispensed in the window that no plan line claims.
-    # July carry-over is NOT off-plan: if filling already started before the
-    # plan month began, the batch belongs to last month's plan and is excluded
-    # here (it is still tracked normally everywhere else on the dashboard).
-    def _is_prev_month_work(key):
-        fd = FILL_DATES.get(key)
+    # July carry-over is NOT off-plan. Two exclusions:
+    #   1. dispensed before the plan month started → last month's plan
+    #      (the pre-month RM window exists only to credit early starts of
+    #       matched plan items, never to raise alarms);
+    #   2. filling already began before the plan month → last month's work
+    #      even if the RM date reads later (catches mistyped future dates).
+    def _is_prev_month_work(b):
+        if b['date'] < PLAN_WINDOW_FROM:
+            return True
+        fd = FILL_DATES.get(b['key'])
         return bool(fd and fd['first'] < PLAN_WINDOW_FROM)
     off_plan = sorted([b for b in rmw
-                       if b['key'] not in used_keys and not _is_prev_month_work(b['key'])],
+                       if b['key'] not in used_keys and not _is_prev_month_work(b)],
                       key=lambda b: b['date'])
     _today_op = date.today()
     for b in off_plan:
