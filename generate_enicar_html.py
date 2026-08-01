@@ -952,42 +952,61 @@ def _collect_names():
 
 _FLAVOUR_WORDS = ['mango', 'mint', 'orange', 'banana', 'chocolate', 'cherry', 'honey',
                   'grapes', 'pineapple', 'mixfruit', 'vanilla', 'strawberry', 'cocktail',
-                  'melon', 'red', 'white', 'lemon']
+                  'melon', 'lemon']
 
 def _flavours(name):
     c = _pcanon(name)
     return {w for w in _FLAVOUR_WORDS if w in c}
 
 def _name_conflicts():
+    """Director's rule (updated 31 Jul 2026): staff type names manually, so
+    routine spelling differences between logs are NOT worth showing. Surface a
+    batch only when:
+      (a) filling / packing / dispatch AGREE with each other but RM says
+          something different  →  the RM entry itself needs verifying, or
+      (b) the names differ by FLAVOUR / VARIANT anywhere  →  one entry is on
+          the wrong product and must be verified before correcting."""
     data = _collect_names()
     out = []
     for k, logs in data.items():
         if k in _NAME_SOP or len(logs) < 2:
             continue
-        allc = set()
+        def clusters_of(names):
+            from difflib import SequenceMatcher
+            cs = sorted({_pcanon(x) for x in names}, key=len)
+            cl = []
+            for x in cs:
+                if not any(x in c or c in x
+                           or SequenceMatcher(None, x, c).ratio() >= 0.82
+                           for c in cl):
+                    cl.append(x)
+            return cl
+        allnames = set()
         for s in logs.values():
-            allc |= {_pcanon(x) for x in s}
-        clusters = []
-        for x in sorted(allc, key=len):
-            if not any(x in c or c in x for c in clusters):
-                clusters.append(x)
-        if len(clusters) < 2:
-            continue
-        # severity
-        flav = [_flavours(x) for x in allc if _flavours(x)]
+            allnames |= s
+        # (b) flavour / variant conflict anywhere → always show
+        flav = [_flavours(x) for x in allnames if _flavours(x)]
         differing_flavour = len({frozenset(f) for f in flav}) > 1 if flav else False
-        rm_name = sorted(logs.get('RM', [])) or None
         if differing_flavour:
-            sev, srank = '🔴 Different flavour / variant — verify', 0
-        elif all(any(w in _pcanon(b) for w in _pcanon(a).split()) or _pcanon(a) in _pcanon(b)
-                 for a in allc for b in allc if len(_pcanon(a)) <= len(_pcanon(b))):
-            sev, srank = '🟡 Short form — standardise to RM name', 2
-        else:
-            sev, srank = '🟠 Spelling differs — correct to RM name', 1
-        out.append({'batch': (_journey_by_key.get(k, {}) or {}).get('batch', k),
-                    'logs': {lg: sorted(v) for lg, v in logs.items()},
-                    'rm': rm_name[0] if rm_name else None,
-                    'sev': sev, 'srank': srank})
+            out.append({'batch': (_journey_by_key.get(k, {}) or {}).get('batch', k),
+                        'logs': {lg: sorted(v) for lg, v in logs.items()},
+                        'rm': (sorted(logs['RM'])[0] if logs.get('RM') else None),
+                        'sev': '🔴 Different flavour / variant — verify which is right', 'srank': 0})
+            continue
+        # (a) production logs agree with each other, RM differs → verify RM
+        down = set()
+        for lg in ('Filling', 'Packing', 'Dispatch'):
+            down |= logs.get(lg, set())
+        if not down or not logs.get('RM'):
+            continue
+        if len(clusters_of(down)) != 1:
+            continue                      # staff spelling noise — hidden by rule
+        if len(clusters_of(down | logs['RM'])) > 1:
+            out.append({'batch': (_journey_by_key.get(k, {}) or {}).get('batch', k),
+                        'logs': {lg: sorted(v) for lg, v in logs.items()},
+                        'rm': sorted(logs['RM'])[0],
+                        'sev': '🟠 All production logs agree — RM name differs, verify the RM entry',
+                        'srank': 1})
     out.sort(key=lambda x: (x['srank'], x['batch']))
     return out
 
@@ -1012,10 +1031,10 @@ def name_conflict_html():
 <details class="card" id="nameconf-card">
   <summary>{sec(f'  ━━&nbsp;&nbsp;⚠ NAME &nbsp; MISMATCH &nbsp; — &nbsp; SAME &nbsp; BATCH, &nbsp; DIFFERENT &nbsp; PRODUCT &nbsp; NAME &nbsp; ({len(NAME_CONFLICTS)}) &nbsp;━━', C_AMB)}</summary>
   <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
-    These batch numbers are written with different product names in different logs.
-    <strong>The RM name is the correct one</strong> — filling, packing and dispatch should be corrected to match it.
-    {crit} of them differ by <strong>flavour or variant</strong>, which means one entry is on the wrong product
-    and must be verified before correcting.
+    Routine spelling variations from manual typing are <strong>hidden</strong>. A batch appears here only when
+    <strong>filling, packing and dispatch all agree with each other but RM says something different</strong>
+    (verify the RM entry), or when names differ by <strong>flavour / variant</strong> ({crit} such — one entry is
+    on the wrong product and must be verified before correcting).
   </div>
   <div class="tbl-wrap" style="padding-top:10px">
     <table style="min-width:720px">
