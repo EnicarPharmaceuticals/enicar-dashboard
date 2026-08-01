@@ -716,7 +716,8 @@ def _load_plan():
             cp, cparty = _c('PRODUCT'), _c('PARTY', 'CUSTOMER')
             cq, cpack, cprio = _c('QTY', 'PLANNED'), _c('PACK'), _c('PRIORITY')
             # Store-writable columns (optional — added by RM / Plant Head)
-            cstat, cdate = _c('RM STATUS', 'STATUS'), _c('RM DATE', 'DISPENSE DATE')
+            cstat = _c('RM STATUS', 'STATUS')
+            cdate = _c('DISPENSE ON', 'DISPENSE BY', 'TARGET', 'RM DATE', 'DISPENSE DATE')
             cbatch, cby = _c('BATCH'), _c('UPDATED BY', 'BY')
             crem = _c('REMARK', 'NOTE')
             def _num(v):
@@ -864,7 +865,26 @@ def _build_plan_view():
             it['status'], it['srank'] = '🟤 RM dispensed', 1
         it['pct'] = min(100.0, (it['filled'] / plan_q * 100) if plan_q else 0)
 
-    items.sort(key=lambda x: (x['priority'] or 9, -(x['planned_units'] or 0)))
+    # ── Dispensing schedule ──────────────────────────────────────────────
+    # Anything the Plant Head / store gave a target date to is an instruction:
+    # it sorts to the top of the plan, soonest first, and drives the schedule
+    # card. Plant time (IST) decides what "today" means, not the build server.
+    _ist_today = (datetime.utcnow() + timedelta(hours=5, minutes=30)).date()
+    for it in items:
+        td = it.get('rm_date')
+        it['due_days'] = (td - _ist_today).days if td else None
+        st = (it.get('rm_status') or '').lower()
+        it['is_done'] = bool(it['batches']) or st.startswith(('dispensed', 'done', 'complete'))
+        if td and not it['is_done']:
+            d = it['due_days']
+            it['due_bucket'] = ('overdue' if d < 0 else 'today' if d == 0
+                                else 'tomorrow' if d == 1 else 'later')
+        else:
+            it['due_bucket'] = ''
+    _BUCKET_ORDER = {'overdue': 0, 'today': 1, 'tomorrow': 2, 'later': 3, '': 4}
+    items.sort(key=lambda x: (_BUCKET_ORDER[x['due_bucket']],
+                              x['due_days'] if x['due_days'] is not None else 9999,
+                              x['priority'] or 9, -(x['planned_units'] or 0)))
     # RM batches dispensed in the window that no plan line claims
     off_plan = sorted([b for b in rmw if b['key'] not in used_keys], key=lambda b: b['date'])
     summary = {
@@ -879,6 +899,10 @@ def _build_plan_view():
         'flags': sum(1 for x in items if x.get('flag')),
         'next': sum(1 for x in items if 'next' in (x.get('rm_status') or '').lower()
                     or 'tomorrow' in (x.get('rm_status') or '').lower()),
+        'overdue': sum(1 for x in items if x['due_bucket'] == 'overdue'),
+        'due_today': sum(1 for x in items if x['due_bucket'] == 'today'),
+        'due_tomorrow': sum(1 for x in items if x['due_bucket'] == 'tomorrow'),
+        'due_later': sum(1 for x in items if x['due_bucket'] == 'later'),
     }
     return items, source, summary, off_plan
 
@@ -1037,6 +1061,54 @@ def _plan_batch_detail(it, idx):
             f'<th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>'
             f'</tr></thead><tbody>{rows}</tbody></table></td></tr>')
 
+def dispense_schedule_html():
+    """The store's work queue: every plan item with a target dispense date that
+    is not yet dispensed, grouped Overdue / Today / Tomorrow / Coming up."""
+    due = [x for x in PLAN_ITEMS if x['due_bucket']]
+    if not due:
+        return ''
+    groups = [('overdue',  '🔴 OVERDUE — was due earlier',  '#FFEBEE', C_AMB),
+              ('today',    '🟠 DISPENSE TODAY',             '#FFF3E0', C_ORG),
+              ('tomorrow', '🟡 DISPENSE TOMORROW',          '#FFFDE7', '#F9A825'),
+              ('later',    '⚪ COMING UP',                  '#FAFAFA', '#78909C')]
+    blocks = ''
+    for key, label, bg, col_ in groups:
+        rows_g = [x for x in due if x['due_bucket'] == key]
+        if not rows_g:
+            continue
+        trs = ''
+        for it in rows_g:
+            when = it['rm_date'].strftime('%d %b') if it['rm_date'] else '—'
+            st = it.get('rm_status') or '—'
+            by = it.get('updated_by') or ''
+            trs += (f'<tr style="background:#fff">'
+                    f'<td class="td-name" style="font-weight:600">{it["product"]}</td>'
+                    f'<td class="td-name" style="color:#546E7A">{it["party_canon"]}</td>'
+                    f'<td class="td-num" style="font-weight:700">{n(it["planned_units"])}</td>'
+                    f'<td class="td-name">{it.get("pack") or "—"}</td>'
+                    f'<td class="td-num" style="font-weight:700;color:{col_}">{when}</td>'
+                    f'<td class="td-name" style="font-size:12px">{st}'
+                    + (f'<div style="font-size:10px;color:#B0BEC5">{by}</div>' if by else '')
+                    + '</td></tr>')
+        blocks += (f'<div style="background:{bg};border-radius:8px;padding:10px 12px;margin:0 14px 10px">'
+                   f'<div style="font-weight:700;color:{col_};font-size:13px;margin-bottom:6px">'
+                   f'{label} ({len(rows_g)})</div>'
+                   f'<div class="tbl-wrap" style="padding:0"><table style="min-width:640px">'
+                   f'<thead><tr class="th-row"><th>PRODUCT</th><th>COMPANY</th><th>QTY</th>'
+                   f'<th>PACK</th><th>DISPENSE ON</th><th>STATUS / BY</th></tr></thead>'
+                   f'<tbody>{trs}</tbody></table></div></div>')
+    return f'''
+<details class="card" open id="dispense-card">
+  <summary>{sec(f'  ━━&nbsp;&nbsp;📋 RM &nbsp; DISPENSING &nbsp; SCHEDULE &nbsp; — &nbsp; ORDERED &nbsp; BY &nbsp; PLANT &nbsp; HEAD &nbsp;({len(due)})&nbsp;━━', C_ORG)}</summary>
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 8px">
+    Items the Plant Head / store have given a <strong>DISPENSE ON</strong> date in the AUG PLAN tab and
+    that RM has not dispensed yet. An item disappears from this list automatically the moment its RM
+    dispensing is logged. Overdue first, then today, then tomorrow.
+  </div>
+  {blocks}
+</details>'''
+
+
 def plan_section_html():
     if not PLAN_ITEMS:
         return ''
@@ -1050,10 +1122,15 @@ def plan_section_html():
       + tile('MARKED BY RM / PLANT HEAD', n(s['written']),
              (f'{s["next"]} marked to dispense next · {s["flags"]} need attention'
               if s['written'] else 'add the RM STATUS column to the plan tab to use this'), '#7B1FA2')
+      + tile('DISPENSING SCHEDULE', n(s['overdue'] + s['due_today'] + s['due_tomorrow'] + s['due_later']),
+             f'{s["overdue"]} overdue · {s["due_today"]} today · {s["due_tomorrow"]} tomorrow', C_ORG)
     )
     rows = ''
     for i, it in enumerate(PLAN_ITEMS):
-        bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
+        bg = ('#FFEBEE' if it['due_bucket'] == 'overdue' else
+              '#FFF3E0' if it['due_bucket'] == 'today' else
+              '#FFFDE7' if it['due_bucket'] == 'tomorrow' else
+              '#F1F8F6' if i % 2 == 0 else '#FFFFFF')
         prio = it['priority'] or '—'
         lots = f' <span style="color:#90A4AE;font-size:10px">({it["lots"]} lots)</span>' if it['lots'] > 1 else ''
         nb = len(it['batches'])
@@ -2007,6 +2084,8 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 <!-- ════════════════════════════════════════════════════════════
      SECTION 0b — MONTHLY PRODUCTION PLAN (planned vs actual)
 ════════════════════════════════════════════════════════════ -->
+{dispense_schedule_html()}
+
 {plan_section_html()}
 
 {name_conflict_html()}
