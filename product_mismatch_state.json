@@ -21,6 +21,7 @@
   "6171C85001|product|livogenirontonic5000ltr|livogenirontonic": "2026-07-31",
   "6173C85001|product|livogenirontonic5000ltr|livogenirontonic": "2026-07-31",
   "6189C85001|product|polybionlc300ml|polybionlc": "2026-07-31",
+  "6190C85001|product|polybionlc300ml|polybionlc": "2026-08-01",
   "650007|product|polygel|polygelsuspensionsachet": "2026-07-31",
   "ALE-141|party|sapphirelifesciencepvtltdp2p|ronakeximpvtltd": "2026-08-01",
   "ALE-142|party|sapphirelifesciencepvtltdp2p|sapphirelifesciencepvtltd": "2026-08-01",
@@ -41,7 +42,6 @@
   "EL-2429|party|carethcorporation|londonunitedmedimpexpvtltd": "2026-07-31",
   "EL-2433|product|calcibrintsuspension|calcibrintsusp": "2026-07-31",
   "EL-2434|party|yelloworangepharmacy|pharmatrustltd": "2026-07-31",
-  "EL-2437|product|bonaplexsyrup|bonaplxsyrup": "2026-08-01",
   "EL-2442|party|nelpalifescience|sapphirelifesciencepvtltdp2p": "2026-08-01",
   "EL-2443|party|nelpalifescience|sapphirelifesciencepvtltdp2p": "2026-08-01",
   "EL-2444|party|nelpalifescience|sapphirelifesciencepvtltdp2p": "2026-08-01",
@@ -51,6 +51,7 @@
   "EL-2450|product|gasout|gasoutsusp": "2026-07-31",
   "EL-2451|party|napoexport|napoexportsprivatelimited": "2026-07-31",
   "EL-2451|product|gasout|gasoutsusp": "2026-07-31",
+  "EL-2462|party|systopiclaboratoriespvtltd|macleodspharmaceuticalslimitedp2p": "2026-08-01",
   "EL-2467|party|sapphirelifesciencepvtltdp2p|carethcorporation": "2026-07-31",
   "EL-2467|party|sapphirelifesciencepvtltdp2p|intelpharmaceuticalagencyguyanaltd": "2026-07-31",
   "EL-2468|product|selfcarepainfever250mg|selfcarepainfever": "2026-07-31",
@@ -213,6 +214,7 @@
   "SL05406|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-01",
   "SL05406|product|abytonefortesyrup|abytonefortered": "2026-07-31",
   "SL05407|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-01",
+  "SN142802|party|blissgvspharmaltdp2ppharmaltdp2p|blissgvspharmaltdp2p": "2026-08-01",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-07-31",
   "U-132|product|nocigel|nocigelo": "2026-07-31",
   "U-136|party|unichemghanalimited|uniquepharma": "2026-07-31",
@@ -226,6 +228,48 @@
   "U-147|product|qenzy|": "2026-07-31",
   "VM-37715|product|diarstopsuspension|diarstopsusp": "2026-07-31",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-07-31",
+  "_offplan_alerted": {
+    "CNJ017": {
+      "batch": "CNJ017",
+      "company": "",
+      "date": "2026-08-01",
+      "product": "Comit-100",
+      "qty": 30000.0,
+      "stage": "Filling started"
+    },
+    "CNJ018": {
+      "batch": "CNJ018",
+      "company": "BLISS GVS PHARMA LTD (P2P)",
+      "date": "2026-08-01",
+      "product": "COMIT-100",
+      "qty": 500.0,
+      "stage": "RM dispensed"
+    },
+    "CNJ019": {
+      "batch": "CNJ019",
+      "company": "BLISS GVS PHARMA LTD (P2P)",
+      "date": "2026-08-01",
+      "product": "COMIT-100",
+      "qty": 500.0,
+      "stage": "RM dispensed"
+    },
+    "SN142802": {
+      "batch": "SN142802",
+      "company": "",
+      "date": "2026-08-01",
+      "product": "Silnamys",
+      "qty": 9000.0,
+      "stage": "Filling started"
+    },
+    "SN162802": {
+      "batch": "SN162802",
+      "company": "BLISS GVS PHARMA LTD (P2P)",
+      "date": "2026-08-01",
+      "product": "SILNAMYS",
+      "qty": 2200.0,
+      "stage": "RM dispensed"
+    }
+  },
   "_plan_snapshot": {
     "fp": {
       "abccoldsyrup|menzbek|100ml": {
