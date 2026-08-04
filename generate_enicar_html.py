@@ -509,6 +509,8 @@ def _batch_journey():
             if e['packsize'] is None and 'PackSize' in r.index and not pd.isna(r.get('PackSize')):
                 e['packsize'] = str(r.get('PackSize')).strip()
             d = r.get('Date')
+            if d is not None and d.year < 2024:
+                d = None                     # impossible year — keep qty, drop date
             if d is not None and (e['last'] is None or d > e['last']):
                 e['last'] = d
             # Track most recent DISPATCH date separately — used for auto-clearing
@@ -583,7 +585,7 @@ def _stage_dates(df):
         if pd.isna(b) or not str(b).strip():
             continue
         k, d = _bkey(b), r.get('Date')
-        if d is None:
+        if d is None or d.year < 2024:      # typo years (e.g. 0226) — ignore for dates
             continue
         e = out.setdefault(k, {'first': d, 'last': d})
         if d < e['first']: e['first'] = d
@@ -1028,6 +1030,148 @@ def _name_conflicts():
 
 NAME_CONFLICTS = _name_conflicts()
 
+# ══════════════════════════════════════════════════════════════════════════════
+# PRODUCTION TREND CHARTS  (server-rendered SVG — no libraries, works offline)
+# ──────────────────────────────────────────────────────────────────────────────
+# Chart palette validated with the dataviz six-checks script (CVD-safe,
+# normal-vision distinct, on-surface contrast): teal / red / amber.
+# ══════════════════════════════════════════════════════════════════════════════
+CH_FILL, CH_PACK, CH_DISP = '#00897B', '#BF360C', '#F57F17'
+_INK, _INK2, _GRID = '#37474F', '#78909C', '#ECEFF1'
+
+def _daily_series(days=42):
+    from datetime import timedelta as _td
+    end = date.today()
+    start = end - _td(days=days - 1)
+    idx = [start + _td(days=i) for i in range(days)]
+    def bucket(df, qty):
+        m = {}
+        for _, r in df.iterrows():
+            d = r.get('Date')
+            if d is not None and start <= d <= end:
+                m[d] = m.get(d, 0) + float(pd.to_numeric(r.get(qty), errors='coerce') or 0)
+        return [m.get(d, 0) for d in idx]
+    return idx, bucket(fill_df, 'Qty'), bucket(pack_df, 'TotalPacked'), bucket(disp_df, 'Qty')
+
+def _monthly_series():
+    def bucket(df, qty):
+        m = {}
+        for _, r in df.iterrows():
+            d = r.get('Date')
+            if d is not None and d.year >= 2026:
+                k = d.strftime('%Y-%m')
+                m[k] = m.get(k, 0) + float(pd.to_numeric(r.get(qty), errors='coerce') or 0)
+        return m
+    f, p, dd = bucket(fill_df, 'Qty'), bucket(pack_df, 'TotalPacked'), bucket(disp_df, 'Qty')
+    months = sorted(set(f) | set(p) | set(dd))
+    return months, [f.get(m, 0) for m in months], [p.get(m, 0) for m in months], [dd.get(m, 0) for m in months]
+
+def _knum(v):
+    if v >= 1_000_000: return f'{v/1_000_000:.1f}M'
+    if v >= 1_000:     return f'{v/1_000:.0f}k'
+    return f'{v:.0f}'
+
+def daily_trend_svg():
+    idx, F, P, D = _daily_series()
+    W, H, L, R, T, B = 940, 260, 52, 96, 16, 34
+    top = max(max(F), max(P), max(D), 1) * 1.08
+    def X(i): return L + (W - L - R) * (i / max(len(idx) - 1, 1))
+    def Y(v): return T + (H - T - B) * (1 - v / top)
+    parts = [f'<svg viewBox="0 0 {W} {H}" style="width:100%;height:auto;min-width:680px" '
+             f'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Daily production, last 42 days">']
+    # recessive grid: 4 horizontal lines + weekly verticals with date labels
+    for gy in range(1, 5):
+        v = top * gy / 4
+        parts.append(f'<line x1="{L}" y1="{Y(v):.1f}" x2="{W-R}" y2="{Y(v):.1f}" stroke="{_GRID}" stroke-width="1"/>')
+        parts.append(f'<text x="{L-6}" y="{Y(v)+4:.1f}" text-anchor="end" font-size="10" fill="{_INK2}">{_knum(v)}</text>')
+    parts.append(f'<line x1="{L}" y1="{Y(0):.1f}" x2="{W-R}" y2="{Y(0):.1f}" stroke="#B0BEC5" stroke-width="1"/>')
+    for i, d in enumerate(idx):
+        if d.weekday() == 0:   # Mondays
+            parts.append(f'<line x1="{X(i):.1f}" y1="{T}" x2="{X(i):.1f}" y2="{H-B}" stroke="{_GRID}" stroke-width="1"/>')
+            parts.append(f'<text x="{X(i):.1f}" y="{H-B+14}" text-anchor="middle" font-size="10" fill="{_INK2}">{d.strftime("%d %b")}</text>')
+    series = [('Filled', F, CH_FILL), ('Packed', P, CH_PACK), ('Dispatched', D, CH_DISP)]
+    for name, S, col in series:
+        pts = ' '.join(f'{X(i):.1f},{Y(v):.1f}' for i, v in enumerate(S))
+        parts.append(f'<polyline points="{pts}" fill="none" stroke="{col}" stroke-width="2" '
+                     f'stroke-linejoin="round" stroke-linecap="round"/>')
+    # markers + native hover tooltips (invisible enlarged hit circles)
+    for name, S, col in series:
+        for i, v in enumerate(S):
+            if v > 0:
+                parts.append(f'<circle cx="{X(i):.1f}" cy="{Y(v):.1f}" r="2.6" fill="{col}"/>')
+            parts.append(f'<circle cx="{X(i):.1f}" cy="{Y(v):.1f}" r="9" fill="transparent">'
+                         f'<title>{idx[i].strftime("%d %b")} — {name}: {v:,.0f} units</title></circle>')
+    # direct end-labels in ink with colored marker (identity never color-alone)
+    lastx = X(len(idx) - 1)
+    ends = sorted([(Y(S[-1]), name, col) for name, S, col in series])
+    used = []
+    for y, name, col in ends:
+        while any(abs(y - u) < 14 for u in used):
+            y += 14
+        used.append(y)
+        parts.append(f'<circle cx="{lastx+8:.1f}" cy="{y:.1f}" r="4" fill="{col}"/>')
+        parts.append(f'<text x="{lastx+15:.1f}" y="{y+4:.1f}" font-size="11" font-weight="600" fill="{_INK}">{name}</text>')
+    parts.append('</svg>')
+    return ''.join(parts)
+
+def monthly_bars_svg():
+    months, F, P, D = _monthly_series()
+    if not months:
+        return ''
+    W, H, L, R, T, B = 940, 230, 52, 20, 18, 40
+    top = max(max(F), max(P), max(D), 1) * 1.14
+    n = len(months)
+    group_w = (W - L - R) / n
+    bar_w = min(30, (group_w - 24) / 3)
+    def Y(v): return T + (H - T - B) * (1 - v / top)
+    parts = [f'<svg viewBox="0 0 {W} {H}" style="width:100%;height:auto;min-width:680px" '
+             f'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Monthly production comparison">']
+    for gy in range(1, 4):
+        v = top * gy / 3
+        parts.append(f'<line x1="{L}" y1="{Y(v):.1f}" x2="{W-R}" y2="{Y(v):.1f}" stroke="{_GRID}" stroke-width="1"/>')
+        parts.append(f'<text x="{L-6}" y="{Y(v)+4:.1f}" text-anchor="end" font-size="10" fill="{_INK2}">{_knum(v)}</text>')
+    parts.append(f'<line x1="{L}" y1="{Y(0):.1f}" x2="{W-R}" y2="{Y(0):.1f}" stroke="#B0BEC5" stroke-width="1"/>')
+    series = [('Filled', F, CH_FILL), ('Packed', P, CH_PACK), ('Dispatched', D, CH_DISP)]
+    from datetime import date as _date
+    for mi, mk in enumerate(months):
+        cx = L + group_w * (mi + 0.5)
+        y0, m0 = int(mk[:4]), int(mk[5:7])
+        label = _date(y0, m0, 1).strftime('%b %Y')
+        parts.append(f'<text x="{cx:.1f}" y="{H-B+16}" text-anchor="middle" font-size="11" '
+                     f'font-weight="600" fill="{_INK}">{label}</text>')
+        for si, (name, S, col) in enumerate(series):
+            v = S[mi]
+            x = cx + (si - 1) * (bar_w + 2) - bar_w / 2   # 2px surface gap between bars
+            yv, y0px = Y(v), Y(0)
+            h = max(y0px - yv, 0)
+            if h > 0:
+                parts.append(f'<path d="M{x:.1f},{y0px:.1f} L{x:.1f},{yv+4:.1f} Q{x:.1f},{yv:.1f} {x+4:.1f},{yv:.1f} '
+                             f'L{x+bar_w-4:.1f},{yv:.1f} Q{x+bar_w:.1f},{yv:.1f} {x+bar_w:.1f},{yv+4:.1f} '
+                             f'L{x+bar_w:.1f},{y0px:.1f} Z" fill="{col}">'
+                             f'<title>{label} — {name}: {v:,.0f} units</title></path>')
+            # selective direct label: only the latest month gets values
+            if mi == len(months) - 1 and v > 0:
+                parts.append(f'<text x="{x+bar_w/2:.1f}" y="{yv-5:.1f}" text-anchor="middle" '
+                             f'font-size="10" fill="{_INK2}">{_knum(v)}</text>')
+    parts.append('</svg>')
+    return ''.join(parts)
+
+def trend_section_html():
+    legend = ''.join(
+        f'<span style="display:inline-flex;align-items:center;gap:5px;margin-right:16px">'
+        f'<span style="width:10px;height:10px;border-radius:50%;background:{c};display:inline-block"></span>'
+        f'<span style="font-size:12px;color:{_INK};font-weight:600">{nm}</span></span>'
+        for nm, c in [('Filled', CH_FILL), ('Packed', CH_PACK), ('Dispatched', CH_DISP)])
+    return f'''
+<details class="card" open>
+  <summary>{sec('  ━━&nbsp;&nbsp;📈 PRODUCTION &nbsp; TREND &nbsp;━━', C_PRI)}</summary>
+  <div style="padding:10px 16px 4px">{legend}</div>
+  <div style="padding:0 16px 6px;font-size:12px;font-weight:700;color:{C_PRI}">Daily output — last 6 weeks (hover any point for exact figures)</div>
+  <div style="overflow-x:auto;padding:0 12px">{daily_trend_svg()}</div>
+  <div style="padding:12px 16px 6px;font-size:12px;font-weight:700;color:{C_PRI}">Month-by-month comparison</div>
+  <div style="overflow-x:auto;padding:0 12px 12px">{monthly_bars_svg()}</div>
+</details>'''
+
 def name_conflict_html():
     if not NAME_CONFLICTS:
         return ''
@@ -1244,6 +1388,15 @@ def plan_section_html():
     emailed to the store team automatically.
   </div>
   <div class="tile-row">{tiles}</div>
+  <div style="padding:2px 18px 10px">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:#607D8B;margin-bottom:3px">
+      <span style="font-weight:700;color:{C_PRI}">OVERALL PLAN COMPLETION (units filled vs planned)</span>
+      <span style="font-weight:700">{(s['filled']/s['units']*100) if s['units'] else 0:.1f}%</span>
+    </div>
+    <div style="background:#ECEFF1;border-radius:5px;height:10px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,{C_SEC},#00897B);height:10px;border-radius:5px;width:{min(100,(s['filled']/s['units']*100) if s['units'] else 0):.1f}%"></div>
+    </div>
+  </div>
   <div class="chip-row" style="padding:0 16px 10px">{chips}</div>
   <div class="tbl-wrap">
     <table style="min-width:880px">
@@ -1939,10 +2092,11 @@ html = f"""<!DOCTYPE html>
 <title>Enicar Dashboard — {PERIOD}</title>
 <style>
   * {{ box-sizing:border-box; margin:0; padding:0; }}
-  body {{ font-family:Arial,sans-serif; background:#ECEFF1; color:#263238; }}
+  body {{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+         background:#ECEFF1; color:#263238; -webkit-font-smoothing:antialiased; }}
 
   /* ── Header ── */
-  .header {{ background:{C_PRI}; color:#fff; padding:18px 28px 12px; }}
+  .header {{ background:linear-gradient(135deg,#00332B 0%,{C_PRI} 55%,{C_SEC} 100%); color:#fff; padding:18px 28px 14px; }}
   .header h1 {{ font-size:32px; font-weight:900; letter-spacing:3px; line-height:1; }}
   .header-sub {{ font-size:13px; color:#B2DFDB; margin-top:4px; }}
   .period-bar {{ background:{C_SEC}; color:#fff; text-align:center; padding:8px;
@@ -1950,7 +2104,7 @@ html = f"""<!DOCTYPE html>
 
   /* ── Layout ── */
   .container {{ max-width:1280px; margin:0 auto; padding:16px; }}
-  .card {{ background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.09);
+  .card {{ background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,38,32,0.10);
            margin-bottom:16px; overflow:hidden; }}
 
   /* ── Section header ── */
@@ -1960,7 +2114,9 @@ html = f"""<!DOCTYPE html>
   /* ── Tiles ── */
   .tile-row {{ display:flex; gap:10px; padding:14px 14px 10px; flex-wrap:wrap; }}
   .tile {{ flex:1; min-width:150px; background:#fff; border:1px solid #E0F2F1;
-           border-radius:8px; padding:12px 14px; text-align:center; }}
+           border-radius:10px; padding:12px 14px; text-align:center;
+           transition:transform .15s ease, box-shadow .15s ease; }}
+  .tile:hover {{ transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,38,32,0.12); }}
   .tlabel {{ font-size:9px; font-weight:700; color:{C_SEC}; text-transform:uppercase;
              letter-spacing:0.8px; margin-bottom:6px; }}
   .tvalue {{ font-size:26px; font-weight:700; line-height:1.1; }}
@@ -2030,7 +2186,9 @@ html = f"""<!DOCTYPE html>
   /* ── Scope chips + calendar picker ── */
   .chip-row {{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }}
   .chip {{ border:1.5px solid {C_SEC}; color:{C_SEC}; background:#fff; border-radius:16px;
-           padding:7px 14px; font-size:12.5px; font-weight:700; cursor:pointer; user-select:none; }}
+           padding:7px 14px; font-size:12.5px; font-weight:700; cursor:pointer; user-select:none;
+           transition:background .12s ease, color .12s ease; }}
+  .chip:hover {{ background:{C_LBG}; }}
   .chip.active {{ background:{C_SEC}; color:#fff; }}
   .chip.cal {{ border-style:dashed; }}
   .cal-panel {{ background:#fff; border:1.5px solid {C_LBG}; border-radius:10px;
@@ -2100,6 +2258,11 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
      SECTION A — AT A GLANCE (director summary layer)
 ════════════════════════════════════════════════════════════ -->
 {director_summary_html()}
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION A2 — PRODUCTION TREND (charts)
+════════════════════════════════════════════════════════════ -->
+{trend_section_html()}
 
 <div class="expand-bar"><button id="expand-all-btn" onclick="toggleAllDetails()">▸ Expand all detail sections</button></div>
 
@@ -2289,7 +2452,9 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 <div class="footer">
   Generated by Enicar Dashboard Generator &nbsp;|&nbsp; {generated_at}<br>
   Data source: Enicar_Dashboard_Template.xlsx &nbsp;|&nbsp;
-  Updates automatically every 15 minutes from the live production sheet
+  Updates automatically every 15 minutes from the live production sheet &nbsp;|&nbsp;
+  <a href="https://raw.githubusercontent.com/EnicarPharmaceuticals/enicar-dashboard/main/archive/enicar_latest.json"
+     style="color:#00695C;font-weight:700">⬇ Full data (JSON)</a> — daily snapshots archived since 04 Aug 2026
 </div>
 
 <script>
