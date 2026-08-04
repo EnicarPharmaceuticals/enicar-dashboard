@@ -821,12 +821,16 @@ def _build_plan_view():
         for b in hits:
             used_keys.add(b['key'])
             j = _journey_by_key.get(b['key'], {})
+            _fd, _pd2, _dd2 = FILL_DATES.get(b['key']), PACK_DATES.get(b['key']), DISP_DATES.get(b['key'])
             batches.append({
                 'batch': b['batch'], 'rm_date': b['date'], 'rm_customer': b['customer'],
                 'size': b['size'],
                 'filled': float(j.get('filled') or 0), 'packed': float(j.get('packed') or 0),
                 'dispatched': float(j.get('dispatched') or 0),
                 'status': j.get('status') or 'RM dispensed — no production yet',
+                'f_first': _fd and _fd['first'], 'f_last': _fd and _fd['last'],
+                'p_first': _pd2 and _pd2['first'], 'p_last': _pd2 and _pd2['last'],
+                'd_first': _dd2 and _dd2['first'], 'd_last': _dd2 and _dd2['last'],
             })
         batches.sort(key=lambda x: x['rm_date'])
         it['batches'] = batches
@@ -921,6 +925,9 @@ def _build_plan_view():
         'due_today': sum(1 for x in items if x['due_bucket'] == 'today'),
         'due_tomorrow': sum(1 for x in items if x['due_bucket'] == 'tomorrow'),
         'due_later': sum(1 for x in items if x['due_bucket'] == 'later'),
+        'packed_sum': sum(x['packed'] for x in items),
+        'disp_sum': sum(x['dispatched'] for x in items),
+        'rm_started': sum(1 for x in items if x['batches']),
     }
     return items, source, summary, off_plan
 
@@ -1074,6 +1081,11 @@ def _plan_batch_detail(it, idx):
                 f'No RM dispensing recorded yet for this item. Once the store dispenses it, the '
                 f'batch number appears here automatically and filling / packing / dispatch follow it.'
                 f'</td></tr>')
+    def _dr(a, z):
+        if not a:
+            return ''
+        s2 = a.strftime('%d %b') if a == z or not z else f'{a.strftime("%d %b")}–{z.strftime("%d %b")}'
+        return f'<div style="font-size:10px;color:#90A4AE">{s2}</div>'
     rows = ''
     for b in it['batches']:
         rows += (f'<tr>'
@@ -1081,10 +1093,13 @@ def _plan_batch_detail(it, idx):
                  f'<td class="td-name">{b["rm_date"].strftime("%d %b")}</td>'
                  f'<td class="td-name" style="color:#546E7A">{b["rm_customer"] or "—"}</td>'
                  f'<td class="td-num">{n(b["size"]) if b["size"] else "—"}</td>'
-                 f'<td class="td-num" style="color:{C_SEC}">{n(b["filled"]) if b["filled"] else "—"}</td>'
-                 f'<td class="td-num" style="color:{C_AMB}">{n(b["packed"]) if b["packed"] else "—"}</td>'
-                 f'<td class="td-num" style="color:{C_ORG}">{n(b["dispatched"]) if b["dispatched"] else "—"}</td>'
-                 f'<td class="td-name" style="font-size:12px">{b["status"]}</td></tr>')
+                 f'<td class="td-num" style="color:{C_SEC}">{n(b["filled"]) if b["filled"] else "—"}{_dr(b.get("f_first"), b.get("f_last"))}</td>'
+                 f'<td class="td-num" style="color:{C_AMB}">{n(b["packed"]) if b["packed"] else "—"}{_dr(b.get("p_first"), b.get("p_last"))}</td>'
+                 f'<td class="td-num" style="color:{C_ORG}">{n(b["dispatched"]) if b["dispatched"] else "—"}{_dr(b.get("d_first"), b.get("d_last"))}</td>'
+                 f'<td class="td-name" style="font-size:12px">{b["status"]}</td>'
+                 f'<td class="td-num"><button onclick="event.stopPropagation();jumpToBatch(\'{b["batch"]}\')" '
+                 f'style="border:1px solid {C_SEC};background:#fff;color:{C_SEC};border-radius:5px;'
+                 f'padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">🔍 JOURNEY</button></td></tr>')
     warn = ''
     if it['party_differs']:
         warn = (f'<div style="background:#FFF3E0;border-left:4px solid {C_ORG};padding:7px 10px;'
@@ -1095,9 +1110,9 @@ def _plan_batch_detail(it, idx):
             f'{warn}'
             f'<div style="font-size:12px;font-weight:700;color:{C_PRI};margin-bottom:5px">'
             f'Batches dispensed by RM for this plan item — verified chain</div>'
-            f'<table style="width:100%;min-width:640px"><thead><tr class="th-row">'
+            f'<table style="width:100%;min-width:720px"><thead><tr class="th-row">'
             f'<th>BATCH</th><th>RM DATE</th><th>COMPANY (FROM RM)</th><th>BATCH SIZE</th>'
-            f'<th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>STATUS</th>'
+            f'<th>FILLED (DATES)</th><th>PACKED (DATES)</th><th>DISPATCHED (DATES)</th><th>STATUS</th><th></th>'
             f'</tr></thead><tbody>{rows}</tbody></table></td></tr>')
 
 def dispense_schedule_html():
@@ -1192,8 +1207,24 @@ def plan_section_html():
             wrote += f'<div style="font-size:10px;color:#B0BEC5">{it["updated_by"]}</div>'
         flagchip = (f'<div style="font-size:10px;color:{C_AMB};margin-top:3px">⚠ {it["flag"]}</div>'
                     ) if it.get('flag') else ''
-        bar = (f'<div style="background:#ECEFF1;border-radius:3px;height:6px;min-width:70px">'
-               f'<div style="background:{C_SEC};height:6px;border-radius:3px;width:{it["pct"]:.0f}%"></div></div>')
+        def _mini(pct_v, col, lbl, tip):
+            hpx = 0 if pct_v <= 0 else max(3, min(22, round(22 * pct_v / 100)))
+            return (f'<div title="{tip}" style="display:flex;flex-direction:column;align-items:center;gap:1px">'
+                    f'<div style="width:15px;height:22px;background:#ECEFF1;border-radius:3px;'
+                    f'display:flex;align-items:flex-end;overflow:hidden">'
+                    f'<div style="width:100%;height:{hpx}px;background:{col}"></div></div>'
+                    f'<span style="font-size:8px;color:#90A4AE;font-weight:700">{lbl}</span></div>')
+        _pq = it['planned_units'] or 0
+        _pctf = (it['filled'] / _pq * 100) if _pq else 0
+        _pctp = (it['packed'] / _pq * 100) if _pq else 0
+        _pctd = (it['dispatched'] / _pq * 100) if _pq else 0
+        bar = ('<div style="display:flex;gap:3px">'
+               + _mini(100 if it['batches'] else 0, C_PRI, 'RM',
+                       f'RM dispensed: {len(it["batches"])} batch(es)' if it['batches'] else 'RM: not dispensed yet')
+               + _mini(_pctf, C_SEC, 'F', f'Filled {it["filled"]:,.0f} of {_pq:,.0f} ({_pctf:.0f}%)')
+               + _mini(_pctp, C_AMB, 'P', f'Packed {it["packed"]:,.0f} of {_pq:,.0f} ({_pctp:.0f}%)')
+               + _mini(_pctd, C_ORG, 'D', f'Dispatched {it["dispatched"]:,.0f} of {_pq:,.0f} ({_pctd:.0f}%)')
+               + '</div>')
         _isnext = 1 if ('next' in _sl or 'tomorrow' in _sl) else 0
         rows += (f'<tr style="background:{bg};cursor:pointer" data-prio="{it["priority"] or 0}" '
                  f'data-srank="{it["srank"]}" data-next="{_isnext}" data-flag="{1 if it.get("flag") else 0}" '
@@ -1248,21 +1279,25 @@ def plan_section_html():
     emailed to the store team automatically.
   </div>
   <div class="tile-row">{tiles}</div>
-  <div style="padding:2px 18px 10px">
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:#607D8B;margin-bottom:3px">
-      <span style="font-weight:700;color:{C_PRI}">OVERALL PLAN COMPLETION (units filled vs planned)</span>
-      <span style="font-weight:700">{(s['filled']/s['units']*100) if s['units'] else 0:.1f}%</span>
-    </div>
-    <div style="background:#ECEFF1;border-radius:5px;height:10px;overflow:hidden">
-      <div style="background:linear-gradient(90deg,{C_SEC},#00897B);height:10px;border-radius:5px;width:{min(100,(s['filled']/s['units']*100) if s['units'] else 0):.1f}%"></div>
-    </div>
+  <div style="padding:2px 18px 12px">
+    <div style="font-weight:700;color:{C_PRI};font-size:12px;margin-bottom:5px">HOW THE WHOLE PLAN IS MOVING (units, % of {n(s['units'])} planned)</div>
+    <table style="width:100%;font-size:12px;border-collapse:collapse">
+      <tr><td style="width:110px;color:#546E7A;padding:2px 0">RM started</td>
+          <td><div style="display:inline-block;background:{C_PRI};color:#fff;padding:2px 8px;border-radius:4px;min-width:60px;width:{(s['rm_started']/s['items']*100) if s['items'] else 0:.0f}%;box-sizing:border-box">{s['rm_started']} of {s['items']} items</div></td></tr>
+      <tr><td style="color:#546E7A;padding:2px 0">Filled</td>
+          <td><div style="display:inline-block;background:{C_SEC};color:#fff;padding:2px 8px;border-radius:4px;min-width:60px;width:{min(100,(s['filled']/s['units']*100) if s['units'] else 0):.0f}%;box-sizing:border-box">{n(s['filled'])} &nbsp;({(s['filled']/s['units']*100) if s['units'] else 0:.1f}%)</div></td></tr>
+      <tr><td style="color:#546E7A;padding:2px 0">Packed</td>
+          <td><div style="display:inline-block;background:{C_AMB};color:#fff;padding:2px 8px;border-radius:4px;min-width:60px;width:{min(100,(s['packed_sum']/s['units']*100) if s['units'] else 0):.0f}%;box-sizing:border-box">{n(s['packed_sum'])} &nbsp;({(s['packed_sum']/s['units']*100) if s['units'] else 0:.1f}%)</div></td></tr>
+      <tr><td style="color:#546E7A;padding:2px 0">Dispatched</td>
+          <td><div style="display:inline-block;background:{C_ORG};color:#fff;padding:2px 8px;border-radius:4px;min-width:60px;width:{min(100,(s['disp_sum']/s['units']*100) if s['units'] else 0):.0f}%;box-sizing:border-box">{n(s['disp_sum'])} &nbsp;({(s['disp_sum']/s['units']*100) if s['units'] else 0:.1f}%)</div></td></tr>
+    </table>
   </div>
   <div class="chip-row" style="padding:0 16px 10px">{chips}</div>
   <div class="tbl-wrap">
     <table style="min-width:880px">
       <thead><tr class="th-row">
         <th>P</th><th>PRODUCT</th><th>CUSTOMER</th><th>PACK</th><th>PLANNED</th>
-        <th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th>TRACKED STATUS</th>
+        <th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PIPELINE (RM→F→P→D)</th><th>TRACKED STATUS</th>
         <th>RM / PLANT HEAD ENTRY</th>
       </tr></thead>
       <tbody id="plan-rows">{rows}</tbody>
@@ -2930,6 +2965,15 @@ function lookupBatch() {{
     </tr></thead>
     <tbody>${{rows}}</tbody>
   </table></div>${{note}}${{actHtml}}`;
+}}
+
+// ── Jump from a plan batch to its full journey in search ──
+function jumpToBatch(b) {{
+  const inp = document.getElementById('batch-search');
+  if (!inp) return;
+  inp.value = b;
+  lookupBatch();
+  if (inp.scrollIntoView) inp.scrollIntoView({{behavior: 'smooth', block: 'center'}});
 }}
 
 // ── Plan card: click a row to verify its RM batches ───
