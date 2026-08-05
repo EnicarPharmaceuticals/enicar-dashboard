@@ -36,6 +36,7 @@
   "EAS001|party|blissgvspharmaltdp2ppharmaltdp2p|blissgvspharmaltdp2p": "2026-08-04",
   "EAS002|party|blissgvspharmaltdp2ppharmaltdp2p|blissgvspharmaltdp2p": "2026-08-04",
   "EAS003|party|blissgvspharmaltdp2ppharmaltdp2p|blissgvspharmaltdp2p": "2026-08-04",
+  "EF-142|party|flamingopharmaceuticalslimited|blissgvspharmaltdp2p": "2026-08-05",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-08-03",
   "EL-2413|party|yelloworangepharmacy|pharmatrustltd": "2026-08-03",
   "EL-2414|party|yelloworangepharmacy|pharmatrustltd": "2026-08-03",
@@ -228,6 +229,7 @@
   "SL05410|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-04",
   "SL05411|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-04",
   "SN142802|party|blissgvspharmaltdp2ppharmaltdp2p|blissgvspharmaltdp2p": "2026-08-04",
+  "SN142802|party|blissgvspharmaltdp2ppharmaltdp2p|flamingopharmaceuticalslimited": "2026-08-05",
   "SN152802|party|blissgvspharmaltdp2ppharmaltdp2p|blissgvspharmaltdp2p": "2026-08-03",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-08-03",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsuspensionbp100mg5ml": "2026-08-04",
@@ -242,6 +244,7 @@
   "U-144|party|unichemghanalimited|uniquepharma": "2026-08-03",
   "U-146|party|unichemghanalimited|uniquepharma": "2026-08-03",
   "U-147|product|qenzy|": "2026-08-03",
+  "VM-37715|product|diarstopsuspension|diarstop": "2026-08-05",
   "VM-37715|product|diarstopsuspension|diarstopsusp": "2026-08-03",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-08-03",
   "_offplan_alerted": {
