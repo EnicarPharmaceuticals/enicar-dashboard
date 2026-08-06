@@ -1410,14 +1410,37 @@ def _monthly_summary():
                 if pt not in pt_drill: continue
                 q = float(pd.to_numeric(r.get(qty_col), errors='coerce') or 0)
                 if not q: continue
+                sz = r.get('PackSize')
+                sz_n = (re.sub(r'\s+', '', str(sz)).upper()
+                        if sz is not None and str(sz).strip() not in ('', 'nan', 'None') else '')
                 if pt == 'Bottle':
-                    sz = r.get('PackSize')
-                    key = (re.sub(r'\s+', '', str(sz)).upper()
-                           if sz is not None and str(sz).strip() not in ('', 'nan', 'None') else '(size n/a)')
+                    key = sz_n or '(size n/a)'
                 else:
-                    key = _brand(r.get('Product'))
+                    # brand + size kept separately so multi-size brands can be split
+                    key = (_brand(r.get('Product')), sz_n)
                 pt_drill[pt].setdefault(key, {'f': 0.0, 'p': 0.0, 'd': 0.0})
                 pt_drill[pt][key][stage] += q
+
+        # Flatten non-bottle drills: one line per brand — but when a brand comes
+        # in DIFFERENT pack sizes, one line per size (each size has its own rate).
+        for _pt in list(pt_drill):
+            if _pt == 'Bottle':
+                continue
+            per_brand = {}
+            for (br, sz_n), v in pt_drill[_pt].items():
+                per_brand.setdefault(br, {}).setdefault(sz_n, {'f': 0.0, 'p': 0.0, 'd': 0.0})
+                for st2 in ('f', 'p', 'd'):
+                    per_brand[br][sz_n][st2] += v[st2]
+            flat = {}
+            for br, sizes in per_brand.items():
+                if len(sizes) == 1:
+                    sz_n = next(iter(sizes))
+                    label = f'{br} ({sz_n})' if sz_n else br
+                    flat[label] = sizes[sz_n]
+                else:
+                    for sz_n, v in sizes.items():
+                        flat[f'{br} — {sz_n or "size n/a"}'] = v
+            pt_drill[_pt] = flat
 
         # Per customer × product type (party names already alias-normalised on load)
         cust_data = {}
