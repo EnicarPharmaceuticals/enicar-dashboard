@@ -1387,7 +1387,18 @@ def _monthly_summary():
                 'd': float(pd.to_numeric(d_m[d_m['ProductType']==pt]['Qty'], errors='coerce').sum()),
             }
 
-        # Per customer × product type (party names already alias-normalised on load)
+        # Per customer breakdown, structured for conversion-charge (CCPC) revenue:
+        #   Bottles  → one line PER PACK SIZE (each size has its own rate)
+        #   Pouches  → ONE combined line (all sachet types & sizes together)
+        #   Ointment / External → one line each
+        def _rev_key(pt, size):
+            if pt in ('Flat Sachet', 'Stick Pack Sachet'):
+                return 'Pouches (all sizes)'
+            if pt == 'Bottle':
+                s2 = re.sub(r'\s+', '', str(size)).upper() if (size is not None
+                        and str(size).strip() not in ('', 'nan', 'None')) else '(size n/a)'
+                return f'Bottle {s2}'
+            return pt                                  # Ointment, External
         cust_data = {}
         for df_x, qty_col, ptype_col, stage in [
             (f_m, 'Qty',         'ProductType', 'f'),
@@ -1401,11 +1412,13 @@ def _monthly_summary():
                 pt = r.get(ptype_col)
                 if pd.isna(pt) or pt not in PRODUCT_TYPES: continue
                 q = float(pd.to_numeric(r.get(qty_col), errors='coerce') or 0)
-                cust_data.setdefault(cust, {p:{'f':0.0,'p':0.0,'d':0.0} for p in PRODUCT_TYPES})
-                cust_data[cust][pt][stage] += q
+                key = _rev_key(pt, r.get('PackSize'))
+                cust_data.setdefault(cust, {})
+                cust_data[cust].setdefault(key, {'f': 0.0, 'p': 0.0, 'd': 0.0})
+                cust_data[cust][key][stage] += q
         # Sort customers by total volume desc, keep only non-empty
         def _cust_total(c):
-            return sum(cust_data[c][pt]['f']+cust_data[c][pt]['p']+cust_data[c][pt]['d'] for pt in PRODUCT_TYPES)
+            return sum(v['f'] + v['p'] + v['d'] for v in cust_data[c].values())
         customers = sorted([c for c in cust_data if _cust_total(c) > 0], key=_cust_total, reverse=True)
 
         out.append({
@@ -1926,9 +1939,17 @@ def _pt_and_customer_html(s):
     for cust in s['customers']:
         cd = s['cust_data'][cust]
         # Build only non-empty rows
+        # Display order: bottles ascending by size, then pouches, ointment, external
+        def _row_order(k):
+            if k.startswith('Bottle'):
+                m2 = re.search(r'([\d.]+)', k)
+                return (0, float(m2.group(1)) if m2 else 999)
+            if k.startswith('Pouches'):  return (1, 0)
+            if k == 'Ointment':          return (2, 0)
+            return (3, 0)
         nonzero_rows = []
         ctot_f = ctot_p = ctot_d = 0.0
-        for p in PRODUCT_TYPES:
+        for p in sorted(cd, key=_row_order):
             f, pa, d = cd[p]['f'], cd[p]['p'], cd[p]['d']
             if f + pa + d == 0:
                 continue
@@ -1962,8 +1983,8 @@ def _pt_and_customer_html(s):
 
     cust_html = f'''
     <div style="margin-top:16px">
-      <div style="font-weight:700;color:{C_PRI};font-size:13px;margin-bottom:4px">By customer × product type — this month</div>
-      <div style="font-size:11px;color:#90A4AE;margin-bottom:8px">Sorted by total volume. Empty product types are hidden per customer.</div>
+      <div style="font-weight:700;color:{C_PRI};font-size:13px;margin-bottom:4px">By customer — for conversion-charge revenue — this month</div>
+      <div style="font-size:11px;color:#90A4AE;margin-bottom:8px">Bottles are split per pack size (each size has its own rate); pouches are one combined line per customer; sorted by total volume.</div>
       {cust_blocks if cust_blocks else '<div style="color:#90A4AE;padding:8px">No customer activity this month.</div>'}
     </div>
     '''
