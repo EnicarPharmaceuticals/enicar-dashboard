@@ -2024,7 +2024,9 @@ try:
 except Exception:
     LOGO_URI = ''
 
-generated_at = datetime.now().strftime('%d %b %Y, %I:%M %p')
+# Always stamp in Indian time — the cloud runner is UTC and confused the team
+from datetime import timezone as _tz, timedelta as _tdelta
+generated_at = datetime.now(_tz(_tdelta(hours=5, minutes=30))).strftime('%d %b %Y, %I:%M %p IST')
 
 html = f"""<!DOCTYPE html>
 <html lang="en">
