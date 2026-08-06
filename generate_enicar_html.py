@@ -1387,6 +1387,29 @@ def _monthly_summary():
                 'd': float(pd.to_numeric(d_m[d_m['ProductType']==pt]['Qty'], errors='coerce').sum()),
             }
 
+        # Drill-downs for the type table: Bottle → per pack size; each pouch
+        # type → per company (for conversion-charge revenue reading).
+        pt_drill = {'Bottle': {}, 'Flat Sachet': {}, 'Stick Pack Sachet': {}}
+        for df_x, qty_col, ptype_col, stage in [
+            (f_m, 'Qty',         'ProductType', 'f'),
+            (p_m, 'TotalPacked', 'ProdType',    'p'),
+            (d_m, 'Qty',         'ProductType', 'd'),
+        ]:
+            for _, r in df_x.iterrows():
+                pt = r.get(ptype_col)
+                if pt not in pt_drill: continue
+                q = float(pd.to_numeric(r.get(qty_col), errors='coerce') or 0)
+                if not q: continue
+                if pt == 'Bottle':
+                    sz = r.get('PackSize')
+                    key = (re.sub(r'\s+', '', str(sz)).upper()
+                           if sz is not None and str(sz).strip() not in ('', 'nan', 'None') else '(size n/a)')
+                else:
+                    cu = r.get('Party')
+                    key = str(cu).strip() if cu is not None and str(cu).strip() not in ('', 'nan') else '(company n/a)'
+                pt_drill[pt].setdefault(key, {'f': 0.0, 'p': 0.0, 'd': 0.0})
+                pt_drill[pt][key][stage] += q
+
         # Per customer breakdown, structured for conversion-charge (CCPC) revenue:
         #   Bottles  → one line PER PACK SIZE (each size has its own rate)
         #   Pouches  → ONE combined line (all sachet types & sizes together)
@@ -1438,6 +1461,7 @@ def _monthly_summary():
             'pack_split': _split_by_rm_month(p_m, 'TotalPacked', m),
             'disp_split': _split_by_rm_month(d_m, 'Qty',         m),
             'pt_table':   pt_table,
+            'pt_drill':   pt_drill,
             'customers':  customers,
             'cust_data':  cust_data,
         })
@@ -1905,17 +1929,41 @@ def _pt_and_customer_html(s):
     tot_f = sum(pt[p]['f'] for p in PRODUCT_TYPES)
     tot_p = sum(pt[p]['p'] for p in PRODUCT_TYPES)
     tot_d = sum(pt[p]['d'] for p in PRODUCT_TYPES)
+    drill = s.get('pt_drill', {})
+    mid = s['m'].replace('-', '')
     rows = ''
     for i, p in enumerate(PRODUCT_TYPES):
         bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
-        rows += (f'<tr style="background:{bg}"><td class="td-name">{p}</td>'
+        sub = drill.get(p) or {}
+        has_drill = bool(sub)
+        gid = f'{mid}-{i}'
+        caret = (f' <span id="ptc-{gid}" style="color:#90A4AE;font-size:10px">▸ click for '
+                 f'{"sizes" if p == "Bottle" else "companies"}</span>') if has_drill else ''
+        click = (f' style="background:{bg};cursor:pointer" onclick="togglePTx(\'{gid}\')"'
+                 if has_drill else f' style="background:{bg}"')
+        rows += (f'<tr{click}><td class="td-name">{p}{caret}</td>'
                  f'<td class="td-num" style="color:{C_SEC};font-weight:600">{n(pt[p]["f"])}</td>'
                  f'<td class="td-num" style="color:{C_AMB};font-weight:600">{n(pt[p]["p"])}</td>'
                  f'<td class="td-num" style="color:{C_ORG};font-weight:600">{n(pt[p]["d"])}</td></tr>')
+        if has_drill:
+            if p == 'Bottle':
+                def _sk(kv):
+                    m2 = re.search(r'([\d.]+)', kv[0])
+                    return float(m2.group(1)) if m2 else 9999
+                entries = sorted(sub.items(), key=_sk)
+            else:
+                entries = sorted(sub.items(), key=lambda kv: -(kv[1]['f'] + kv[1]['p'] + kv[1]['d']))
+            for lbl, v in entries:
+                rows += (f'<tr class="ptx-{gid}" style="display:none;background:#FAFDFC">'
+                         f'<td class="td-name" style="padding-left:30px;color:#546E7A;font-size:12px">↳ {lbl}</td>'
+                         f'<td class="td-num" style="color:{C_SEC};font-size:12px">{n(v["f"]) if v["f"] else "—"}</td>'
+                         f'<td class="td-num" style="color:{C_AMB};font-size:12px">{n(v["p"]) if v["p"] else "—"}</td>'
+                         f'<td class="td-num" style="color:{C_ORG};font-size:12px">{n(v["d"]) if v["d"] else "—"}</td></tr>')
 
     pt_html = f'''
     <div style="border-top:1px solid #B0BEC5;padding-top:10px;margin-top:14px">
-      <div style="font-weight:700;color:{C_PRI};font-size:13px;margin-bottom:6px">Product type breakdown — this month</div>
+      <div style="font-weight:700;color:{C_PRI};font-size:13px;margin-bottom:6px">Product type breakdown — this month
+        <span style="font-weight:400;font-size:11px;color:#90A4AE">— click Bottle for sizes, pouch rows for companies</span></div>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead><tr style="background:{C_PRI};color:#fff">
           <th style="padding:6px 8px;text-align:left">PRODUCT TYPE</th>
@@ -2986,6 +3034,16 @@ function lookupBatch() {{
     </tr></thead>
     <tbody>${{rows}}</tbody>
   </table></div>${{note}}${{actHtml}}`;
+}}
+
+// ── Product-type drill-down (monthly summary) ─────────
+function togglePTx(gid) {{
+  document.querySelectorAll('.ptx-' + gid).forEach(tr => {{
+    tr.style.display = tr.style.display === 'none' ? '' : 'none';
+  }});
+  const c = document.getElementById('ptc-' + gid);
+  if (c) c.textContent = c.textContent.startsWith('▸') ?
+    c.textContent.replace('▸', '▾') : c.textContent.replace('▾', '▸');
 }}
 
 // ── Jump from a plan batch to its full journey in search ──
