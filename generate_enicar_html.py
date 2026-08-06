@@ -1387,9 +1387,19 @@ def _monthly_summary():
                 'd': float(pd.to_numeric(d_m[d_m['ProductType']==pt]['Qty'], errors='coerce').sum()),
             }
 
-        # Drill-downs for the type table: Bottle → per pack size; each pouch
-        # type → per company (for conversion-charge revenue reading).
-        pt_drill = {'Bottle': {}, 'Flat Sachet': {}, 'Stick Pack Sachet': {}}
+        # Drill-downs for the type table:
+        #   Bottle → per pack size
+        #   Pouches / Ointment / External → per BRAND name (first word of the
+        #   product, so Redsun Mango/Mint/... all fold into "Redsun" — no
+        #   flavour bifurcation, per the Director).
+        def _brand(pname):
+            s2 = str(pname or '').strip()
+            if not s2 or s2.lower() == 'nan':
+                return '(name n/a)'
+            w = re.split(r'[\s(]+', s2)[0].strip(' .-,')
+            w = re.sub(r'-\d+$', '', w)          # COMIT-100 → COMIT
+            return w.title() if w else '(name n/a)'
+        pt_drill = {pt: {} for pt in PRODUCT_TYPES}
         for df_x, qty_col, ptype_col, stage in [
             (f_m, 'Qty',         'ProductType', 'f'),
             (p_m, 'TotalPacked', 'ProdType',    'p'),
@@ -1405,8 +1415,7 @@ def _monthly_summary():
                     key = (re.sub(r'\s+', '', str(sz)).upper()
                            if sz is not None and str(sz).strip() not in ('', 'nan', 'None') else '(size n/a)')
                 else:
-                    cu = r.get('Party')
-                    key = str(cu).strip() if cu is not None and str(cu).strip() not in ('', 'nan') else '(company n/a)'
+                    key = _brand(r.get('Product'))
                 pt_drill[pt].setdefault(key, {'f': 0.0, 'p': 0.0, 'd': 0.0})
                 pt_drill[pt][key][stage] += q
 
@@ -1925,7 +1934,7 @@ def _pt_and_customer_html(s):
         has_drill = bool(sub)
         gid = f'{mid}-{i}'
         caret = (f' <span id="ptc-{gid}" style="color:#90A4AE;font-size:10px">▸ click for '
-                 f'{"sizes" if p == "Bottle" else "companies"}</span>') if has_drill else ''
+                 f'{"sizes" if p == "Bottle" else "brands"}</span>') if has_drill else ''
         click = (f' style="background:{bg};cursor:pointer" onclick="togglePTx(\'{gid}\')"'
                  if has_drill else f' style="background:{bg}"')
         rows += (f'<tr{click}><td class="td-name">{p}{caret}</td>'
@@ -1950,7 +1959,7 @@ def _pt_and_customer_html(s):
     pt_html = f'''
     <div style="border-top:1px solid #B0BEC5;padding-top:10px;margin-top:14px">
       <div style="font-weight:700;color:{C_PRI};font-size:13px;margin-bottom:6px">Product type breakdown — this month
-        <span style="font-weight:400;font-size:11px;color:#90A4AE">— click Bottle for sizes, pouch rows for companies</span></div>
+        <span style="font-weight:400;font-size:11px;color:#90A4AE">— click Bottle for sizes; pouches, ointment &amp; external for brand names</span></div>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead><tr style="background:{C_PRI};color:#fff">
           <th style="padding:6px 8px;text-align:left">PRODUCT TYPE</th>
