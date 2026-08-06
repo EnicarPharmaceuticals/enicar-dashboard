@@ -800,6 +800,8 @@ def _build_plan_view():
 
     def prod_match(a, b):
         A, B = _pcanon(a), _pcanon(b)
+        if A and A == B:           # exact name — covers short ones like PA-C
+            return True
         return len(A) >= 4 and len(B) >= 4 and (A in B or B in A)
 
     for it in items:
@@ -903,8 +905,16 @@ def _build_plan_view():
             return True
         fd = FILL_DATES.get(b['key'])
         return bool(fd and fd['first'] < PLAN_WINDOW_FROM)
+    # Plan rows often carry only the base/brand name — "Kifaru Jelly 100mg"
+    # must cover "KIFARU JELLY (Strawberry Flavour)". Same brand anywhere on
+    # the plan ⇒ never an off-plan alarm (Director, 6 Aug 2026).
+    def _brand_of(p):
+        tok = str(p or '').strip().split()[0] if str(p or '').strip() else ''
+        return _pcanon(re.sub(r'[-–]?\d+$', '', tok))
+    _plan_brands = {b for b in (_brand_of(it['product']) for it in items) if len(b) >= 4}
     off_plan = sorted([b for b in rmw
-                       if b['key'] not in used_keys and not _is_prev_month_work(b)],
+                       if b['key'] not in used_keys and not _is_prev_month_work(b)
+                       and _brand_of(b['product']) not in _plan_brands],
                       key=lambda b: b['date'])
     _today_op = date.today()
     for b in off_plan:
