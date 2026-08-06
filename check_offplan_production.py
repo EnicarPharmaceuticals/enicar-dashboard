@@ -179,6 +179,11 @@ def find_offplan():
         f = fmap.get(k)
         if f and f['first'] and f['first'] < PLAN_MONTH_START:
             continue                                    # filling began in July
+        # Column PLAN classifies the dispense: only "regular" production can be
+        # off-plan — "trial" (e.g. TLB batches) and "additional" are deliberate
+        # extras, never alarms (Director, 6 Aug 2026).
+        if str(r.get('PLAN') or '').strip().lower() != 'regular':
+            continue
         prod = str(r.get('NAME OF THE PRODUCT') or '').strip()
         if on_plan(prod, k, plan_prods, plan_batches, plan_brands) or carried_over(prod):
             continue
