@@ -47,8 +47,8 @@ def pc(s):  return re.sub(r'[^a-z0-9]', '', str(s or '').lower())
 
 def load_plan_products_and_batches():
     """Returns (set of canon product names on the plan, set of batch keys the
-    store wrote into the plan tab)."""
-    prods, batches = set(), set()
+    store wrote into the plan tab, set of canon plan brands)."""
+    prods, batches, brands = set(), set(), set()
     import pandas as pd
     try:
         tab = next((s for s in pd.ExcelFile(XLSX).sheet_names
@@ -62,6 +62,7 @@ def load_plan_products_and_batches():
                 p = r.get(cp)
                 if pd.notna(p) and str(p).strip():
                     prods.add(pc(p))
+                    brands.add(brand(p))
                 if cb is not None:
                     b = r.get(cb)
                     if pd.notna(b) and str(b).strip():
@@ -69,30 +70,46 @@ def load_plan_products_and_batches():
                             if x.strip():
                                 batches.add(bk(x))
             if prods:
-                return prods, batches
+                return prods, batches, brands
     except Exception as e:
         print(f'  (plan tab unreadable: {e})')
     try:
         pj = json.load(open(PLAN_JSON))
         prods = {pc(i['product']) for i in pj.get('items', [])}
+        brands = {brand(i['product']) for i in pj.get('items', [])}
     except Exception:
         pass
-    return prods, batches
+    return prods, batches, brands
 
 
-def on_plan(product, key, plan_prods, plan_batches):
+def brand(p):
+    """Brand = first word of the product name, trailing strength digits stripped
+    ("KIFARU JELLY (Strawberry)" → kifaru, "COMIT-100" → comit)."""
+    tok = str(p or '').strip().split()[0] if str(p or '').strip() else ''
+    return pc(re.sub(r'[-–]?\d+$', '', tok))
+
+
+def on_plan(product, key, plan_prods, plan_batches, plan_brands):
     if key in plan_batches:
         return True
     c = pc(product)
+    if c in plan_prods:            # exact name — covers short ones like PA-C
+        return True
     if len(c) < 4:
         return False
-    return any(len(pp) >= 4 and (c in pp or pp in c) for pp in plan_prods)
+    if any(len(pp) >= 4 and (c in pp or pp in c) for pp in plan_prods):
+        return True
+    # Plan rows often carry only the base/brand name (no flavour, no variant) —
+    # "Kifaru Jelly 100mg" must cover "KIFARU JELLY (Strawberry Flavour)".
+    # Same brand on the plan ⇒ never an off-plan alarm (Director, 6 Aug 2026).
+    b = brand(product)
+    return len(b) >= 4 and b in plan_brands
 
 
 def find_offplan():
     """Batches taken into production this month whose product is not planned."""
     import pandas as pd
-    plan_prods, plan_batches = load_plan_products_and_batches()
+    plan_prods, plan_batches, plan_brands = load_plan_products_and_batches()
     if not plan_prods:
         print('  No plan found — skipping.')
         return None
@@ -138,7 +155,7 @@ def find_offplan():
         if f and f['first'] and f['first'] < PLAN_MONTH_START:
             continue                                    # filling began in July
         prod = str(r.get('NAME OF THE PRODUCT') or '').strip()
-        if on_plan(prod, k, plan_prods, plan_batches):
+        if on_plan(prod, k, plan_prods, plan_batches, plan_brands):
             continue
         out[k] = {'batch': str(b).strip(), 'product': prod,
                   'company': str(r.get('CUSTOMER') or '').strip(),
@@ -148,7 +165,7 @@ def find_offplan():
     for k, f in fmap.items():
         if k in out or k in baseline or not f['first'] or f['first'] < PLAN_MONTH_START:
             continue
-        if on_plan(f['product'], k, plan_prods, plan_batches):
+        if on_plan(f['product'], k, plan_prods, plan_batches, plan_brands):
             continue
         out[k] = {'batch': k, 'product': f['product'], 'company': '',
                   'stage': 'Filling started', 'date': f['first'].isoformat(),
