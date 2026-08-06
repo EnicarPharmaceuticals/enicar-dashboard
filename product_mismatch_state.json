@@ -22,7 +22,7 @@
   "6173C85001|product|livogenirontonic5000ltr|livogenirontonic": "2026-08-06",
   "6189C85001|product|polybionlc300ml|polybionlc": "2026-08-06",
   "6190C85001|product|polybionlc300ml|polybionlc": "2026-08-04",
-  "6197C85001|product|polybionlc300ml|polybionlc": "2026-08-06",
+  "6197C85001|product|polybionlc400ml|polybionlc": "2026-08-06",
   "650007|product|polygel|polygelsuspensionsachet": "2026-08-06",
   "6560009|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-05",
   "ALE-141|party|sapphirelifesciencepvtltdp2p|ronakeximpvtltd": "2026-08-04",
@@ -133,7 +133,6 @@
   "RE-061307|product|redsunjellychocolateflavour|redsunchocolate": "2026-08-06",
   "RE-061307|product|redsunjellychocolateflavour|redsunjellychocolate": "2026-08-06",
   "RE-071308|product|redsunjellychocolateflavour|redsunjellychocolate": "2026-08-06",
-  "RE-081309|product|redsunjellychocolateflavour|edsunjellychocolateflavour": "2026-08-06",
   "RE-081309|product|redsunjellychocolateflavour|redsunjellychocolate": "2026-08-06",
   "RE-091310|product|redsunjellychocolateflavour|redsunjellychocolate": "2026-08-06",
   "RE-091320|product|wormronsuspensionbananaflavour|wormronbanana": "2026-08-06",
@@ -269,12 +268,108 @@
       "qty": 500.0,
       "stage": "RM dispensed"
     },
+    "EL-2489": {
+      "batch": "EL-2489",
+      "company": "Systopic Laboratories Pvt. Ltd",
+      "date": "2026-08-05",
+      "product": "CYRA MPS",
+      "qty": 5000.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2490": {
+      "batch": "EL-2490",
+      "company": "Systopic Laboratories Pvt. Ltd",
+      "date": "2026-08-05",
+      "product": "CYRA MPS",
+      "qty": 5000.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2496": {
+      "batch": "EL-2496",
+      "company": "",
+      "date": "2026-08-05",
+      "product": "BR-PARACETAMOL CHILDREN ELIXIR",
+      "qty": 30400.0,
+      "stage": "Filling started"
+    },
+    "RE-161327": {
+      "batch": "RE-161327",
+      "company": "",
+      "date": "2026-08-03",
+      "product": "WORMRON SUSPENSION (Strawberry Flavour)",
+      "qty": 80000.0,
+      "stage": "Filling started"
+    },
+    "REO-353": {
+      "batch": "REO-353",
+      "company": "",
+      "date": "2026-08-04",
+      "product": "Naomi Triple  Action",
+      "qty": 66240.0,
+      "stage": "Filling started"
+    },
+    "REO-356": {
+      "batch": "REO-356",
+      "company": "Ronak Exim pvt Ltd.",
+      "date": "2026-08-03",
+      "product": "Naomi Triple Action Cream",
+      "qty": 1000.0,
+      "stage": "RM dispensed"
+    },
+    "REO-357": {
+      "batch": "REO-357",
+      "company": "Ronak Exim pvt Ltd.",
+      "date": "2026-08-03",
+      "product": "Naomi Triple Action Cream",
+      "qty": 1000.0,
+      "stage": "RM dispensed"
+    },
+    "REO-358": {
+      "batch": "REO-358",
+      "company": "Ronak Exim pvt Ltd.",
+      "date": "2026-08-04",
+      "product": "Naomi Triple Action Cream",
+      "qty": 1000.0,
+      "stage": "RM dispensed"
+    },
+    "REO-359": {
+      "batch": "REO-359",
+      "company": "Ronak Exim pvt Ltd.",
+      "date": "2026-08-04",
+      "product": "Naomi Triple Action Cream",
+      "qty": 1000.0,
+      "stage": "RM dispensed"
+    },
+    "S-1474": {
+      "batch": "S-1474",
+      "company": "Shalina Healthcare Pvt. Ltd.",
+      "date": "2026-08-05",
+      "product": "KIFARU JELLY (Strawberry Flavour)",
+      "qty": 510.0,
+      "stage": "RM dispensed"
+    },
+    "S-1475": {
+      "batch": "S-1475",
+      "company": "Shalina Healthcare Pvt. Ltd.",
+      "date": "2026-08-05",
+      "product": "KIFARU JELLY (Banana Flavour)",
+      "qty": 510.0,
+      "stage": "RM dispensed"
+    },
     "SN142802": {
       "batch": "SN142802",
       "company": "",
       "date": "2026-08-01",
       "product": "Silnamys",
       "qty": 9000.0,
+      "stage": "Filling started"
+    },
+    "SN152802": {
+      "batch": "SN152802",
+      "company": "",
+      "date": "2026-08-03",
+      "product": "Silnamys",
+      "qty": 20000.0,
       "stage": "Filling started"
     },
     "SN162802": {
@@ -284,6 +379,22 @@
       "product": "SILNAMYS",
       "qty": 2200.0,
       "stage": "RM dispensed"
+    },
+    "T16002": {
+      "batch": "T16002",
+      "company": "",
+      "date": "2026-08-03",
+      "product": "Azithromycin",
+      "qty": 25000.0,
+      "stage": "Filling started"
+    },
+    "U-157": {
+      "batch": "U-157",
+      "company": "",
+      "date": "2026-08-04",
+      "product": "PA-C",
+      "qty": 40400.0,
+      "stage": "Filling started"
     }
   },
   "_plan_snapshot": {
@@ -1078,15 +1189,15 @@
         "status": "",
         "units": 20000.0
       },
-      "nocigelsachet|unique|24x15ml": {
+      "nocigelsachet|unique|15ml": {
         "batch": "",
         "date": "",
-        "pack": "24 x 15 ml",
+        "pack": "15 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Nocigel (Sachet)",
         "status": "",
-        "units": 10000.0
+        "units": 240000.0
       },
       "nocolddx|unique|7ml": {
         "batch": "",
@@ -1720,6 +1831,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-01T10:30:51"
+    "ts": "2026-08-06T11:19:25"
   }
 }
