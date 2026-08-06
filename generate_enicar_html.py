@@ -912,9 +912,28 @@ def _build_plan_view():
         tok = str(p or '').strip().split()[0] if str(p or '').strip() else ''
         return _pcanon(re.sub(r'[-–]?\d+$', '', tok))
     _plan_brands = {b for b in (_brand_of(it['product']) for it in items) if len(b) >= 4}
+    # Products whose RM was dispensed in the PREVIOUS month were on that
+    # month's plan and are carrying over — deliberately not repeated on this
+    # month's plan, so new batches of them are never off-plan (Director, 6 Aug).
+    _prev_end = PLAN_WINDOW_FROM - timedelta(days=1)
+    _prev_start = _prev_end.replace(day=1)
+    _prev_prods, _prev_brands = set(), set()
+    for _v in RM_INFO.values():
+        if _v.get('date') and _prev_start <= _v['date'] <= _prev_end and _v.get('product'):
+            _prev_prods.add(_pcanon(_v['product']))
+            _prev_brands.add(_brand_of(_v['product']))
+    def _carried_over(p):
+        c = _pcanon(p)
+        if c and c in _prev_prods:
+            return True
+        if len(c) >= 4 and any(len(x) >= 4 and (c in x or x in c) for x in _prev_prods):
+            return True
+        b = _brand_of(p)
+        return len(b) >= 4 and b in _prev_brands
     off_plan = sorted([b for b in rmw
                        if b['key'] not in used_keys and not _is_prev_month_work(b)
-                       and _brand_of(b['product']) not in _plan_brands],
+                       and _brand_of(b['product']) not in _plan_brands
+                       and not _carried_over(b['product'])],
                       key=lambda b: b['date'])
     _today_op = date.today()
     for b in off_plan:
