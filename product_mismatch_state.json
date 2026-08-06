@@ -22,8 +22,13 @@
   "6173C85001|product|livogenirontonic5000ltr|livogenirontonic": "2026-08-06",
   "6189C85001|product|polybionlc300ml|polybionlc": "2026-08-06",
   "6190C85001|product|polybionlc300ml|polybionlc": "2026-08-04",
+  "6192C85001|product|polybionactive300ml|polybionactive": "2026-08-06",
+  "6194C85001|product|polybionactive300ml|polybionactive": "2026-08-06",
+  "6196C85002|product|polybionlc400ml|polybionlc": "2026-08-06",
   "6197C85001|product|polybionlc400ml|polybionlc": "2026-08-06",
+  "6199C85001|product|ostopolybion300ml|ostopolybion": "2026-08-06",
   "650007|product|polygel|polygelsuspensionsachet": "2026-08-06",
+  "6560008|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-06",
   "6560009|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-05",
   "ALE-141|party|sapphirelifesciencepvtltdp2p|ronakeximpvtltd": "2026-08-04",
   "ALE-142|party|sapphirelifesciencepvtltdp2p|sapphirelifesciencepvtltd": "2026-08-04",
@@ -185,6 +190,8 @@
   "REO-351|product|naomitripleactioncream|naomitripleaction": "2026-08-06",
   "REO-352|product|naomitripleactioncream|naomitripleaction": "2026-08-06",
   "REO-353|product|naomitripleactioncream|naomitripleaction": "2026-08-04",
+  "S-1475|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-06",
+  "S-1475|product|kifarujellybananaflavour|kifarujellybanana": "2026-08-06",
   "S-1478|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-06",
   "S-1478|product|ibulocksuspension|ibulocksusp": "2026-08-06",
   "S-1573|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-06",
@@ -240,6 +247,7 @@
   "U-144|party|unichemghanalimited|uniquepharma": "2026-08-06",
   "U-146|party|unichemghanalimited|uniquepharma": "2026-08-06",
   "U-147|product|qenzy|": "2026-08-06",
+  "VM-15711|product|supertonesyrup|supertone": "2026-08-06",
   "VM-37715|product|diarstopsuspension|diarstop": "2026-08-05",
   "VM-37715|product|diarstopsuspension|diarstopsusp": "2026-08-06",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-08-06",
@@ -291,6 +299,14 @@
       "product": "BR-PARACETAMOL CHILDREN ELIXIR",
       "qty": 30400.0,
       "stage": "Filling started"
+    },
+    "MUCE-196": {
+      "batch": "MUCE-196",
+      "company": "GROUP PHARMACEUTICALS LTD",
+      "date": "2026-08-06",
+      "product": "Minmin Tonic",
+      "qty": 4540.0,
+      "stage": "RM dispensed"
     },
     "RE-161327": {
       "batch": "RE-161327",
@@ -394,6 +410,14 @@
       "date": "2026-08-04",
       "product": "PA-C",
       "qty": 40400.0,
+      "stage": "Filling started"
+    },
+    "VM-15711": {
+      "batch": "VM-15711",
+      "company": "",
+      "date": "2026-08-06",
+      "product": "Supertone",
+      "qty": 11800.0,
       "stage": "Filling started"
     }
   },
