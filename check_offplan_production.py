@@ -25,7 +25,7 @@ OFFPLAN_EMAILS=0 disables sending (report-only). --test prints, never sends.
 """
 
 import os, sys, json, re, calendar
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 HERE  = os.path.dirname(os.path.abspath(__file__))
 ROOT  = os.environ.get('DASHBOARD_ROOT') or os.path.join(HERE, '..')
@@ -139,6 +139,31 @@ def find_offplan():
         if pd.notna(d) and (e['first'] is None or d.date() < e['first']):
             e['first'] = d.date()
 
+    # Products with RM dispensed in the PREVIOUS month were on that month's
+    # plan and are simply carrying over — they were deliberately not repeated
+    # on this month's plan, so new batches of them are never off-plan
+    # (Director, 6 Aug 2026).
+    prev_end = PLAN_MONTH_START - timedelta(days=1)
+    prev_start = prev_end.replace(day=1)
+    prev_prods, prev_brands = set(), set()
+    for _, r in rm.iterrows():
+        d = pd.to_datetime(r.get('DISPENSING DATE'), errors='coerce')
+        if pd.isna(d) or not (prev_start <= d.date() <= prev_end):
+            continue
+        p = str(r.get('NAME OF THE PRODUCT') or '').strip()
+        if p:
+            prev_prods.add(pc(p))
+            prev_brands.add(brand(p))
+
+    def carried_over(product):
+        c = pc(product)
+        if c and c in prev_prods:
+            return True
+        if len(c) >= 4 and any(len(x) >= 4 and (c in x or x in c) for x in prev_prods):
+            return True
+        b = brand(product)
+        return len(b) >= 4 and b in prev_brands
+
     out = {}
     # RM dispensed in the plan month
     for _, r in rm.iterrows():
@@ -155,7 +180,7 @@ def find_offplan():
         if f and f['first'] and f['first'] < PLAN_MONTH_START:
             continue                                    # filling began in July
         prod = str(r.get('NAME OF THE PRODUCT') or '').strip()
-        if on_plan(prod, k, plan_prods, plan_batches, plan_brands):
+        if on_plan(prod, k, plan_prods, plan_batches, plan_brands) or carried_over(prod):
             continue
         out[k] = {'batch': str(b).strip(), 'product': prod,
                   'company': str(r.get('CUSTOMER') or '').strip(),
@@ -165,7 +190,7 @@ def find_offplan():
     for k, f in fmap.items():
         if k in out or k in baseline or not f['first'] or f['first'] < PLAN_MONTH_START:
             continue
-        if on_plan(f['product'], k, plan_prods, plan_batches, plan_brands):
+        if on_plan(f['product'], k, plan_prods, plan_batches, plan_brands) or carried_over(f['product']):
             continue
         out[k] = {'batch': k, 'product': f['product'], 'company': '',
                   'stage': 'Filling started', 'date': f['first'].isoformat(),
