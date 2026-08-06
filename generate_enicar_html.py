@@ -610,9 +610,12 @@ def _rm_info():
             continue
         k = _bkey(b)
         d = pd.to_datetime(r.get('DISPENSING DATE'), errors='coerce')
-        e = info.setdefault(k, {'date': None, 'customer': None, 'product': None, 'size': 0.0})
+        e = info.setdefault(k, {'date': None, 'customer': None, 'product': None, 'size': 0.0,
+                                'plan_type': None})
         if pd.notna(d) and (e['date'] is None or d.date() < e['date']):
             e['date'] = d.date()
+        if e['plan_type'] is None and pd.notna(r.get('PLAN')):
+            e['plan_type'] = str(r.get('PLAN')).strip().lower()
         if e['customer'] is None and pd.notna(r.get('CUSTOMER')):
             e['customer'] = str(r.get('CUSTOMER')).strip()
         if e['product'] is None and pd.notna(r.get('NAME OF THE PRODUCT')):
@@ -930,8 +933,13 @@ def _build_plan_view():
             return True
         b = _brand_of(p)
         return len(b) >= 4 and b in _prev_brands
+    # RM's PLAN column classifies each dispense: only "regular" production can
+    # be off-plan — "trial" (TLB etc.) and "additional" are deliberate extras.
+    def _is_regular(b):
+        return (RM_INFO.get(b['key'], {}).get('plan_type') or '') == 'regular'
     off_plan = sorted([b for b in rmw
                        if b['key'] not in used_keys and not _is_prev_month_work(b)
+                       and _is_regular(b)
                        and _brand_of(b['product']) not in _plan_brands
                        and not _carried_over(b['product'])],
                       key=lambda b: b['date'])
