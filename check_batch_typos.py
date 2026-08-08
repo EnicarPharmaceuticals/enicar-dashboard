@@ -26,6 +26,32 @@ import os, sys, re
 from collections import Counter
 import pandas as pd
 
+
+# ── Tolerant sheet-name lookup ────────────────────────────────────────────────
+# Staff sometimes rename tabs in the live sheet ("\u2795 Packing Log" became
+# "Packing Log" on 8 Aug 2026 and broke every build). Resolve sheet_name by
+# canon match (letters/digits only, case-insensitive) so renames never break us.
+def _tolerant_read_excel_install():
+    import pandas as _pd, re as _re
+    if getattr(_pd.read_excel, '_tolerant', False):
+        return
+    _orig = _pd.read_excel
+    def _read_excel(io, sheet_name=0, **kw):
+        if isinstance(sheet_name, str):
+            try:
+                names = _pd.ExcelFile(io).sheet_names
+                if sheet_name not in names:
+                    c = lambda s: _re.sub(r'[^a-z0-9]', '', str(s).lower())
+                    m = [n for n in names if c(n) == c(sheet_name)]
+                    if m:
+                        sheet_name = m[0]
+            except Exception:
+                pass
+        return _orig(io, sheet_name=sheet_name, **kw)
+    _read_excel._tolerant = True
+    _pd.read_excel = _read_excel
+_tolerant_read_excel_install()
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.environ.get('DASHBOARD_ROOT') or os.path.join(HERE, '..')
 XLSX = os.path.join(ROOT, 'Enicar_Dashboard_Template.xlsx')
