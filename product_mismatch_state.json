@@ -26,6 +26,7 @@
   "6194C85001|product|polybionactive300ml|polybionactive": "2026-08-09",
   "6195C85001|product|polybionactive300ml|polybionactive": "2026-08-08",
   "6195C85002|product|polybionactive300ml|polybionactive": "2026-08-08",
+  "6196C85001|product|polybionactive300ml|polybionactive": "2026-08-10",
   "6196C85002|product|polybionlc400ml|polybionlc": "2026-08-09",
   "6197C85001|product|polybionlc400ml|polybionlc": "2026-08-09",
   "6199C85001|product|ostopolybion300ml|ostopolybion": "2026-08-09",
@@ -53,7 +54,7 @@
   "EL-2429|party|carethcorporation|londonunitedmedimpexpvtltd": "2026-08-09",
   "EL-2433|product|calcibrintsuspension|calcibrintsusp": "2026-08-09",
   "EL-2434|party|yelloworangepharmacy|pharmatrustltd": "2026-08-09",
-  "EL-2440|party|omexport|omexports": "2026-08-08",
+  "EL-2440|party|omexports|omexport": "2026-08-10",
   "EL-2442|party|nelpalifescience|sapphirelifesciencepvtltdp2p": "2026-08-10",
   "EL-2443|party|nelpalifescience|sapphirelifesciencepvtltdp2p": "2026-08-10",
   "EL-2444|party|nelpalifescience|sapphirelifesciencepvtltdp2p": "2026-08-10",
@@ -195,6 +196,7 @@
   "REO-351|product|naomitripleactioncream|naomitripleaction": "2026-08-09",
   "REO-352|product|naomitripleactioncream|naomitripleaction": "2026-08-09",
   "REO-353|product|naomitripleactioncream|naomitripleaction": "2026-08-10",
+  "S-1474|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-10",
   "S-1474|product|kifarujellystrawberryflavour|kifarujellystrawberry": "2026-08-10",
   "S-1475|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-09",
   "S-1475|product|kifarujellybananaflavour|kifarujellybanana": "2026-08-09",
@@ -202,6 +204,7 @@
   "S-1478|product|ibulocksuspension|ibulocksusp": "2026-08-09",
   "S-1573|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-09",
   "S-1573|product|kifaru50jelly|kifaru50": "2026-08-09",
+  "SBFE-145|product|bioforcetonic|biofore": "2026-08-10",
   "SL05376|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-10",
   "SL05380|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-10",
   "SL05381|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-10",
@@ -253,6 +256,7 @@
   "U-144|party|unichemghanalimited|uniquepharma": "2026-08-09",
   "U-146|party|unichemghanalimited|uniquepharma": "2026-08-09",
   "U-147|product|qenzy|": "2026-08-09",
+  "U-158|party|indocoremediesltd|uniquepharma": "2026-08-10",
   "VM-15711|product|supertonesyrup|supertone": "2026-08-09",
   "VM-37715|product|diarstopsuspension|diarstop": "2026-08-08",
   "VM-37715|product|diarstopsuspension|diarstopsusp": "2026-08-09",
@@ -377,6 +381,14 @@
       "product": "KIFARU JELLY (Banana Flavour)",
       "qty": 510.0,
       "stage": "RM dispensed"
+    },
+    "SBFE-145": {
+      "batch": "SBFE-145",
+      "company": "",
+      "date": "2026-08-10",
+      "product": "Biofore",
+      "qty": 7000.0,
+      "stage": "Filling started"
     },
     "SN142802": {
       "batch": "SN142802",
@@ -1687,7 +1699,7 @@
         "priority": "1",
         "product": "Tempact-250 Suspension",
         "status": "",
-        "units": 650000.0
+        "units": 65000.0
       },
       "topicidal|sapphire|175ml": {
         "batch": "",
@@ -1861,6 +1873,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-06T11:19:25"
+    "ts": "2026-08-10T12:32:39"
   }
 }
