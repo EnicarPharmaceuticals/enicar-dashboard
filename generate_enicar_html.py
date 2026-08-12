@@ -1355,6 +1355,12 @@ def plan_section_html():
           <td><div style="display:inline-block;background:{C_ORG};color:#fff;padding:2px 8px;border-radius:4px;min-width:60px;width:{min(100,(s['disp_sum']/s['units']*100) if s['units'] else 0):.0f}%;box-sizing:border-box">{n(s['disp_sum'])} &nbsp;({(s['disp_sum']/s['units']*100) if s['units'] else 0:.1f}%)</div></td></tr>
     </table>
   </div>
+  <div style="padding:0 16px 8px">
+    <input id="plan-search" type="search" placeholder="🔍 Search the plan — product, customer, pack, batch…"
+           oninput="planSearch(this.value)" onclick="event.stopPropagation()"
+           style="width:100%;max-width:430px;padding:7px 12px;border:1px solid #B0BEC5;border-radius:6px;font-size:13px;color:#37474F">
+    <span id="plan-search-count" style="font-size:12px;color:#607D8B;margin-left:8px"></span>
+  </div>
   <div class="chip-row" style="padding:0 16px 10px">{chips}</div>
   <div class="tbl-wrap">
     <table style="min-width:880px">
@@ -3138,24 +3144,44 @@ function togglePlan(i) {{
 }}
 
 // ── Plan card: priority / status filter chips ─────────
-function planFilter(chipEl, p) {{
-  document.querySelectorAll('#plan-card .chip-row .chip').forEach(c => c.classList.remove('active'));
-  if (chipEl) chipEl.classList.add('active');
+let _planChipP = -1, _planQ = '';
+function _planApply() {{
+  let shown = 0, total = 0;
   document.querySelectorAll('#plan-rows tr[data-prio]').forEach(tr => {{
     const prio = parseInt(tr.getAttribute('data-prio') || '0');
     const srank = parseInt(tr.getAttribute('data-srank') || '0');
     const isnext = tr.getAttribute('data-next') === '1';
     const isflag = tr.getAttribute('data-flag') === '1';
+    const p = _planChipP;
     let show = true;
     if (p >= 1) show = (prio === p);
     else if (p === -2) show = (srank === 0);
     else if (p === -3) show = (srank > 0 && srank < 5);
     else if (p === -4) show = isnext;
     else if (p === -5) show = isflag;
-    tr.style.display = show ? '' : 'none';
     const det = tr.nextElementSibling;                 // paired detail row
+    if (show && _planQ) {{
+      // match the visible row text, or the batch numbers inside its detail row
+      show = tr.textContent.toLowerCase().includes(_planQ)
+          || !!(det && det.id && det.id.startsWith('plan-d-')
+                && det.textContent.toLowerCase().includes(_planQ));
+    }}
+    total++; if (show) shown++;
+    tr.style.display = show ? '' : 'none';
     if (det && det.id && det.id.startsWith('plan-d-')) det.style.display = 'none';
   }});
+  const c = document.getElementById('plan-search-count');
+  if (c) c.textContent = _planQ ? `${{shown}} of ${{total}} plan lines` : '';
+}}
+function planFilter(chipEl, p) {{
+  document.querySelectorAll('#plan-card .chip-row .chip').forEach(c => c.classList.remove('active'));
+  if (chipEl) chipEl.classList.add('active');
+  _planChipP = p;
+  _planApply();
+}}
+function planSearch(q) {{
+  _planQ = (q || '').trim().toLowerCase();
+  _planApply();
 }}
 
 // ── Init on load ──────────────────────────────────────
