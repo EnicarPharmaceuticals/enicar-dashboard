@@ -187,6 +187,7 @@
   "REO-351|product|naomitripleactioncream|naomitripleaction": "2026-08-12",
   "REO-352|product|naomitripleactioncream|naomitripleaction": "2026-08-12",
   "REO-353|product|naomitripleactioncream|naomitripleaction": "2026-08-13",
+  "REO-354|product|naomitripleactioncream|naomitripleaction": "2026-08-14",
   "S-1474|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-13",
   "S-1474|product|kifarujellystrawberryflavour|kifarujellystrawberry": "2026-08-13",
   "S-1475|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-12",
@@ -379,6 +380,14 @@
       "product": "Biofore",
       "qty": 7000.0,
       "stage": "Filling started"
+    },
+    "SL05415": {
+      "batch": "SL05415",
+      "company": "SOCOMED PHARMA PVT. LTD",
+      "date": "2026-08-14",
+      "product": "BEDISYL 100 JELLY (Strawberry Flavour)",
+      "qty": 505.0,
+      "stage": "RM dispensed"
     },
     "SN142802": {
       "batch": "SN142802",
