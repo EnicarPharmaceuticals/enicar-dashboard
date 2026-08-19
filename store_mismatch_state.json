@@ -1,6 +1,5 @@
 {
   "BATCH|26CH0054|26CH0034": "2026-08-17",
-  "BATCH|6224C85001|6220C85001": "2026-08-17",
   "BATCH|ALF145|ALE-145": "2026-08-19",
   "BATCH|ALF146|ALE-146": "2026-08-17",
   "BATCH|ALF147|ALE-147": "2026-08-19",
@@ -18,6 +17,7 @@
   "BATCH|U164|U-162": "2026-08-19",
   "PARTY|6219C85001|proctergamblehealthlimited|proctergamble": "2026-08-19",
   "PARTY|6220C85001|proctergamblehealthlimited|proctergamble": "2026-08-17",
+  "PARTY|6224C85001|proctergamblehealthlimited|proctergamble": "2026-08-19",
   "PARTY|BM-01279|bluemappharmachemp2p|bluemappharmachem": "2026-08-19",
   "PARTY|BM-01280|bluemappharmachemp2p|bluemappharmachem": "2026-08-19",
   "PARTY|BM-29278|bluemappharmachemp2p|bluemappharmachem": "2026-08-19",
