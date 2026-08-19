@@ -1141,16 +1141,6 @@
         "status": "",
         "units": 10000.0
       },
-      "maxilog|aurastanmark|150ml": {
-        "batch": "",
-        "date": "",
-        "pack": "150 ml",
-        "party": "Aura/Stanmark",
-        "priority": "",
-        "product": "Maxilog",
-        "status": "",
-        "units": 13000.0
-      },
       "meboxsuspension|sapphire|30ml": {
         "batch": "",
         "date": "",
@@ -1170,6 +1160,16 @@
         "product": "Megalax",
         "status": "",
         "units": 50000.0
+      },
+      "mexyloc|aurastanmark|150ml": {
+        "batch": "",
+        "date": "",
+        "pack": "150 ml",
+        "party": "Aura/Stanmark",
+        "priority": "",
+        "product": "Mexyloc",
+        "status": "",
+        "units": 13000.0
       },
       "minminps|rpg|100ml": {
         "batch": "",
@@ -1893,6 +1893,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-10T12:32:39"
+    "ts": "2026-08-19T13:10:03"
   }
 }
