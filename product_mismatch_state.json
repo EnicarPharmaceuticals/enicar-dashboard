@@ -40,6 +40,7 @@
   "6560010|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-17",
   "ALE-141|party|sapphirelifesciencepvtltdp2p|ronakeximpvtltd": "2026-08-19",
   "ALE-142|party|sapphirelifesciencepvtltdp2p|sapphirelifesciencepvtltd": "2026-08-19",
+  "AP28886|party|aurapharmaceuticalspvtltdp2p|aurapharmaceuticalspvtltd": "2026-08-19",
   "AP28886|product|ornidoxsuspensionenicar|ornidoxsusp": "2026-08-18",
   "AQ-11153|product|nectallin|sudinkid": "2026-08-19",
   "BM-01279|party|bluemappharmachemp2p|bluemappharmachem": "2026-08-19",
@@ -264,6 +265,14 @@
   "VM-37715|product|diarstopsuspension|diarstopsusp": "2026-08-18",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-08-18",
   "_offplan_alerted": {
+    "AP02893": {
+      "batch": "AP02893",
+      "company": "AURA PHARMACEUTICALS PVT. LTD(P2P)",
+      "date": "2026-08-19",
+      "product": "Mexyloc",
+      "qty": 1315.0,
+      "stage": "RM dispensed"
+    },
     "CNJ017": {
       "batch": "CNJ017",
       "company": "",
