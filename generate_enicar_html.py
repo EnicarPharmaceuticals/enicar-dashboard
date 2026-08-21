@@ -787,13 +787,28 @@ def _load_plan():
 _journey_by_key = {_bkey(e['batch']): e for e in BATCH_JOURNEY}
 
 def _rm_batches_in_window():
-    """RM batches dispensed from PLAN_RM_FROM onward — the authoritative link
+    """RM batches that belong to this month's plan — the authoritative link
     between the plan and real production. Batch number and COMPANY NAME both
     come from RM: under loan-licence / P2P arrangements the plan may carry the
-    marketing company while RM carries the manufacturing licence holder."""
+    marketing company while RM carries the manufacturing licence holder.
+
+    A batch qualifies if its RM dispense falls in the window, OR if the real
+    work (filling / packing / dispatch) happened during the plan month. RM can
+    legitimately be dispensed well before production starts — NP-1060 Becatone-L
+    was dispensed 20 Jul but filled, packed and dispatched in August, and used
+    to show as "Not started" because only the RM date was considered
+    (Director, 20 Aug 2026)."""
+    def _worked_this_month(k):
+        for src in (FILL_DATES, PACK_DATES, DISP_DATES):
+            d = src.get(k)
+            if d and d.get('last') and d['last'] >= PLAN_WINDOW_FROM:
+                return True
+        return False
     out = []
     for k, v in RM_INFO.items():
-        if not v.get('date') or v['date'] < PLAN_RM_FROM:
+        if not v.get('date'):
+            continue
+        if v['date'] < PLAN_RM_FROM and not _worked_this_month(k):
             continue
         out.append({'key': k, 'batch': (_journey_by_key.get(k, {}) or {}).get('batch', k),
                     'product': v.get('product') or '', 'customer': v.get('customer') or '',
