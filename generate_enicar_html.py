@@ -702,6 +702,35 @@ _PLAN_JSON       = os.path.join(HERE, 'plan_aug_2026.json')
 def _pcanon(s):
     return re.sub(r'[^a-z0-9]', '', str(s or '').lower())
 
+# ── Party aliases (Director, 22 Aug 2026) ─────────────────────────────────────
+# Legally-different names that are the SAME customer for planning purposes.
+# The ⇄ "company differs" chip must NOT fire for these. Match: a party belongs
+# to a group when its canon name contains any of the group's marker strings.
+_PARTY_ALIAS_GROUPS = [
+    ('shalina',),                                  # Shalina Laboratories ⇄ Shalina Healthcare
+    ('pharmatrust',),                              # Pharmatrust Ltd ⇄ Pharmatrust Limited
+    ('londonunited',),                             # London United Exports ⇄ London United Medimpex
+    ('aurapharma', 'stanmar'),                     # Aura Pharmaceuticals ⇄ STANMARC ENTERPRISE (P2P)
+]
+
+def _party_group(name):
+    c = _pcanon(name)
+    if not c:
+        return None
+    for gi, markers in enumerate(_PARTY_ALIAS_GROUPS):
+        if any(m in c for m in markers):
+            return gi
+    return None
+
+def _same_party(a, b):
+    A, B = _pcanon(a), _pcanon(b)
+    if not A or not B:
+        return False
+    if A in B or B in A:
+        return True
+    ga, gb = _party_group(a), _party_group(b)
+    return ga is not None and ga == gb
+
 # Plan-sheet short party names → canonical dashboard customers
 _PLAN_PARTY_SHORT = {
     'luex': 'London United Exports Ltd', 'p&g': 'Procter & Gamble',
@@ -824,7 +853,16 @@ def _build_plan_view():
     # the AUG plan just badge that row ("also pending from JUN/JUL"); the rest
     # join the table as their own rows so the one card is the whole workload.
     for it in raw_items:
-        it['month'] = 'AUG'
+        # A sheet row whose REMARKS says "carry-over from JUL/JUN" keeps its
+        # original month chip — so the Director can paste the pending list
+        # straight into the AUG PLAN tab and the segregation survives.
+        _rl = (it.get('remark') or '').lower()
+        if 'carr' in _rl and 'jun' in _rl:
+            it['month'] = 'JUN'
+        elif 'carr' in _rl and 'jul' in _rl:
+            it['month'] = 'JUL'
+        else:
+            it['month'] = 'AUG'
     _carry_badge = {}
     try:
         _pending = json.load(open(os.path.join(HERE, 'pending_plan_jun_jul.json'))).get('items', [])
@@ -921,10 +959,14 @@ def _build_plan_view():
         # Company name is taken from RM; flag when the plan shows a different one
         rm_customers = sorted({b['rm_customer'] for b in batches if b['rm_customer']})
         it['rm_customers'] = rm_customers
-        it['party_differs'] = bool(rm_customers) and not any(
-            _pcanon(it['party_canon']) and _pcanon(c) and
-            (_pcanon(it['party_canon']) in _pcanon(c) or _pcanon(c) in _pcanon(it['party_canon']))
-            for c in rm_customers)
+        # RM dispensing name is the authoritative company (Director, 22 Aug 2026):
+        # display it whenever batches exist; the plan's own party becomes a small
+        # "plan: X" note only when it genuinely names a different company.
+        it['display_party'] = (' / '.join(rm_customers) if rm_customers
+                               else it['party_canon'])
+        it['party_differs'] = (bool(rm_customers) and bool(_pcanon(it['party_canon']))
+                               and not any(_same_party(it['party_canon'], c)
+                                           for c in rm_customers))
 
         # Reconcile what the store wrote against what the logs actually show
         _st = (it.get('rm_status') or '').strip().lower()
@@ -1423,9 +1465,9 @@ def plan_section_html():
         nb = len(it['batches'])
         badge = (f'<span style="background:{C_LBG};color:{C_PRI};border-radius:3px;padding:1px 5px;'
                  f'font-size:10px;font-weight:700">{nb} batch{"es" if nb != 1 else ""}</span>') if nb else ''
-        pflag = (f' <span style="background:#FFF3E0;color:#E65100;border-radius:3px;padding:1px 5px;'
-                 f'font-size:10px;font-weight:700" title="Plan company differs from RM — loan licence / P2P">'
-                 f'⇄ {it["rm_customers"][0]}</span>') if it['party_differs'] else ''
+        pflag = (f' <span title="The plan tab names a different company — RM name is treated as correct" '
+                 f'style="background:#FFF3E0;color:#E65100;border-radius:3px;padding:1px 5px;'
+                 f'font-size:10px;font-weight:700">⇄ plan: {it["party_canon"]}</span>') if it['party_differs'] else ''
         # what the store / Plant Head wrote in the sheet
         _stt = it.get('rm_status') or ''
         _sl = _stt.lower()
@@ -1477,7 +1519,7 @@ def plan_section_html():
                  f'onclick="togglePlan({i})" title="Click to verify the RM batches behind this item">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
                  f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
-                 f'<td class="td-name" style="color:#546E7A">{it["party_canon"]}{pflag}</td>'
+                 f'<td class="td-name" style="color:#546E7A">{it.get("display_party") or "—"}{pflag}</td>'
                  f'<td class="td-name" style="color:#37474F">{it.get("pack") or "—"}</td>'
                  f'<td class="td-num" style="font-weight:700">{n(it["planned_units"])}</td>'
                  f'<td class="td-num" style="color:{C_SEC}">{n(it["filled"]) if it["filled"] else "—"}</td>'
