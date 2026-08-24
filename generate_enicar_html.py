@@ -819,6 +819,36 @@ def _build_plan_view():
     raw_items, source = _load_plan()
     if not raw_items:
         return [], source, {}, []
+    # ── Consolidate June–July carry-over into the same plan (Director, 22 Aug):
+    # every row carries a month tag. Pending items whose product is ALREADY on
+    # the AUG plan just badge that row ("also pending from JUN/JUL"); the rest
+    # join the table as their own rows so the one card is the whole workload.
+    for it in raw_items:
+        it['month'] = 'AUG'
+    _carry_badge = {}
+    try:
+        _pending = json.load(open(os.path.join(HERE, 'pending_plan_jun_jul.json'))).get('items', [])
+    except Exception:
+        _pending = []
+    def _pp_match(a, b):
+        A, B = _pcanon(a), _pcanon(b)
+        return A and B and (A == B or (len(A) >= 5 and len(B) >= 5 and (A in B or B in A)))
+    for _pe in _pending:
+        _mon = 'JUN' if str(_pe.get('plan_date') or '')[5:7] == '06' else 'JUL'
+        _hit = next((it for it in raw_items if it['month'] == 'AUG'
+                     and _pp_match(it['product'], _pe['product'])), None)
+        if _hit is not None:
+            k = _pcanon(_hit['product'])
+            e = _carry_badge.setdefault(k, {'months': set(), 'units': 0})
+            e['months'].add(_mon)
+            e['units'] += int(_pe.get('pending') or 0)
+        else:
+            raw_items.append({'product': _pe['product'], 'party': '',
+                              'planned_units': float(_pe.get('pending') or 0),
+                              'pack': _pe.get('pack') or '', 'priority': None,
+                              'rm_status': '', 'rm_date': None, 'rm_batch': '',
+                              'updated_by': '', 'remark': f"carry-over from {_mon}",
+                              'month': _mon})
     # Merge duplicate product+party+pack lines (lots) so actuals aren't double-counted
     merged = {}
     for it in raw_items:
@@ -836,6 +866,11 @@ def _build_plan_view():
         if it.get('rm_date') and not m.get('rm_date'):
             m['rm_date'] = it['rm_date']
     items = list(merged.values())
+    for it in items:
+        _cb = _carry_badge.get(_pcanon(it['product']))
+        if it.get('month') == 'AUG' and _cb:
+            it['carry_months'] = '+'.join(sorted(_cb['months']))
+            it['carry_units'] = _cb['units']
     for it in items:
         it['priority'] = min(it['prio_list']) if it['prio_list'] else None
 
@@ -1006,6 +1041,8 @@ def _build_plan_view():
         'packed_sum': sum(x['packed'] for x in items),
         'disp_sum': sum(x['dispatched'] for x in items),
         'rm_started': sum(1 for x in items if x['batches']),
+        'carry_items': sum(1 for x in items if x.get('month') != 'AUG'),
+        'carry_units': sum((x['planned_units'] or 0) for x in items if x.get('month') != 'AUG'),
     }
     return items, source, summary, off_plan
 
@@ -1372,6 +1409,8 @@ def plan_section_html():
               if s['written'] else 'add the RM STATUS column to the plan tab to use this'), '#7B1FA2')
       + tile('DISPENSING SCHEDULE', n(s['overdue'] + s['due_today'] + s['due_tomorrow'] + s['due_later']),
              f'{s["overdue"]} overdue · {s["due_today"]} today · {s["due_tomorrow"]} tomorrow', C_ORG)
+      + tile('↩ JUN–JUL CARRY-OVER', n(s.get('carry_items', 0)),
+             f'{n(s.get("carry_units", 0))} units still pending from earlier plans', '#F57F17')
     )
     rows = ''
     for i, it in enumerate(PLAN_ITEMS):
@@ -1420,11 +1459,24 @@ def plan_section_html():
                + _mini(_pctd, C_ORG, 'D', f'Dispatched {it["dispatched"]:,.0f} of {_pq:,.0f} ({_pctd:.0f}%)')
                + '</div>')
         _isnext = 1 if ('next' in _sl or 'tomorrow' in _sl) else 0
+        _mon = it.get('month', 'AUG')
+        _mcol = {'AUG': ('#E0F2F1', '#00695C'), 'JUL': ('#FFF8E1', '#F57F17'),
+                 'JUN': ('#FBE9E7', '#BF360C')}[_mon if _mon in ('AUG', 'JUL', 'JUN') else 'AUG']
+        _mchip = (f'<span style="background:{_mcol[0]};color:{_mcol[1]};border-radius:3px;'
+                  f'padding:1px 5px;font-size:10px;font-weight:800;margin-right:5px">{_mon}</span>')
+        _carry = ''
+        if it.get('carry_months'):
+            _carry = (f' <span title="This product also had {it["carry_units"]:,} units pending '
+                      f'from the {it["carry_months"]} plan — carried into this month" '
+                      f'style="background:#FFF8E1;color:#F57F17;border-radius:3px;padding:1px 5px;'
+                      f'font-size:10px;font-weight:700">↩ carried from {it["carry_months"]} '
+                      f'({it["carry_units"]:,})</span>')
         rows += (f'<tr style="background:{bg};cursor:pointer" data-prio="{it["priority"] or 0}" '
                  f'data-srank="{it["srank"]}" data-next="{_isnext}" data-flag="{1 if it.get("flag") else 0}" '
+                 f'data-month="{_mon}" '
                  f'onclick="togglePlan({i})" title="Click to verify the RM batches behind this item">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
-                 f'<td class="td-name">{it["product"]}{lots} {badge}</td>'
+                 f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
                  f'<td class="td-name" style="color:#546E7A">{it["party_canon"]}{pflag}</td>'
                  f'<td class="td-name" style="color:#37474F">{it.get("pack") or "—"}</td>'
                  f'<td class="td-num" style="font-weight:700">{n(it["planned_units"])}</td>'
@@ -1438,7 +1490,8 @@ def plan_section_html():
         rows += _plan_batch_detail(it, i)
     chips = ''.join(
         f'<span class="chip" onclick="event.stopPropagation();planFilter(this,{p})">{lbl}</span>'
-        for p, lbl in [(-1, 'ALL'), (1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
+        for p, lbl in [(-1, 'ALL'), (-6, 'AUG PLAN'), (-7, '↩ JUN–JUL CARRY-OVER'),
+                       (1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
                        (4, 'PRIORITY 4'), (-2, 'NOT STARTED'), (-3, 'IN PROGRESS'),
                        (-4, '🟣 DISPENSE NEXT'), (-5, '⚠ NEEDS ATTENTION')])
     off = ''
@@ -1463,7 +1516,9 @@ def plan_section_html():
 <details class="card" id="plan-card">
   <summary>{sec(f'  ━━&nbsp;&nbsp;🗓 {PLAN_TITLE} &nbsp;—&nbsp; PLANNED &nbsp; vs &nbsp; ACTUAL &nbsp;━━', C_PRI)}</summary>
   <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
-    Plan source: <strong>{PLAN_SOURCE}</strong>. <strong>Click any row</strong> to see the RM batches behind it
+    Plan source: <strong>{PLAN_SOURCE}</strong>, consolidated with the <strong>June–July pending plan</strong> —
+    the month chip on each row shows which plan it belongs to, and AUG items that were also pending
+    earlier carry an <strong>↩ carried from</strong> tag. <strong>Click any row</strong> to see the RM batches behind it
     and verify the chain. Plan lines carry no batch number — the link is made on <strong>product name</strong>,
     and the <strong>batch number and company name are taken from RM</strong> (under loan-licence / P2P the plan
     company can differ; that is marked ⇄, not treated as an error). Filling, packing and dispatch are then
@@ -2473,7 +2528,7 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 ════════════════════════════════════════════════════════════ -->
 {dispense_schedule_html()}
 
-{plan_section_html()}\n{pending_plan_html()}
+{plan_section_html()}
 
 {name_conflict_html()}
 
@@ -3301,6 +3356,8 @@ function _planApply() {{
     else if (p === -3) show = (srank > 0 && srank < 5);
     else if (p === -4) show = isnext;
     else if (p === -5) show = isflag;
+    else if (p === -6) show = (tr.getAttribute('data-month') === 'AUG');
+    else if (p === -7) show = (tr.getAttribute('data-month') !== 'AUG');
     const det = tr.nextElementSibling;                 // paired detail row
     if (show && _planQ) {{
       // match the visible row text, or the batch numbers inside its detail row
