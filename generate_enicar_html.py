@@ -1009,6 +1009,63 @@ def _build_plan_view():
     }
     return items, source, summary, off_plan
 
+# ── Pending production plan (June–July 2026 carry-over) ───────────────────────
+# A static snapshot the Director supplied (22 Aug 2026): products PLANNED in
+# Jun–Jul that still had unproduced quantity when the plan was exported. We
+# cross-check each against real production so "still pending" reflects reality:
+# a pending line is CLEARED once that product was filled on or after its plan
+# date (matched on product name; pack size shown for context).
+def _build_pending_plan():
+    path = os.path.join(HERE, 'pending_plan_jun_jul.json')
+    try:
+        data = json.load(open(path))
+    except Exception:
+        return None
+    # product canon → most recent filling / dispatch date across all logs
+    last_fill, last_disp = {}, {}
+    for _, r in fill_df.iterrows():
+        c = _pcanon(r.get('Product'))
+        if c and r.get('Date'):
+            if c not in last_fill or r['Date'] > last_fill[c]:
+                last_fill[c] = r['Date']
+    for _, r in disp_df.iterrows():
+        c = _pcanon(r.get('Product'))
+        if c and r.get('Date'):
+            if c not in last_disp or r['Date'] > last_disp[c]:
+                last_disp[c] = r['Date']
+
+    def _match(canon_prod):
+        # exact, then containment either way (>=5 chars to avoid junk matches)
+        if canon_prod in last_fill:
+            return last_fill[canon_prod], last_disp.get(canon_prod)
+        for c, d in last_fill.items():
+            if len(canon_prod) >= 5 and (canon_prod in c or c in canon_prod):
+                return d, last_disp.get(c)
+        return None, None
+
+    items = []
+    for it in data.get('items', []):
+        c = _pcanon(it['product'])
+        pdate = date.fromisoformat(it['plan_date']) if it.get('plan_date') else None
+        fdate, ddate = _match(c)
+        # cleared = produced on/after the plan date (fresh production, not the
+        # earlier run that this line was already pending against)
+        done = bool(fdate and pdate and fdate >= pdate)
+        items.append({**it, 'plan_dt': pdate, 'last_fill': fdate,
+                      'last_disp': ddate, 'done': done})
+    # still-pending first, then by plan date
+    items.sort(key=lambda x: (x['done'], x['plan_dt'] or date.max))
+    still = [i for i in items if not i['done']]
+    summary = {
+        'total': len(items), 'done': sum(1 for i in items if i['done']),
+        'pending': len(still),
+        'units_total': sum(i['pending'] for i in items),
+        'units_pending': sum(i['pending'] for i in still),
+    }
+    return {'items': items, 'summary': summary, 'source': data.get('source', '')}
+
+PENDING_PLAN = _build_pending_plan()
+
 PLAN_ITEMS, PLAN_SOURCE, PLAN_SUMMARY, PLAN_OFF = _build_plan_view()
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1238,6 +1295,65 @@ def dispense_schedule_html():
     dispensing is logged. Overdue first, then today, then tomorrow.
   </div>
   {blocks}
+</details>'''
+
+
+def pending_plan_html():
+    """Card: June–July plan items that still had unproduced quantity, with a
+    live 'produced since?' status so the Director can see what is truly left."""
+    if not PENDING_PLAN or not PENDING_PLAN['items']:
+        return ''
+    s = PENDING_PLAN['summary']
+    def _tile(lbl, val, col):
+        return (f'<div class="tile"><div class="tile-v" style="color:{col}">{val}</div>'
+                f'<div class="tile-l">{lbl}</div></div>')
+    tiles = (_tile('PENDING ITEMS', s['pending'], C_ORG)
+             + _tile('UNITS PENDING', f"{s['units_pending']:,}", C_ORG)
+             + _tile('CLEARED SINCE', s['done'], C_SEC)
+             + _tile('TOTAL LINES', s['total'], C_PRI))
+    rows = ''
+    for it in PENDING_PLAN['items']:
+        done = it['done']
+        if done:
+            badge = (f'<span style="background:#E8F5E9;color:#2E7D32;border-radius:3px;'
+                     f'padding:1px 6px;font-size:11px;font-weight:700">✅ produced '
+                     f'{it["last_fill"].strftime("%d %b")}</span>')
+        elif it['last_fill']:
+            badge = (f'<span style="background:#FFF8E1;color:#F57F17;border-radius:3px;'
+                     f'padding:1px 6px;font-size:11px;font-weight:700">⚪ pending · last run '
+                     f'{it["last_fill"].strftime("%d %b")}</span>')
+        else:
+            badge = ('<span style="background:#FBE9E7;color:#BF360C;border-radius:3px;'
+                     'padding:1px 6px;font-size:11px;font-weight:700">⚪ not yet produced</span>')
+        bg = '#FAFDFC' if done else '#fff'
+        rows += (f'<tr data-done="{1 if done else 0}" style="background:{bg}">'
+                 f'<td class="td-name">{it["plan_dt"].strftime("%d %b") if it["plan_dt"] else "—"}</td>'
+                 f'<td class="td-name" style="font-weight:600">{it["product"]}</td>'
+                 f'<td class="td-name" style="color:#546E7A">{it["pack"]}</td>'
+                 f'<td class="td-num" style="font-weight:700">{it["pending"]:,}</td>'
+                 f'<td class="td-name">{badge}</td></tr>')
+    chips = (
+        '<span class="chip active" onclick="event.stopPropagation();pendFilter(this,\'all\')">ALL</span>'
+        '<span class="chip" onclick="event.stopPropagation();pendFilter(this,\'pending\')">STILL PENDING</span>'
+        '<span class="chip" onclick="event.stopPropagation();pendFilter(this,\'done\')">CLEARED SINCE</span>')
+    return f'''
+<details class="card" id="pending-card">
+  <summary>{sec('  ━━&nbsp;&nbsp;⏳ PENDING FROM JUNE–JULY PLAN &nbsp;—&nbsp; CARRY-OVER &nbsp;━━', C_ORG)}</summary>
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
+    Products that were <strong>planned in June–July</strong> but still had unproduced quantity when the plan
+    was exported. Each line is checked against real production: it shows <strong>✅ produced</strong> once that
+    product was filled on or after its plan date, otherwise it stays <strong>⚪ pending</strong>
+    (with the last time it ran, if ever). Source: {PENDING_PLAN['source']}.
+  </div>
+  <div class="tile-row">{tiles}</div>
+  <div class="chip-row" style="padding:0 16px 10px">{chips}</div>
+  <div class="tbl-wrap">
+    <table style="min-width:640px">
+      <thead><tr class="th-row"><th>PLAN DATE</th><th>PRODUCT</th><th>PACK</th>
+        <th>PENDING</th><th>STATUS</th></tr></thead>
+      <tbody id="pending-rows">{rows}</tbody>
+    </table>
+  </div>
 </details>'''
 
 
@@ -2357,7 +2473,7 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 ════════════════════════════════════════════════════════════ -->
 {dispense_schedule_html()}
 
-{plan_section_html()}
+{plan_section_html()}\n{pending_plan_html()}
 
 {name_conflict_html()}
 
@@ -3159,6 +3275,17 @@ function togglePlan(i) {{
 }}
 
 // ── Plan card: priority / status filter chips ─────────
+function pendFilter(el, mode) {{
+  document.querySelectorAll('#pending-card .chip-row .chip').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('#pending-rows tr[data-done]').forEach(tr => {{
+    const done = tr.getAttribute('data-done') === '1';
+    let show = true;
+    if (mode === 'pending') show = !done;
+    else if (mode === 'done') show = done;
+    tr.style.display = show ? '' : 'none';
+  }});
+}}
 let _planChipP = -1, _planQ = '';
 function _planApply() {{
   let shown = 0, total = 0;
