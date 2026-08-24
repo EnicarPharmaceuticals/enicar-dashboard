@@ -915,9 +915,16 @@ def _build_plan_view():
     rmw = _rm_batches_in_window()
     used_keys = set()
 
+    # Product aliases the Director confirmed are the SAME item (22 Aug 2026).
+    # "MinMin PS" is the physician-sample pack of Minmin Tonic.
+    _PRODUCT_ALIASES = [frozenset(('minminps', 'minmintonic')),
+                        frozenset(('unidaktgeloral', 'unidaktcream'))]
+
     def prod_match(a, b):
         A, B = _pcanon(a), _pcanon(b)
         if A and A == B:           # exact name — covers short ones like PA-C
+            return True
+        if frozenset((A, B)) in _PRODUCT_ALIASES:
             return True
         return len(A) >= 4 and len(B) >= 4 and (A in B or B in A)
 
