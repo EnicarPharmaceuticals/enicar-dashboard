@@ -1,0 +1,431 @@
+{
+ "source": "Pending Production Plan.xls (June–July 2026 carryover)",
+ "window": "Jun–Jul 2026",
+ "items": [
+  {
+   "product": "Perfac-C",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 2020,
+   "plan_date": "2026-06-06",
+   "plan_no": 646
+  },
+  {
+   "product": "Bromovan Plus",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 1010,
+   "plan_date": "2026-06-06",
+   "plan_no": 647
+  },
+  {
+   "product": "PH-Alka",
+   "type": "Syrup",
+   "pack": "120 ml",
+   "pending": 1220,
+   "plan_date": "2026-06-06",
+   "plan_no": 651
+  },
+  {
+   "product": "Sortoux",
+   "type": "Syrup",
+   "pack": "120 ml",
+   "pending": 1220,
+   "plan_date": "2026-06-06",
+   "plan_no": 652
+  },
+  {
+   "product": "Q-Amino",
+   "type": "Syrup",
+   "pack": "200 ml",
+   "pending": 10100,
+   "plan_date": "2026-06-06",
+   "plan_no": 653
+  },
+  {
+   "product": "MON-LC",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 1010,
+   "plan_date": "2026-06-06",
+   "plan_no": 654
+  },
+  {
+   "product": "Unisang Tonic",
+   "type": "Syrup",
+   "pack": "200 ml",
+   "pending": 4040,
+   "plan_date": "2026-06-06",
+   "plan_no": 656
+  },
+  {
+   "product": "Uniforce Tonic",
+   "type": "Syrup",
+   "pack": "200 ml",
+   "pending": 2020,
+   "plan_date": "2026-06-06",
+   "plan_no": 657
+  },
+  {
+   "product": "TUSPEL COUGH SYRUP",
+   "type": "Syrup",
+   "pack": "60 ml (Kenya)",
+   "pending": 1270,
+   "plan_date": "2026-07-08",
+   "plan_no": 711
+  },
+  {
+   "product": "Tuspel Plus Cough Syrup",
+   "type": "Syrup",
+   "pack": "100 ml (French)",
+   "pending": 2380,
+   "plan_date": "2026-07-08",
+   "plan_no": 712
+  },
+  {
+   "product": "Amidol Grip Syrup",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 6060,
+   "plan_date": "2026-07-08",
+   "plan_no": 718
+  },
+  {
+   "product": "PICRON BABY COLD COUGH & FEVER SYRUP",
+   "type": "Syrup",
+   "pack": "60 ml",
+   "pending": 5160,
+   "plan_date": "2026-07-08",
+   "plan_no": 724
+  },
+  {
+   "product": "COSOME® COUGH SYRUP",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 5000,
+   "plan_date": "2026-07-25",
+   "plan_no": 747
+  },
+  {
+   "product": "POLYBION LC (Vitamin B6, Nicotinamide, Vitamin B12 & Lysine Syrup)",
+   "type": "Syrup",
+   "pack": "300 ml",
+   "pending": 10000,
+   "plan_date": "2026-07-25",
+   "plan_no": 748
+  },
+  {
+   "product": "POLYBION LC (Vitamin B6, Nicotinamide, Vitamin B12 & Lysine Syrup)",
+   "type": "Syrup",
+   "pack": "400 ml (New)",
+   "pending": 20000,
+   "plan_date": "2026-07-25",
+   "plan_no": 749
+  },
+  {
+   "product": "POLYBION ACTIVE (Vitamin B-Complex Syrup with Lysine)",
+   "type": "Syrup",
+   "pack": "300 ml",
+   "pending": 10000,
+   "plan_date": "2026-07-25",
+   "plan_no": 752
+  },
+  {
+   "product": "Energvit Tonic",
+   "type": "Syrup",
+   "pack": "220 ml (Sale)",
+   "pending": 3000,
+   "plan_date": "2026-07-29",
+   "plan_no": 759
+  },
+  {
+   "product": "Allerzy-LM",
+   "type": "Syrup",
+   "pack": "30 ml (P.S.)",
+   "pending": 175,
+   "plan_date": "2026-07-29",
+   "plan_no": 762
+  },
+  {
+   "product": "Allerzy-DC",
+   "type": "Syrup",
+   "pack": "50 ml (P.S)",
+   "pending": 300,
+   "plan_date": "2026-07-29",
+   "plan_no": 763
+  },
+  {
+   "product": "Allerzy-X",
+   "type": "Syrup",
+   "pack": "50 ml (P.S)",
+   "pending": 300,
+   "plan_date": "2026-07-29",
+   "plan_no": 764
+  },
+  {
+   "product": "BEDISYL 100 JELLY (Banana Flavour)",
+   "type": "Syrup",
+   "pack": "5 gm",
+   "pending": 505,
+   "plan_date": "2026-07-30",
+   "plan_no": 766
+  },
+  {
+   "product": "BEDISYL 100 JELLY (Mango Flavour)",
+   "type": "Syrup",
+   "pack": "5 gm",
+   "pending": 505,
+   "plan_date": "2026-07-30",
+   "plan_no": 767
+  },
+  {
+   "product": "BEDISYL 100 JELLY (Pineapple Flavour)",
+   "type": "Syrup",
+   "pack": "5 gm",
+   "pending": 505,
+   "plan_date": "2026-07-30",
+   "plan_no": 768
+  },
+  {
+   "product": "Amitone",
+   "type": "Syrup",
+   "pack": "200 ml (Vanilla)",
+   "pending": 8080,
+   "plan_date": "2026-07-30",
+   "plan_no": 770
+  },
+  {
+   "product": "Carbocisteine Syrup 5% W/V (Kanvid)",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 12700,
+   "plan_date": "2026-07-31",
+   "plan_no": 772
+  },
+  {
+   "product": "Analgin Syrup (Kanvid)",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 2020,
+   "plan_date": "2026-07-31",
+   "plan_no": 773
+  },
+  {
+   "product": "B.OVERGREENS ABC BABY COUGH SYRUP",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 1010,
+   "plan_date": "2026-07-31",
+   "plan_no": 778
+  },
+  {
+   "product": "B.OVERGREENS ABC COLD SYRUP",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 1010,
+   "plan_date": "2026-07-31",
+   "plan_no": 780
+  },
+  {
+   "product": "B. OVERGREENS ABC COLD-C SYRUP",
+   "type": "Syrup",
+   "pack": "100 ml",
+   "pending": 1515,
+   "plan_date": "2026-07-31",
+   "plan_no": 781
+  },
+  {
+   "product": "Bioforce Tonic",
+   "type": "Syrup",
+   "pack": "200 ml (Congo)",
+   "pending": 3030,
+   "plan_date": "2026-07-31",
+   "plan_no": 783
+  },
+  {
+   "product": "Mucoril Expectorant",
+   "type": "Syrup",
+   "pack": "100 ml (Congo)",
+   "pending": 4545,
+   "plan_date": "2026-07-31",
+   "plan_no": 786
+  },
+  {
+   "product": "Bonaplex Syrup",
+   "type": "Syrup",
+   "pack": "250 ml",
+   "pending": 18700,
+   "plan_date": "2026-07-31",
+   "plan_no": 787
+  },
+  {
+   "product": "Naomi Triple Action Cream",
+   "type": "Ointment",
+   "pack": "15 gm",
+   "pending": 7000,
+   "plan_date": "2026-07-14",
+   "plan_no": 729
+  },
+  {
+   "product": "Pyranique",
+   "type": "Suspension",
+   "pack": "15 ml",
+   "pending": 310,
+   "plan_date": "2026-06-06",
+   "plan_no": 649
+  },
+  {
+   "product": "Gavinique",
+   "type": "Suspension",
+   "pack": "10 ml",
+   "pending": 51,
+   "plan_date": "2026-06-06",
+   "plan_no": 658
+  },
+  {
+   "product": "Uflam",
+   "type": "Suspension",
+   "pack": "60 ml",
+   "pending": 1820,
+   "plan_date": "2026-06-06",
+   "plan_no": 659
+  },
+  {
+   "product": "METRON-F",
+   "type": "Suspension",
+   "pack": "100 ml",
+   "pending": 8550,
+   "plan_date": "2026-06-09",
+   "plan_no": 660
+  },
+  {
+   "product": "Polygel Suspension",
+   "type": "Suspension",
+   "pack": "200 ml (Angola)",
+   "pending": 10100,
+   "plan_date": "2026-07-08",
+   "plan_no": 721
+  },
+  {
+   "product": "Nystatin Oral Suspension USP",
+   "type": "Suspension",
+   "pack": "30 ml",
+   "pending": 4000,
+   "plan_date": "2026-07-20",
+   "plan_no": 738
+  },
+  {
+   "product": "Malegra Oral Jelly",
+   "type": "Suspension",
+   "pack": "5 gm",
+   "pending": 5310,
+   "plan_date": "2026-07-22",
+   "plan_no": 742
+  },
+  {
+   "product": "OSTO-POLYBION (Suspension of Calcium with Vitamin D3 & Vitamin B12)",
+   "type": "Suspension",
+   "pack": "300 ml",
+   "pending": 10000,
+   "plan_date": "2026-07-25",
+   "plan_no": 750
+  },
+  {
+   "product": "IBUPROFEN ORAL SUSPENSION BP (Kanvid)",
+   "type": "Suspension",
+   "pack": "100 ml",
+   "pending": 4040,
+   "plan_date": "2026-07-27",
+   "plan_no": 757
+  },
+  {
+   "product": "Algate-O",
+   "type": "Suspension",
+   "pack": "60 ml (P.S)",
+   "pending": 310,
+   "plan_date": "2026-07-29",
+   "plan_no": 760
+  },
+  {
+   "product": "Algate",
+   "type": "Suspension",
+   "pack": "200 ml (Sale Pack)",
+   "pending": 1500,
+   "plan_date": "2026-07-29",
+   "plan_no": 761
+  },
+  {
+   "product": "BLISCAL",
+   "type": "Suspension",
+   "pack": "200 ml",
+   "pending": 2020,
+   "plan_date": "2026-07-30",
+   "plan_no": 771
+  },
+  {
+   "product": "Nystatin Oral Suspension USP (Kanvid)",
+   "type": "Suspension",
+   "pack": "60 ml",
+   "pending": 2730,
+   "plan_date": "2026-07-31",
+   "plan_no": 774
+  },
+  {
+   "product": "Albendazole Oral Suspension USP (Kanvid)",
+   "type": "Suspension",
+   "pack": "10 ml",
+   "pending": 410,
+   "plan_date": "2026-07-31",
+   "plan_no": 775
+  },
+  {
+   "product": "B.OVERGREENS ABC TEETHING MIXTURE",
+   "type": "Suspension",
+   "pack": "100 ml",
+   "pending": 1010,
+   "plan_date": "2026-07-31",
+   "plan_no": 776
+  },
+  {
+   "product": "B.OVERGREENS ABC ORAL PARACETAMOL SUSPENSION",
+   "type": "Suspension",
+   "pack": "100 ml",
+   "pending": 2020,
+   "plan_date": "2026-07-31",
+   "plan_no": 777
+  },
+  {
+   "product": "B.OVERGREENS ABC METRONIDAZOLE+FURAZOLIDONE SUSPENSION",
+   "type": "Suspension",
+   "pack": "100 ml",
+   "pending": 1010,
+   "plan_date": "2026-07-31",
+   "plan_no": 779
+  },
+  {
+   "product": "Anticid Plus",
+   "type": "Suspension",
+   "pack": "200 ml (France)",
+   "pending": 9700,
+   "plan_date": "2026-07-31",
+   "plan_no": 790
+  },
+  {
+   "product": "Lexofen Plus Junior Suspension",
+   "type": "Suspension",
+   "pack": "100 ml",
+   "pending": 1010,
+   "plan_date": "2026-07-31",
+   "plan_no": 791
+  },
+  {
+   "product": "GASSTOP",
+   "type": "Suspension",
+   "pack": "200 ml",
+   "pending": 6425,
+   "plan_date": "2026-07-31",
+   "plan_no": 793
+  }
+ ],
+ "total_pending": 219736
+}
