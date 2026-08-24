@@ -1488,11 +1488,17 @@ def plan_section_html():
                  f'<td class="td-name">{wrote}</td>'
                  f'</tr>')
         rows += _plan_batch_detail(it, i)
+    _sc = {k: sum(1 for x in PLAN_ITEMS if x['srank'] == k) for k in range(6)}
     chips = ''.join(
         f'<span class="chip" onclick="event.stopPropagation();planFilter(this,{p})">{lbl}</span>'
         for p, lbl in [(-1, 'ALL'), (-6, 'AUG PLAN'), (-7, '↩ JUN–JUL CARRY-OVER'),
                        (1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
-                       (4, 'PRIORITY 4'), (-2, 'NOT STARTED'), (-3, 'IN PROGRESS'),
+                       (4, 'PRIORITY 4'), (-2, f'NOT STARTED ({_sc[0]})'),
+                       (11, f'🟤 RM DISPENSED ({_sc[1]})'),
+                       (12, f'🔵 FILLING ({_sc[2]})'),
+                       (13, f'🟡 PACKED ({_sc[3]})'),
+                       (14, f'🟠 DISPATCHING ({_sc[4]})'),
+                       (15, f'✅ COMPLETED ({_sc[5]})'),
                        (-4, '🟣 DISPENSE NEXT'), (-5, '⚠ NEEDS ATTENTION')])
     off = ''
     if PLAN_OFF:
@@ -3351,7 +3357,8 @@ function _planApply() {{
     const isflag = tr.getAttribute('data-flag') === '1';
     const p = _planChipP;
     let show = true;
-    if (p >= 1) show = (prio === p);
+    if (p >= 11 && p <= 15) show = (srank === p - 10);
+    else if (p >= 1) show = (prio === p);
     else if (p === -2) show = (srank === 0);
     else if (p === -3) show = (srank > 0 && srank < 5);
     else if (p === -4) show = isnext;
