@@ -933,25 +933,15 @@
         "status": "",
         "units": 165000.0
       },
-      "cyproplexplus|pharmatrustlimited|15ml": {
-        "batch": "",
-        "date": "",
-        "pack": "15 ml",
-        "party": "Pharmatrust Limited",
-        "priority": "1",
-        "product": "Cyproplex-Plus",
-        "status": "",
-        "units": 100000.0
-      },
       "cyproplexplus|unique|15ml": {
         "batch": "",
         "date": "",
         "pack": "15 ml",
         "party": "Unique",
-        "priority": "3",
+        "priority": "1",
         "product": "Cyproplex-Plus",
         "status": "",
-        "units": 150000.0
+        "units": 250000.0
       },
       "daslinnf|rpg|100ml": {
         "batch": "",
@@ -2115,6 +2105,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-24T10:11:41"
+    "ts": "2026-08-25T10:52:13"
   }
 }
