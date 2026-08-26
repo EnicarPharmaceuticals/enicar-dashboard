@@ -883,6 +883,41 @@ def _rm_batches_in_window():
                     'product': v.get('product') or '', 'customer': v.get('customer') or '',
                     'date': v['date'], 'size': v.get('size') or 0,
                     'pack': v.get('pack') or ''})
+    # ── Production with NO RM record still belongs on the plan card ──
+    # MinMin PS (REM387, 50,000 filled + 49,150 dispatched) and P&G Polybion
+    # 150 ml (6230C85001/2, 6233C85001 — 98,500 filled) showed "Not started"
+    # because plan linking only ever looked at the RM log. A batch that was
+    # filled or packed inside the plan month is this month's work whether or
+    # not the store remembered its RM row (Director, 26 Aug 2026). Product,
+    # party and dates come from the production logs; the plan line gets a
+    # flag so the missing RM entry still gets chased, not hidden.
+    _seen = {e['key'] for e in out}
+    _cand = {}
+    for _df in (fill_df, pack_df):
+        for _b, _p, _pa, _d in zip(_df['Batch'], _df['Product'], _df['Party'], _df['Date']):
+            if _b is None or (not isinstance(_b, str) and pd.isna(_b)):
+                continue
+            _k = _bkey(_b)
+            if not _k or _k in _seen or _k in ('-', 'NAN', 'NA'):
+                continue
+            if _k in RM_INFO and RM_INFO[_k].get('date'):
+                continue          # has an RM record — the window rules above own it
+            e = _cand.setdefault(_k, {'batch': str(_b).strip(), 'product': None,
+                                      'customer': None, 'date': None})
+            if _p is not None and e['product'] is None:
+                e['product'] = str(_p)
+            if _pa is not None and e['customer'] is None:
+                e['customer'] = str(_pa)
+            if e['date'] is None or _d < e['date']:
+                e['date'] = _d
+    for _k, e in _cand.items():
+        _fd = FILL_DATES.get(_k)
+        _first = (_fd and _fd['first']) or e['date']
+        if _first is None or _first < PLAN_WINDOW_FROM:
+            continue              # previous-month work / opening stock
+        out.append({'key': _k, 'batch': e['batch'], 'product': e['product'] or '',
+                    'customer': e['customer'] or '', 'date': e['date'],
+                    'size': 0, 'pack': '', 'rm_missing': True})
     return out
 
 def _build_plan_view():
@@ -1000,7 +1035,16 @@ def _build_plan_view():
             return True
         return len(A) >= 4 and len(B) >= 4 and (A in B or B in A)
 
+    # Every pack size each product is planned in — used to spot production
+    # logged in a pack NO line of that product plans (usually a typo in the
+    # log's Pack Size cell: Amylase plan 200 ml vs logs 150 ml).
+    _packs_by_canon = {}
+    for _it in items:
+        _packs_by_canon.setdefault(_pcanon(_it['product']), set()).add(_packnum(_it.get('pack')))
+    _orphan_claimed = set()
+
     for it in items:
+        _me = _pcanon(it['product'])
         # ── Link plan → RM ──
         # If the store wrote a batch number in the plan row, that is definitive
         # (it also rescues items whose product wording differs from the plan).
@@ -1020,7 +1064,6 @@ def _build_plan_view():
             # that line alone (26 Aug 2026). Brand-level matches such as
             # "Kifaru Jelly 100mg" -> "KIFARU JELLY (Strawberry Flavour)" are
             # untouched: the RM name is not itself a plan line.
-            _me = _pcanon(it['product'])
             hits = [b for b in hits
                     if _pcanon(b['product']) == _me
                     or _pcanon(b['product']) not in _exact_plan_names]
@@ -1050,19 +1093,39 @@ def _build_plan_view():
             else:
                 mine = sl.get(_want)
                 blank = sl.get(None) if b['key'] not in _blank_claimed else None
-                if mine is None and blank is None:
+                if blank is not None:
+                    _blank_claimed.add(b['key'])
+                # Production logged in a pack size that NO line of this product
+                # plans — a Pack Size typo in one of the logs (Bonaplex EL-2438
+                # packed rows say 200ML, the only plan line is 250 ml; Amylase
+                # logs say 150 ml, the plan says 200 ml). Credit it HERE, once,
+                # with a flag, instead of letting the units vanish — but only
+                # when the log's own product name is exactly this line's.
+                extra = None
+                if _pcanon(b['product']) == _me:
+                    _own = _packs_by_canon.get(_me, set())
+                    for _pk, _q in sl.items():
+                        if _pk is None or _pk in _own:
+                            continue
+                        if (b['key'], _pk) in _orphan_claimed:
+                            continue
+                        _orphan_claimed.add((b['key'], _pk))
+                        extra = {f: (extra or {}).get(f, 0.0) + _q[f]
+                                 for f in ('filled', 'packed', 'dispatched')}
+                        it.setdefault('pack_notes', []).append(
+                            f"{b['batch']} logged as {_pk:g} (plan: {it.get('pack')})")
+                if mine is None and blank is None and extra is None:
                     if not wanted:          # produced in other packs only
                         continue
                     mine = {'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0}
-                if blank is not None:
-                    _blank_claimed.add(b['key'])
                 qty = {f: (mine or {}).get(f, 0.0) + (blank or {}).get(f, 0.0)
+                       + (extra or {}).get(f, 0.0)
                        for f in ('filled', 'packed', 'dispatched')}
             used_keys.add(b['key'])
             _fd, _pd2, _dd2 = FILL_DATES.get(b['key']), PACK_DATES.get(b['key']), DISP_DATES.get(b['key'])
             batches.append({
                 'batch': b['batch'], 'rm_date': b['date'], 'rm_customer': b['customer'],
-                'rm_product': b['product'], 'size': b['size'], **qty,
+                'rm_product': b['product'], 'size': b['size'], 'rm_missing': b.get('rm_missing', False), **qty,
                 'status': j.get('status') or 'RM dispensed — no production yet',
                 'f_first': _fd and _fd['first'], 'f_last': _fd and _fd['last'],
                 'p_first': _pd2 and _pd2['first'], 'p_last': _pd2 and _pd2['last'],
@@ -1105,6 +1168,14 @@ def _build_plan_view():
         if it.get('missing_batches'):
             it['flag'] = ('Batch ' + ', '.join(it['missing_batches'])
                           + ' written here is not in the RM log yet')
+        _no_rm = [b['batch'] for b in batches if b.get('rm_missing')]
+        _notes = []
+        if _no_rm:
+            _notes.append('no RM Dispensing entry for ' + ', '.join(_no_rm))
+        if it.get('pack_notes'):
+            _notes.append('pack size mismatch — ' + '; '.join(it['pack_notes'][:3]))
+        if _notes:
+            it['flag'] = (it['flag'] + ' · ' if it['flag'] else '') + ' · '.join(_notes)
 
         plan_q = it['planned_units'] or 0
         if not batches:
@@ -1188,6 +1259,29 @@ def _build_plan_view():
                        and _brand_of(b['product']) not in _plan_brands
                        and not _carried_over(b['product'])],
                       key=lambda b: b['date'])
+    # ── Self-check (26 Aug 2026): no batch may be credited to plan lines for
+    # MORE than the logs say it produced. This is the invariant the Alaize /
+    # Gelucid / Kifaru bugs all broke — if a future name or pack pattern breaks
+    # it again, say so loudly in the build log instead of shipping wrong numbers.
+    _credit = {}
+    for _it in items:
+        for _b in _it['batches']:
+            _c = _credit.setdefault(_bkey(_b['batch']), {'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0})
+            for _f in ('filled', 'packed', 'dispatched'):
+                _c[_f] += _b[_f]
+    _div_by = {}
+    for _it in items:                     # mixed-carton lines credit the average
+        if _it.get('mixed_carton'):
+            for _b in _it['batches']:
+                _div_by[_bkey(_b['batch'])] = True
+    for _k, _c in _credit.items():
+        _j = _journey_by_key.get(_k, {})
+        for _f in ('filled', 'packed', 'dispatched'):
+            _act = float(_j.get(_f) or 0)
+            if _c[_f] > _act + 1 and not _div_by.get(_k):
+                print(f'⚠️  PLAN SELF-CHECK: batch {_k} credited {_c[_f]:,.0f} {_f} '
+                      f'but logs show only {_act:,.0f} — plan figures may double-count!')
+
     _today_op = date.today()
     for b in off_plan:
         b['future'] = b['date'] > _today_op
@@ -3251,7 +3345,7 @@ function renderParties(disp, isDaily, label) {{
 }}
 
 // ── At-a-Glance: the cards follow the SAME scope as every detail section ──
-const bkeyJS = s => String(s || '').replace(/\s+/g, '').toUpperCase();
+const bkeyJS = s => String(s || '').replace(/\\s+/g, '').toUpperCase();
 const JOURNEY_BY_KEY = {{}};
 (ENICAR.batches || []).forEach(b => JOURNEY_BY_KEY[bkeyJS(b.batch)] = b);
 const PIPE_STATUSES = new Set(['Filled & packed (in stock)', 'Filled only']);
