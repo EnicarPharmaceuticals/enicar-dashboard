@@ -51,6 +51,8 @@
   "AQ-11153|product|nectallin|sudinkid": "2026-08-25",
   "BM-01279|party|bluemappharmachemp2p|bluemappharmachem": "2026-08-25",
   "BM-01280|party|bluemappharmachemp2p|bluemappharmachem": "2026-08-25",
+  "BM-10282|party|bluemappharmachemp2p|galaxypharmaceuticalsltd": "2026-08-26",
+  "BM-10282|party|bluemappharmachemp2p|sapphirelifesciencepvtltdp2p": "2026-08-26",
   "BM-29278|party|bluemappharmachemp2p|bluemappharmachem": "2026-08-25",
   "CE-348516|product|optiprimsuspension|optiprimsusp": "2026-08-24",
   "CNJ015|party|proctergamble|blissgvspharmaltdp2p": "2026-08-24",
@@ -111,6 +113,7 @@
   "GE05295|product|ferrosesyrup|ferrose": "2026-08-24",
   "GE06048|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
   "GE08291|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
+  "GE15308|party|galaxypharmaceuticalsltd|bluemappharmachemp2p": "2026-08-26",
   "GE22292|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
   "GE29296|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
   "GE95290|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
@@ -132,6 +135,7 @@
   "LH-7826|product|feraminoplus|feraminoplussyrup": "2026-08-24",
   "LH-7926|product|lasominsyrup|lasomin": "2026-08-24",
   "MIO-008|party|mvcpharmaceuticalsp2p|mvc": "2026-08-24",
+  "MXLE-84|party|sapphirelifesciencepvtltdp2p|blissgvspharmaltdp2p": "2026-08-26",
   "MXLE-84|product|meboxsuspension|mebox": "2026-08-25",
   "MXLE-84|product|meboxsuspension|meboxsusp": "2026-08-24",
   "NP-1359|product|coughniltrsyrup|coughniltr": "2026-08-24",
@@ -635,11 +639,11 @@
         "status": "",
         "units": 75000.0
       },
-      "amidolgripsyrup||100ml": {
+      "amidolgripsyrup|shalinahealthcarepvtltd|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
-        "party": "",
+        "party": "Shalina Healthcare Pvt. Ltd.",
         "priority": "",
         "product": "Amidol Grip Syrup",
         "status": "",
@@ -825,11 +829,11 @@
         "status": "",
         "units": 7000.0
       },
-      "bovergreensabccoldcsyrup||100ml": {
+      "bovergreensabccoldcsyrup|mezbeck|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
-        "party": "",
+        "party": "Mezbeck",
         "priority": "",
         "product": "B. OVERGREENS ABC COLD-C SYRUP",
         "status": "",
@@ -1325,11 +1329,11 @@
         "status": "",
         "units": 50000.0
       },
-      "metronf||100ml": {
+      "metronf|ronakeximpvtltd|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
-        "party": "",
+        "party": "Ronak Exim pvt Ltd.",
         "priority": "",
         "product": "METRON-F",
         "status": "",
@@ -1403,7 +1407,7 @@
         "priority": "",
         "product": "Naomi Triple Action Cream",
         "status": "",
-        "units": 7000.0
+        "units": 662400.0
       },
       "napogasoutforteplus|napo|250ml": {
         "batch": "",
@@ -2005,11 +2009,11 @@
         "status": "",
         "units": 24460.0
       },
-      "uflam||60ml": {
+      "uflam|uniquepharma|60ml": {
         "batch": "",
         "date": "",
         "pack": "60 ml",
-        "party": "",
+        "party": "UNIQUE PHARMA.",
         "priority": "",
         "product": "Uflam",
         "status": "",
@@ -2107,6 +2111,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-25T10:52:13"
+    "ts": "2026-08-26T10:42:41"
   }
 }
