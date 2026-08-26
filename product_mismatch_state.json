@@ -265,7 +265,6 @@
   "SL05409|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-25",
   "SL05410|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-25",
   "SL05411|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-08-25",
-  "SL05415|product|bedisyl100jellystrawberryflavour|bedisyl100jelly": "2026-08-24",
   "SL05415|product|bedisyl100jellystrawberryflavour|bedisyl100jellystrawberry": "2026-08-26",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-08-24",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsuspensionbp100mg5ml": "2026-08-25",
@@ -669,10 +668,10 @@
         "status": "",
         "units": 35000.0
       },
-      "amylase|unique|200ml": {
+      "amylase|unique|150ml": {
         "batch": "",
         "date": "",
-        "pack": "200 ml",
+        "pack": "150 ml",
         "party": "Unique",
         "priority": "1",
         "product": "Amylase",
@@ -2111,6 +2110,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-26T10:42:41"
+    "ts": "2026-08-26T11:48:46"
   }
 }
