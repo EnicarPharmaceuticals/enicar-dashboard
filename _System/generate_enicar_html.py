@@ -1039,8 +1039,11 @@ def _build_plan_view():
     # logged in a pack NO line of that product plans (usually a typo in the
     # log's Pack Size cell: Amylase plan 200 ml vs logs 150 ml).
     _packs_by_canon = {}
+    _lines_by_canon = {}
     for _it in items:
-        _packs_by_canon.setdefault(_pcanon(_it['product']), set()).add(_packnum(_it.get('pack')))
+        _c = _pcanon(_it['product'])
+        _packs_by_canon.setdefault(_c, set()).add(_packnum(_it.get('pack')))
+        _lines_by_canon[_c] = _lines_by_canon.get(_c, 0) + 1
     _orphan_claimed = set()
 
     for it in items:
@@ -1083,10 +1086,20 @@ def _build_plan_view():
             if _want is None or not sl:
                 # No pack on the plan row, or nothing produced yet: fall back to
                 # whole-batch figures, but don't attach an RM batch whose own
-                # pack size contradicts the line.
+                # pack size contradicts the line — UNLESS this is the product's
+                # only plan line. RM's pack cell is often wrong (Proliser
+                # GP-84866 says 200, the plan says 100 ml — and RM's earlier
+                # Proliser packs contradict the dispatch log both ways), and
+                # dropping the batch made an RM-dispensed product look
+                # untouched. One line ⇒ attach with a note; several lines ⇒
+                # strict, so Alaize-style splits stay correct (26 Aug 2026).
                 _rp = _packnum(b.get('pack'))
                 if _want is not None and not sl and _rp is not None and _rp != _want:
-                    continue
+                    if not (_pcanon(b['product']) == _me
+                            and _lines_by_canon.get(_me, 0) == 1):
+                        continue
+                    it.setdefault('pack_notes', []).append(
+                        f"{b['batch']} RM pack cell says {_rp:g} (plan: {it.get('pack')})")
                 qty = {'filled': float(j.get('filled') or 0),
                        'packed': float(j.get('packed') or 0),
                        'dispatched': float(j.get('dispatched') or 0)}
