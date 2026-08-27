@@ -43,6 +43,13 @@ warnings.filterwarnings('ignore', category=UserWarning, module='pandas')
 
 import pandas as pd
 
+from datetime import timezone as _tz_ist, timedelta as _td_ist
+def ist_today():
+    """Plant-local (IST) date. The cloud build runs in UTC, where the naive
+    system date lags IST by a day until 05:30 — every 'today' in this file
+    must come from here, never the runner's local clock."""
+    return datetime.now(_tz_ist(_td_ist(hours=5, minutes=30))).date()
+
 # ══════════════════════════════════════════════════════════════════════════════
 # CONFIGURATION — edit these if needed
 # ══════════════════════════════════════════════════════════════════════════════
@@ -554,7 +561,7 @@ def _batch_journey():
     # forever. Threshold tuned to cover the typical 100–300 bottle leftover.
     AUTO_CLEAR_UNITS = 500
     AUTO_CLEAR_DAYS  = 60
-    today_d = date.today()
+    today_d = ist_today()
     for e in j.values():
         leftover = e['filled'] - e['dispatched']
         if (e['last_disp'] is not None and 0 < leftover <= AUTO_CLEAR_UNITS
@@ -660,7 +667,7 @@ RM_INFO = _rm_info()
 #   normal business, so this threshold is deliberately longer)
 STUCK_FILL_DAYS = 7
 STUCK_PACK_DAYS = 21
-_today = date.today()
+_today = ist_today()
 
 def _stuck_info(e):
     """Return (stage_label, days_waiting) if the batch is stuck, else None."""
@@ -1209,7 +1216,7 @@ def _build_plan_view():
     # Anything the Plant Head / store gave a target date to is an instruction:
     # it sorts to the top of the plan, soonest first, and drives the schedule
     # card. Plant time (IST) decides what "today" means, not the build server.
-    _ist_today = (datetime.utcnow() + timedelta(hours=5, minutes=30)).date()
+    _ist_today = ist_today()
     for it in items:
         td = it.get('rm_date')
         it['due_days'] = (td - _ist_today).days if td else None
@@ -1295,7 +1302,7 @@ def _build_plan_view():
                 print(f'⚠️  PLAN SELF-CHECK: batch {_k} credited {_c[_f]:,.0f} {_f} '
                       f'but logs show only {_act:,.0f} — plan figures may double-count!')
 
-    _today_op = date.today()
+    _today_op = ist_today()
     for b in off_plan:
         b['future'] = b['date'] > _today_op
     summary = {
