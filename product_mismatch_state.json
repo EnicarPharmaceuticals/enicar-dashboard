@@ -118,7 +118,6 @@
   "GE05295|product|ferrosesyrup|ferrose": "2026-08-27",
   "GE06048|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
   "GE08291|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
-  "GE15308|party|galaxypharmaceuticalsltd|bluemappharmachemp2p": "2026-08-26",
   "GE22292|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
   "GE29296|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
   "GE95290|party|galaxypharmaceuticalsltd|galaxypharma": "2026-08-25",
@@ -221,7 +220,7 @@
   "REO-358|product|naomitripleactioncream|naomitripleaction": "2026-08-25",
   "REO-359|product|naomitripleactioncream|naomitripleaction": "2026-08-26",
   "REO-360|product|naomitripleactioncream|naomitripleaction": "2026-08-26",
-  "REO-361|product|naomitripleaction|naomitripleactioncream": "2026-08-25",
+  "REO-361|product|naomitripleactioncream|naomitripleaction": "2026-08-27",
   "REO-362|product|naomitripleactioncream|naomitripleaction": "2026-08-27",
   "S-1272|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-25",
   "S-1474|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-08-25",
@@ -1351,10 +1350,10 @@
         "status": "",
         "units": 8550.0
       },
-      "mexyloc|aurastanmark|150ml": {
+      "mexyloc|aurastanmark|100ml": {
         "batch": "",
         "date": "",
-        "pack": "150 ml",
+        "pack": "100 ml",
         "party": "Aura/Stanmark",
         "priority": "",
         "product": "Mexyloc",
@@ -2123,6 +2122,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-26T11:48:46"
+    "ts": "2026-08-27T16:32:24"
   }
 }
