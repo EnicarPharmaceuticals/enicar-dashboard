@@ -2605,6 +2605,21 @@ html = f"""<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="refresh" content="900">
 <title>Enicar Dashboard — {PERIOD}</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b5394">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Enicar">
+<script>
+/* PWA: register the service worker so the dashboard installs to the home
+   screen and still opens (last good data) without signal. The plain browser
+   link is unaffected — the worker is network-first, never stale-first. */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {{
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{{}}));
+}}
+</script>
 <style>
   * {{ box-sizing:border-box; margin:0; padding:0; }}
   body {{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
