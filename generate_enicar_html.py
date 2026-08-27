@@ -637,7 +637,7 @@ def _rm_info():
         k = _bkey(b)
         d = pd.to_datetime(r.get('DISPENSING DATE'), errors='coerce')
         e = info.setdefault(k, {'date': None, 'customer': None, 'product': None, 'size': 0.0,
-                                'plan_type': None})
+                                'plan_type': None, 'pack': None})
         if pd.notna(d) and (e['date'] is None or d.date() < e['date']):
             e['date'] = d.date()
         if e['plan_type'] is None and pd.notna(r.get('PLAN')):
@@ -646,6 +646,8 @@ def _rm_info():
             e['customer'] = str(r.get('CUSTOMER')).strip()
         if e['product'] is None and pd.notna(r.get('NAME OF THE PRODUCT')):
             e['product'] = str(r.get('NAME OF THE PRODUCT')).strip()
+        if e['pack'] is None and pd.notna(r.get('PACK SIZE')):
+            e['pack'] = str(r.get('PACK SIZE')).strip()
         e['size'] += float(pd.to_numeric(r.get('BATCH SIZE'), errors='coerce') or 0)
     return info
 
@@ -815,6 +817,44 @@ def _load_plan():
 
 _journey_by_key = {_bkey(e['batch']): e for e in BATCH_JOURNEY}
 
+def _packnum(v):
+    """Leading number of a pack size — "15 ml", "15.0", "200 ml (Angola)" → 15.0/200.0."""
+    m = re.search(r'\d+(?:\.\d+)?', str(v or ''))
+    return float(m.group()) if m else None
+
+
+def _batch_pack_actuals():
+    """(batch key) → {pack number or None: filled/packed/dispatched}.
+
+    Pack size is a property of the FILLING / PACKING / DISPATCH row, not of the
+    batch. One bulk batch routinely fills two bottle sizes — EL-2509 Ferrolife
+    (1,515 L) made 5,000 x 100 ml AND 5,000 x 200 ml — and RM's own PACK SIZE
+    column records only one of them. So a plan line must be credited from the
+    logs, per pack, or the second pack size looks "not started" while its stock
+    is already dispatched (Director, 26 Aug 2026).
+    """
+    out = {}
+    def add(df, field, qcol):
+        if df is None or len(df) == 0 or qcol not in df.columns:
+            return
+        for b, pk, q in zip(df['Batch'], df['PackSize'], df[qcol]):
+            if b is None or (not isinstance(b, str) and pd.isna(b)):
+                continue
+            k = _bkey(b)
+            if not k or k == '-':
+                continue
+            v = pd.to_numeric(q, errors='coerce')
+            e = out.setdefault(k, {}).setdefault(
+                _packnum(pk), {'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0})
+            e[field] += 0.0 if pd.isna(v) else float(v)
+    add(fill_df, 'filled',     'Qty')
+    add(pack_df, 'packed',     'TotalPacked')
+    add(disp_df, 'dispatched', 'Qty')
+    return out
+
+BATCH_PACK = _batch_pack_actuals()
+
+
 def _rm_batches_in_window():
     """RM batches that belong to this month's plan — the authoritative link
     between the plan and real production. Batch number and COMPANY NAME both
@@ -841,7 +881,43 @@ def _rm_batches_in_window():
             continue
         out.append({'key': k, 'batch': (_journey_by_key.get(k, {}) or {}).get('batch', k),
                     'product': v.get('product') or '', 'customer': v.get('customer') or '',
-                    'date': v['date'], 'size': v.get('size') or 0})
+                    'date': v['date'], 'size': v.get('size') or 0,
+                    'pack': v.get('pack') or ''})
+    # ── Production with NO RM record still belongs on the plan card ──
+    # MinMin PS (REM387, 50,000 filled + 49,150 dispatched) and P&G Polybion
+    # 150 ml (6230C85001/2, 6233C85001 — 98,500 filled) showed "Not started"
+    # because plan linking only ever looked at the RM log. A batch that was
+    # filled or packed inside the plan month is this month's work whether or
+    # not the store remembered its RM row (Director, 26 Aug 2026). Product,
+    # party and dates come from the production logs; the plan line gets a
+    # flag so the missing RM entry still gets chased, not hidden.
+    _seen = {e['key'] for e in out}
+    _cand = {}
+    for _df in (fill_df, pack_df):
+        for _b, _p, _pa, _d in zip(_df['Batch'], _df['Product'], _df['Party'], _df['Date']):
+            if _b is None or (not isinstance(_b, str) and pd.isna(_b)):
+                continue
+            _k = _bkey(_b)
+            if not _k or _k in _seen or _k in ('-', 'NAN', 'NA'):
+                continue
+            if _k in RM_INFO and RM_INFO[_k].get('date'):
+                continue          # has an RM record — the window rules above own it
+            e = _cand.setdefault(_k, {'batch': str(_b).strip(), 'product': None,
+                                      'customer': None, 'date': None})
+            if _p is not None and e['product'] is None:
+                e['product'] = str(_p)
+            if _pa is not None and e['customer'] is None:
+                e['customer'] = str(_pa)
+            if e['date'] is None or _d < e['date']:
+                e['date'] = _d
+    for _k, e in _cand.items():
+        _fd = FILL_DATES.get(_k)
+        _first = (_fd and _fd['first']) or e['date']
+        if _first is None or _first < PLAN_WINDOW_FROM:
+            continue              # previous-month work / opening stock
+        out.append({'key': _k, 'batch': e['batch'], 'product': e['product'] or '',
+                    'customer': e['customer'] or '', 'date': e['date'],
+                    'size': 0, 'pack': '', 'rm_missing': True})
     return out
 
 def _build_plan_view():
@@ -873,8 +949,13 @@ def _build_plan_view():
         return A and B and (A == B or (len(A) >= 5 and len(B) >= 5 and (A in B or B in A)))
     for _pe in _pending:
         _mon = 'JUN' if str(_pe.get('plan_date') or '')[5:7] == '06' else 'JUL'
-        _hit = next((it for it in raw_items if it['month'] == 'AUG'
-                     and _pp_match(it['product'], _pe['product'])), None)
+        # Match against EVERY sheet row, not just AUG ones. Once the Director
+        # pastes the carry-over list into the plan tab those rows carry a JUN/JUL
+        # chip, and an AUG-only test re-injected them as phantom duplicates —
+        # and where PARTY was blank the two copies merged and DOUBLED the
+        # planned quantity (METRON-F showed 17,100 for 8,550). 26 Aug 2026.
+        _hit = next((it for it in raw_items
+                     if _pp_match(it['product'], _pe['product'])), None)
         if _hit is not None:
             k = _pcanon(_hit['product'])
             e = _carry_badge.setdefault(k, {'months': set(), 'units': 0})
@@ -914,21 +995,59 @@ def _build_plan_view():
 
     rmw = _rm_batches_in_window()
     used_keys = set()
+    _blank_claimed = set()   # batches whose no-pack log rows are already credited
+    _brand_line_count = {}
+    _exact_plan_names = {_pcanon(it['product']) for it in items if _pcanon(it['product'])}
 
     # Product aliases the Director confirmed are the SAME item (22 Aug 2026).
     # "MinMin PS" is the physician-sample pack of Minmin Tonic.
+    # Brands packed as a MIXED carton — one sachet of each flavour per carton.
+    _MIXED_CARTON = {'kifarujelly'}
     _PRODUCT_ALIASES = [frozenset(('minminps', 'minmintonic')),
                         frozenset(('unidaktgeloral', 'unidaktcream'))]
 
+    def _brandkey(s):
+        """Product name with a parenthetical flavour and a trailing strength
+        token removed: "Kifaru Jelly 100mg" and "KIFARU JELLY (Strawberry
+        Flavour)" both become "kifarujelly". Nothing else is stripped, so
+        Polybion Lc / Polybion Active and Allerzy-DC / -X stay distinct."""
+        t = re.sub(r'\([^)]*\)', ' ', str(s or ''))
+        t = re.sub(r'\s+\d+(?:\.\d+)?\s*(mg|ml|gm|g|mcg|%)?\s*$', ' ', t, flags=re.I)
+        return _pcanon(t)
+
+    for _it in items:
+        _k = _brandkey(_it['product'])
+        _brand_line_count[_k] = _brand_line_count.get(_k, 0) + 1
+
     def prod_match(a, b):
         A, B = _pcanon(a), _pcanon(b)
+        KA, KB = _brandkey(a), _brandkey(b)
+        # Brand-level match only when the plan does NOT split that brand by
+        # flavour itself. Bedisyl 100 Jelly is planned as three separate lines
+        # (banana / mango / pineapple), so each must keep its own batch;
+        # Kifaru Jelly is one line covering both flavours, so it takes all.
+        if (KA and KA == KB and len(KA) >= 5
+                and _brand_line_count.get(KA, 0) == 1):
+            return True
         if A and A == B:           # exact name — covers short ones like PA-C
             return True
         if frozenset((A, B)) in _PRODUCT_ALIASES:
             return True
         return len(A) >= 4 and len(B) >= 4 and (A in B or B in A)
 
+    # Every pack size each product is planned in — used to spot production
+    # logged in a pack NO line of that product plans (usually a typo in the
+    # log's Pack Size cell: Amylase plan 200 ml vs logs 150 ml).
+    _packs_by_canon = {}
+    _lines_by_canon = {}
+    for _it in items:
+        _c = _pcanon(_it['product'])
+        _packs_by_canon.setdefault(_c, set()).add(_packnum(_it.get('pack')))
+        _lines_by_canon[_c] = _lines_by_canon.get(_c, 0) + 1
+    _orphan_claimed = set()
+
     for it in items:
+        _me = _pcanon(it['product'])
         # ── Link plan → RM ──
         # If the store wrote a batch number in the plan row, that is definitive
         # (it also rescues items whose product wording differs from the plan).
@@ -942,17 +1061,84 @@ def _build_plan_view():
                     it.setdefault('missing_batches', []).append(w)
         else:
             hits = [b for b in rmw if prod_match(it['product'], b['product'])]
-            it['linked_by'] = 'product name'
+            # "Gelucid" is a substring of "Gelucid O", so the loose match handed
+            # each line the other's batches and double-counted both. A batch
+            # whose RM name is EXACTLY another plan line's product belongs to
+            # that line alone (26 Aug 2026). Brand-level matches such as
+            # "Kifaru Jelly 100mg" -> "KIFARU JELLY (Strawberry Flavour)" are
+            # untouched: the RM name is not itself a plan line.
+            hits = [b for b in hits
+                    if _pcanon(b['product']) == _me
+                    or _pcanon(b['product']) not in _exact_plan_names]
+            it['linked_by'] = 'product name + pack size'
+        # ── Credit each batch to this line PER PACK SIZE ──
+        # Same product planned in two packs must not share the same units
+        # (Alaize 15 ml vs 200 ml double-counted), but one bulk batch may
+        # genuinely serve both packs (Ferrolife EL-2509). So the quantities come
+        # from the log rows for THIS pack; a batch that produced only other
+        # packs is not this line's batch at all. Rows where the log left the
+        # pack blank go to the first line that claims the batch.
+        _want = _packnum(it.get('pack'))
         batches = []
         for b in hits:
-            used_keys.add(b['key'])
+            sl = BATCH_PACK.get(b['key'], {})
             j = _journey_by_key.get(b['key'], {})
+            if _want is None or not sl:
+                # No pack on the plan row, or nothing produced yet: fall back to
+                # whole-batch figures, but don't attach an RM batch whose own
+                # pack size contradicts the line — UNLESS this is the product's
+                # only plan line. RM's pack cell is often wrong (Proliser
+                # GP-84866 says 200, the plan says 100 ml — and RM's earlier
+                # Proliser packs contradict the dispatch log both ways), and
+                # dropping the batch made an RM-dispensed product look
+                # untouched. One line ⇒ attach with a note; several lines ⇒
+                # strict, so Alaize-style splits stay correct (26 Aug 2026).
+                _rp = _packnum(b.get('pack'))
+                if _want is not None and not sl and _rp is not None and _rp != _want:
+                    if not (_pcanon(b['product']) == _me
+                            and _lines_by_canon.get(_me, 0) == 1):
+                        continue
+                    it.setdefault('pack_notes', []).append(
+                        f"{b['batch']} RM pack cell says {_rp:g} (plan: {it.get('pack')})")
+                qty = {'filled': float(j.get('filled') or 0),
+                       'packed': float(j.get('packed') or 0),
+                       'dispatched': float(j.get('dispatched') or 0)}
+            else:
+                mine = sl.get(_want)
+                blank = sl.get(None) if b['key'] not in _blank_claimed else None
+                if blank is not None:
+                    _blank_claimed.add(b['key'])
+                # Production logged in a pack size that NO line of this product
+                # plans — a Pack Size typo in one of the logs (Bonaplex EL-2438
+                # packed rows say 200ML, the only plan line is 250 ml; Amylase
+                # logs say 150 ml, the plan says 200 ml). Credit it HERE, once,
+                # with a flag, instead of letting the units vanish — but only
+                # when the log's own product name is exactly this line's.
+                extra = None
+                if _pcanon(b['product']) == _me:
+                    _own = _packs_by_canon.get(_me, set())
+                    for _pk, _q in sl.items():
+                        if _pk is None or _pk in _own:
+                            continue
+                        if (b['key'], _pk) in _orphan_claimed:
+                            continue
+                        _orphan_claimed.add((b['key'], _pk))
+                        extra = {f: (extra or {}).get(f, 0.0) + _q[f]
+                                 for f in ('filled', 'packed', 'dispatched')}
+                        it.setdefault('pack_notes', []).append(
+                            f"{b['batch']} logged as {_pk:g} (plan: {it.get('pack')})")
+                if mine is None and blank is None and extra is None:
+                    if not wanted:          # produced in other packs only
+                        continue
+                    mine = {'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0}
+                qty = {f: (mine or {}).get(f, 0.0) + (blank or {}).get(f, 0.0)
+                       + (extra or {}).get(f, 0.0)
+                       for f in ('filled', 'packed', 'dispatched')}
+            used_keys.add(b['key'])
             _fd, _pd2, _dd2 = FILL_DATES.get(b['key']), PACK_DATES.get(b['key']), DISP_DATES.get(b['key'])
             batches.append({
                 'batch': b['batch'], 'rm_date': b['date'], 'rm_customer': b['customer'],
-                'size': b['size'],
-                'filled': float(j.get('filled') or 0), 'packed': float(j.get('packed') or 0),
-                'dispatched': float(j.get('dispatched') or 0),
+                'rm_product': b['product'], 'size': b['size'], 'rm_missing': b.get('rm_missing', False), **qty,
                 'status': j.get('status') or 'RM dispensed — no production yet',
                 'f_first': _fd and _fd['first'], 'f_last': _fd and _fd['last'],
                 'p_first': _pd2 and _pd2['first'], 'p_last': _pd2 and _pd2['last'],
@@ -960,9 +1146,19 @@ def _build_plan_view():
             })
         batches.sort(key=lambda x: x['rm_date'])
         it['batches'] = batches
-        it['filled']     = sum(b['filled'] for b in batches)
-        it['packed']     = sum(b['packed'] for b in batches)
-        it['dispatched'] = sum(b['dispatched'] for b in batches)
+        # Mixed-carton products: one carton holds one sachet of EACH flavour, so
+        # the plan quantity counts CARTONS. Kifaru Jelly is planned 2,00,000 and
+        # made as 2,00,000 strawberry + 2,00,000 banana on separate batches —
+        # adding the flavours together would read 4,00,000 against a 2,00,000
+        # plan (Director, 26 Aug 2026). Credit the per-flavour average instead.
+        _grp = {}
+        for _b in batches:
+            _grp.setdefault(_pcanon(_b.get('rm_product')), []).append(_b)
+        _div = len(_grp) if (_brandkey(it['product']) in _MIXED_CARTON and len(_grp) > 1) else 1
+        it['mixed_carton'] = _div > 1
+        it['filled']     = sum(b['filled'] for b in batches) / _div
+        it['packed']     = sum(b['packed'] for b in batches) / _div
+        it['dispatched'] = sum(b['dispatched'] for b in batches) / _div
         # Company name is taken from RM; flag when the plan shows a different one
         rm_customers = sorted({b['rm_customer'] for b in batches if b['rm_customer']})
         it['rm_customers'] = rm_customers
@@ -985,6 +1181,14 @@ def _build_plan_view():
         if it.get('missing_batches'):
             it['flag'] = ('Batch ' + ', '.join(it['missing_batches'])
                           + ' written here is not in the RM log yet')
+        _no_rm = [b['batch'] for b in batches if b.get('rm_missing')]
+        _notes = []
+        if _no_rm:
+            _notes.append('no RM Dispensing entry for ' + ', '.join(_no_rm))
+        if it.get('pack_notes'):
+            _notes.append('pack size mismatch — ' + '; '.join(it['pack_notes'][:3]))
+        if _notes:
+            it['flag'] = (it['flag'] + ' · ' if it['flag'] else '') + ' · '.join(_notes)
 
         plan_q = it['planned_units'] or 0
         if not batches:
@@ -1068,6 +1272,29 @@ def _build_plan_view():
                        and _brand_of(b['product']) not in _plan_brands
                        and not _carried_over(b['product'])],
                       key=lambda b: b['date'])
+    # ── Self-check (26 Aug 2026): no batch may be credited to plan lines for
+    # MORE than the logs say it produced. This is the invariant the Alaize /
+    # Gelucid / Kifaru bugs all broke — if a future name or pack pattern breaks
+    # it again, say so loudly in the build log instead of shipping wrong numbers.
+    _credit = {}
+    for _it in items:
+        for _b in _it['batches']:
+            _c = _credit.setdefault(_bkey(_b['batch']), {'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0})
+            for _f in ('filled', 'packed', 'dispatched'):
+                _c[_f] += _b[_f]
+    _div_by = {}
+    for _it in items:                     # mixed-carton lines credit the average
+        if _it.get('mixed_carton'):
+            for _b in _it['batches']:
+                _div_by[_bkey(_b['batch'])] = True
+    for _k, _c in _credit.items():
+        _j = _journey_by_key.get(_k, {})
+        for _f in ('filled', 'packed', 'dispatched'):
+            _act = float(_j.get(_f) or 0)
+            if _c[_f] > _act + 1 and not _div_by.get(_k):
+                print(f'⚠️  PLAN SELF-CHECK: batch {_k} credited {_c[_f]:,.0f} {_f} '
+                      f'but logs show only {_act:,.0f} — plan figures may double-count!')
+
     _today_op = date.today()
     for b in off_plan:
         b['future'] = b['date'] > _today_op
@@ -1523,6 +1750,7 @@ def plan_section_html():
         rows += (f'<tr style="background:{bg};cursor:pointer" data-prio="{it["priority"] or 0}" '
                  f'data-srank="{it["srank"]}" data-next="{_isnext}" data-flag="{1 if it.get("flag") else 0}" '
                  f'data-month="{_mon}" '
+                 f'data-company="{(it.get("display_party") or "").lower()}" '
                  f'onclick="togglePlan({i})" title="Click to verify the RM batches behind this item">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
                  f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
@@ -3130,7 +3358,7 @@ function renderParties(disp, isDaily, label) {{
 }}
 
 // ── At-a-Glance: the cards follow the SAME scope as every detail section ──
-const bkeyJS = s => String(s || '').replace(/\s+/g, '').toUpperCase();
+const bkeyJS = s => String(s || '').replace(/\\s+/g, '').toUpperCase();
 const JOURNEY_BY_KEY = {{}};
 (ENICAR.batches || []).forEach(b => JOURNEY_BY_KEY[bkeyJS(b.batch)] = b);
 const PIPE_STATUSES = new Set(['Filled & packed (in stock)', 'Filled only']);
@@ -3396,6 +3624,33 @@ function pendFilter(el, mode) {{
     tr.style.display = show ? '' : 'none';
   }});
 }}
+// NOT STARTED is a work-planning view — the Director reads it company by
+// company to decide what the store dispenses next, so it sorts alphabetically
+// by company instead of by priority (26 Aug 2026). Every other chip keeps the
+// original priority/due-date order.
+let _planOrigOrder = null;
+function _planSortByCompany(on) {{
+  const tb = document.getElementById('plan-rows');
+  if (!tb) return;
+  if (!_planOrigOrder) _planOrigOrder = Array.from(tb.children);
+  if (!on) {{ _planOrigOrder.forEach(n => tb.appendChild(n)); return; }}
+  const pairs = [];
+  for (let i = 0; i < _planOrigOrder.length; i++) {{
+    const r = _planOrigOrder[i];
+    if (r.nodeType !== 1 || !r.hasAttribute('data-prio')) continue;
+    const d = _planOrigOrder[i + 1];
+    pairs.push([r, (d && d.id && d.id.indexOf('plan-d-') === 0) ? d : null]);
+  }}
+  pairs.sort((a, b) => {{
+    const ca = a[0].getAttribute('data-company') || '';
+    const cb = b[0].getAttribute('data-company') || '';
+    if (!ca && cb) return 1;            // blank company sorts last
+    if (ca && !cb) return -1;
+    return ca.localeCompare(cb);
+  }});
+  pairs.forEach(([r, d]) => {{ tb.appendChild(r); if (d) tb.appendChild(d); }});
+}}
+
 let _planChipP = -1, _planQ = '';
 function _planApply() {{
   let shown = 0, total = 0;
@@ -3432,6 +3687,7 @@ function planFilter(chipEl, p) {{
   document.querySelectorAll('#plan-card .chip-row .chip').forEach(c => c.classList.remove('active'));
   if (chipEl) chipEl.classList.add('active');
   _planChipP = p;
+  _planSortByCompany(p === -2);        // NOT STARTED → alphabetical by company
   _planApply();
 }}
 function planSearch(q) {{
