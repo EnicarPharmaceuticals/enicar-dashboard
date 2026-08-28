@@ -830,6 +830,13 @@ def _packnum(v):
     return float(m.group()) if m else None
 
 
+def _packnums(v):
+    """ALL numbers in a pack cell. RM writes "200 and 100" when one bulk batch
+    fills both sizes (Proliser GP-84866, 28 Aug 2026) — a plan line for either
+    pack must accept the batch."""
+    return {float(m) for m in re.findall(r'\d+(?:\.\d+)?', str(v or ''))}
+
+
 def _batch_pack_actuals():
     """(batch key) → {pack number or None: filled/packed/dispatched}.
 
@@ -1100,13 +1107,13 @@ def _build_plan_view():
                 # dropping the batch made an RM-dispensed product look
                 # untouched. One line ⇒ attach with a note; several lines ⇒
                 # strict, so Alaize-style splits stay correct (26 Aug 2026).
-                _rp = _packnum(b.get('pack'))
-                if _want is not None and not sl and _rp is not None and _rp != _want:
+                _rps = _packnums(b.get('pack'))
+                if _want is not None and not sl and _rps and _want not in _rps:
                     if not (_pcanon(b['product']) == _me
                             and _lines_by_canon.get(_me, 0) == 1):
                         continue
                     it.setdefault('pack_notes', []).append(
-                        f"{b['batch']} RM pack cell says {_rp:g} (plan: {it.get('pack')})")
+                        f"{b['batch']} RM pack cell says {b.get('pack')} (plan: {it.get('pack')})")
                 qty = {'filled': float(j.get('filled') or 0),
                        'packed': float(j.get('packed') or 0),
                        'dispatched': float(j.get('dispatched') or 0)}
