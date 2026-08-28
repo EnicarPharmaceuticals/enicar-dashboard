@@ -2446,6 +2446,219 @@ def director_summary_html():
   <ul style="margin:0 22px 14px 34px;font-size:12.5px;color:#37474F;line-height:1.5">{notes}</ul>
 </div>'''
 
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PRODUCTION INTELLIGENCE (Director asked for a best-in-class dashboard,
+# 28 Aug 2026): plan pacing + projection, 30-day trend, WIP aging, stage
+# cycle times, line output and entry-sheet data quality — all computed
+# server-side from the same logs, no external libraries.
+# ══════════════════════════════════════════════════════════════════════════════
+def _working_days(a, b):
+    """Mon–Sat days in [a, b] (plant works all days except Sundays)."""
+    d, nn = a, 0
+    while d <= b:
+        if d.weekday() != 6:
+            nn += 1
+        d += timedelta(days=1)
+    return nn
+
+
+def production_intel_html():
+    today = ist_today()
+    # Pace against the PLAN month (AUG), not the two-month display period —
+    # "51 of 53 working days" from July made a half-done month look finished.
+    m_start = PLAN_WINDOW_FROM
+    m_end = date(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month,
+                 calendar.monthrange(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month)[1])
+
+    # ── 1. Plan pace & projection ─────────────────────────────────────────
+    S = PLAN_SUMMARY or {}
+    plan_u = S.get('units') or 0
+    done_f, done_p, done_d = S.get('filled', 0), S.get('packed_sum', 0), S.get('disp_sum', 0)
+    wd_total = _working_days(m_start, m_end)
+    wd_gone  = _working_days(m_start, min(today, m_end))
+    wd_left  = max(0, wd_total - wd_gone)
+    pace_pct = wd_gone / wd_total * 100 if wd_total else 0
+    def _pct(x): return (x / plan_u * 100) if plan_u else 0
+    rate = done_f / wd_gone if wd_gone else 0
+    proj = done_f + rate * wd_left
+    proj_pct = _pct(proj)
+    proj_col = C_GRN if proj_pct >= 95 else ('#E65100' if proj_pct >= 80 else '#B71C1C')
+    def _pace_tile(label, val, col):
+        pc = _pct(val)
+        behind = pc - pace_pct
+        note = ('on pace' if behind >= -3 else f'{abs(behind):.0f}% behind the month')
+        return tile(label, f'{pc:.0f}%', f'{n(val)} of {n(plan_u)} — {note}', col)
+    pace_cards = (
+        tile('MONTH ELAPSED', f'{pace_pct:.0f}%', f'{wd_gone} of {wd_total} working days — {wd_left} left', C_PRI)
+      + _pace_tile('PLAN FILLED', done_f, C_SEC)
+      + _pace_tile('PLAN PACKED', done_p, C_AMB)
+      + _pace_tile('PLAN DISPATCHED', done_d, C_ORG)
+      + tile('PROJECTED MONTH-END', f'{proj_pct:.0f}%',
+             f'≈ {n(proj)} filled by {m_end.strftime("%d %b")} at the current daily rate', proj_col)
+    )
+
+    # ── 2. 30-day trend (inline SVG, no libraries) ────────────────────────
+    days = [today - timedelta(days=i) for i in range(29, -1, -1)]
+    def _daily(df, qcol):
+        g = {}
+        for d, q in zip(df['Date'], df[qcol]):
+            g[d] = g.get(d, 0) + (q or 0)
+        return [g.get(d, 0) for d in days]
+    sf, sp, sd = _daily(fill_df, 'Qty'), _daily(pack_df, 'TotalPacked'), _daily(disp_df, 'Qty')
+    peak = max(max(sf), max(sp), max(sd), 1)
+    W, H, L, B = 940, 240, 52, 26
+    def _pts(series):
+        return ' '.join(f'{L + i*(W-L-10)/29:.1f},{H-B-(v/peak)*(H-B-18):.1f}'
+                        for i, v in enumerate(series))
+    def _line(series, col):
+        return (f'<polyline points="{_pts(series)}" fill="none" stroke="{col}" '
+                f'stroke-width="2.2" stroke-linejoin="round"/>')
+    grid = ''
+    for gfrac in (0.25, 0.5, 0.75, 1.0):
+        y = H - B - gfrac * (H - B - 18)
+        grid += (f'<line x1="{L}" y1="{y:.0f}" x2="{W-10}" y2="{y:.0f}" stroke="#CFD8DC" '
+                 f'stroke-width="0.6"/><text x="{L-6}" y="{y+4:.0f}" text-anchor="end" '
+                 f'font-size="10" fill="#78909C">{n(peak*gfrac)}</text>')
+    xlab = ''
+    for i in (0, 5, 10, 15, 20, 25, 29):
+        x = L + i * (W - L - 10) / 29
+        xlab += (f'<text x="{x:.0f}" y="{H-8}" text-anchor="middle" font-size="10" '
+                 f'fill="#78909C">{days[i].strftime("%d %b")}</text>')
+    sun = ''
+    for i, d in enumerate(days):
+        if d.weekday() == 6:
+            x = L + i * (W - L - 10) / 29
+            sun += f'<rect x="{x-3:.0f}" y="18" width="6" height="{H-B-18}" fill="#ECEFF1"/>'
+    legend = (f'<text x="{L}" y="12" font-size="11" fill="{C_SEC}">━ Filled</text>'
+              f'<text x="{L+70}" y="12" font-size="11" fill="{C_AMB}">━ Packed</text>'
+              f'<text x="{L+145}" y="12" font-size="11" fill="{C_ORG}">━ Dispatched</text>'
+              f'<text x="{W-10}" y="12" font-size="10" text-anchor="end" fill="#90A4AE">grey stripes = Sundays</text>')
+    trend_svg = (f'<div style="overflow-x:auto"><svg viewBox="0 0 {W} {H}" '
+                 f'style="width:100%;min-width:640px;height:auto" xmlns="http://www.w3.org/2000/svg">'
+                 f'{sun}{grid}{legend}{_line(sf, C_SEC)}{_line(sp, C_AMB)}{_line(sd, C_ORG)}{xlab}</svg></div>')
+
+    # ── 3. WIP aging ──────────────────────────────────────────────────────
+    def _aging(stage_dates, cond):
+        buckets = {'0–3 d': [0, 0], '4–7 d': [0, 0], '8–14 d': [0, 0], '15+ d': [0, 0]}
+        for e in BATCH_JOURNEY:
+            k = _bkey(e['batch'])
+            if not cond(e):
+                continue
+            sd_ = stage_dates.get(k)
+            if not sd_ or not sd_.get('last') or sd_['last'] < m_start - timedelta(days=45):
+                continue
+            age = (today - sd_['last']).days
+            b = '0–3 d' if age <= 3 else '4–7 d' if age <= 7 else '8–14 d' if age <= 14 else '15+ d'
+            buckets[b][0] += 1
+            buckets[b][1] += float(e.get('filled' if cond is _c1 else 'packed') or 0)
+        return buckets
+    _c1 = lambda e: (e.get('filled') or 0) > 0 and (e.get('packed') or 0) == 0 and (e.get('dispatched') or 0) == 0
+    _c2 = lambda e: (e.get('packed') or 0) > 0 and (e.get('dispatched') or 0) == 0
+    ag1, ag2 = _aging(FILL_DATES, _c1), _aging(PACK_DATES, _c2)
+    def _agrow(lbl, ag, warncol):
+        cells = ''
+        for i, (bk, (c, u)) in enumerate(ag.items()):
+            col = '#37474F' if i < 2 else warncol
+            cells += (f'<td style="text-align:center;color:{col};font-weight:{600 if i>=2 else 400}">'
+                      f'{c} batches<br><span style="font-size:11px">{n(u)} u</span></td>')
+        return f'<tr><td style="font-weight:600;color:{C_PRI}">{lbl}</td>{cells}</tr>'
+    aging_tbl = (f'<table class="tbl" style="width:100%"><tr><th style="text-align:left">Waiting at stage</th>'
+                 + ''.join(f'<th>{b}</th>' for b in ag1) + '</tr>'
+                 + _agrow('Filled, not yet packed', ag1, '#B71C1C')
+                 + _agrow('Packed, not yet dispatched', ag2, '#E65100') + '</table>')
+
+    # ── 4. Cycle times (median days, batches that made the step this month) ─
+    def _median(vals):
+        vals = sorted(vals)
+        if not vals: return None
+        mid = len(vals) // 2
+        return vals[mid] if len(vals) % 2 else (vals[mid-1] + vals[mid]) / 2
+    rm_f, f_p, p_d = [], [], []
+    for k, fd in FILL_DATES.items():
+        ri = RM_INFO.get(k, {})
+        if fd['first'] >= m_start and ri.get('date'):
+            rm_f.append((fd['first'] - ri['date']).days)
+    for k, pdd in PACK_DATES.items():
+        fd = FILL_DATES.get(k)
+        if pdd['first'] >= m_start and fd:
+            f_p.append((pdd['first'] - fd['first']).days)
+    for k, dd in DISP_DATES.items():
+        pdd = PACK_DATES.get(k)
+        if dd['first'] >= m_start and pdd:
+            p_d.append((dd['first'] - pdd['first']).days)
+    def _ct(lbl, v, ref, col):
+        return tile(lbl, ('—' if v is None else f'{v:.0f} d'),
+                    f'median of {ref} batches this month', col)
+    cycle_cards = (_ct('RM → FILLING', _median(rm_f), len(rm_f), C_SEC)
+                 + _ct('FILLING → PACKING', _median(f_p), len(f_p), C_AMB)
+                 + _ct('PACKING → DISPATCH', _median(p_d), len(p_d), C_ORG))
+
+    # ── 5. Line output, last 7 working days ───────────────────────────────
+    last7 = [d for d in ( today - timedelta(days=i) for i in range(0, 10) ) if d.weekday() != 6][:7][::-1]
+    lines = {}
+    for d, ln, q in zip(fill_df['Date'], fill_df['Line'], fill_df['Qty']):
+        if d in last7 and ln:
+            lines.setdefault(str(ln), {}).update()
+            lines[str(ln)][d] = lines[str(ln)].get(d, 0) + (q or 0)
+    line_rows = ''
+    for ln in sorted(lines):
+        tot = sum(lines[ln].values())
+        cells = ''.join(f'<td style="text-align:right">{n(lines[ln].get(d, 0)) if lines[ln].get(d) else "·"}</td>'
+                        for d in last7)
+        line_rows += (f'<tr><td style="font-weight:600">{ln}</td>{cells}'
+                      f'<td style="text-align:right;font-weight:700;color:{C_PRI}">{n(tot)}</td></tr>')
+    line_tbl = (f'<table class="tbl" style="width:100%"><tr><th style="text-align:left">Filling line</th>'
+                + ''.join(f'<th>{d.strftime("%d %b")}</th>' for d in last7)
+                + '<th>Total</th></tr>' + line_rows + '</table>')
+
+    # ── 6. Entry-sheet data quality (⚠ CHECK columns come through the export) ─
+    dq = []
+    try:
+        for _tab, _short in (('➕ Filling Log', 'Filling'), ('➕ Packing Log', 'Packing'),
+                             ('➕ Dispatch Log', 'Dispatch'), ('➕ RM Dispensing Log', 'RM')):
+            _raw = pd.read_excel(TEMPLATE, sheet_name=_tab, header=None, skiprows=3)
+            _hdr = [' '.join(str(x).split()) for x in _raw.iloc[0]]
+            if '⚠ CHECK' in _hdr:
+                _cv = _raw.iloc[1:, _hdr.index('⚠ CHECK')].astype(str)
+                _nw = int(_cv.str.startswith('⚠').sum())
+                dq.append((_short, _nw))
+    except Exception:
+        pass
+    dq_total = sum(x[1] for x in dq)
+    dq_chips = ''.join(
+        f'<span style="display:inline-block;margin:3px 6px 3px 0;padding:4px 12px;border-radius:14px;'
+        f'font-size:12px;font-weight:600;background:{"#FFEBEE" if c else "#E8F5E9"};'
+        f'color:{"#B71C1C" if c else C_GRN}">{t}: {c if c else "✓ clean"}</span>' for t, c in dq)
+    dq_note = ('All entries reconcile with the RM Dispensing Log.' if dq_total == 0 else
+               f'{dq_total} row(s) need correction — they are highlighted RED in the entry sheet '
+               f'(missing RM entry, or pack size disagreeing with RM).')
+
+    return f"""
+<div class="card">
+  {sec('  ━━&nbsp;&nbsp;PRODUCTION &nbsp; INTELLIGENCE &nbsp;━━', C_PRI)}
+  <div style="font-size:13px;font-weight:700;color:{C_PRI};padding:10px 16px 0">PLAN PACE — {PLAN_TITLE}</div>
+  <div class="tile-row">{pace_cards}</div>
+  <div style="font-size:13px;font-weight:700;color:{C_PRI};padding:12px 16px 4px">LAST 30 DAYS — DAILY OUTPUT (units)</div>
+  <div style="padding:0 14px">{trend_svg}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:0 26px">
+    <div style="flex:1;min-width:330px">
+      <div style="font-size:13px;font-weight:700;color:{C_PRI};padding:12px 16px 6px">WORK-IN-PROGRESS AGING</div>
+      <div style="padding:0 14px 8px">{aging_tbl}</div>
+    </div>
+    <div style="flex:1;min-width:330px">
+      <div style="font-size:13px;font-weight:700;color:{C_PRI};padding:12px 16px 6px">SPEED THROUGH THE PLANT</div>
+      <div class="tile-row">{cycle_cards}</div>
+    </div>
+  </div>
+  <div style="font-size:13px;font-weight:700;color:{C_PRI};padding:10px 16px 6px">FILLING LINE OUTPUT — LAST 7 WORKING DAYS</div>
+  <div style="padding:0 14px 8px;overflow-x:auto">{line_tbl}</div>
+  <div style="font-size:13px;font-weight:700;color:{C_PRI};padding:10px 16px 2px">ENTRY-SHEET DATA QUALITY</div>
+  <div style="padding:2px 16px 4px">{dq_chips}</div>
+  <div style="font-size:12px;color:#607D8B;padding:0 16px 14px">{dq_note}</div>
+</div>"""
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # ASSEMBLE HTML
 # ══════════════════════════════════════════════════════════════════════════════
@@ -2844,6 +3057,8 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
      SECTION A — AT A GLANCE (director summary layer)
 ════════════════════════════════════════════════════════════ -->
 {director_summary_html()}
+
+{production_intel_html()}
 
 
 <div class="expand-bar"><button id="expand-all-btn" onclick="toggleAllDetails()">▸ Expand all detail sections</button></div>
