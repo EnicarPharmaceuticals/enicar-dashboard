@@ -44,6 +44,17 @@ warnings.filterwarnings('ignore', category=UserWarning, module='pandas')
 import pandas as pd
 
 from datetime import timezone as _tz_ist, timedelta as _td_ist
+SELF_CHECK_WARNS = []   # every entry renders in a red banner on the dashboard
+
+
+def _self_check(msg):
+    """Record a data-integrity failure. It prints to the build log AND renders
+    as a red banner at the top of the dashboard, so a silent regression is
+    impossible — someone WILL see it (Director: 'keep auto check', 28 Aug)."""
+    print(f'⚠️  SELF-CHECK: {msg}')
+    SELF_CHECK_WARNS.append(msg)
+
+
 def ist_today():
     """Plant-local (IST) date. The cloud build runs in UTC, where the naive
     system date lags IST by a day until 05:30 — every 'today' in this file
@@ -1306,8 +1317,37 @@ def _build_plan_view():
         for _f in ('filled', 'packed', 'dispatched'):
             _act = float(_j.get(_f) or 0)
             if _c[_f] > _act + 1 and not _div_by.get(_k):
-                print(f'⚠️  PLAN SELF-CHECK: batch {_k} credited {_c[_f]:,.0f} {_f} '
-                      f'but logs show only {_act:,.0f} — plan figures may double-count!')
+                _self_check(f'batch {_k} credited {_c[_f]:,.0f} {_f} '
+                            f'but logs show only {_act:,.0f} — plan figures may double-count')
+
+    # Duplicate visible plan rows (the carry-over injection bug of 26 Aug
+    # produced repeated company-less lines — never let that ship silently again)
+    _seen_rows = {}
+    for _it in items:
+        _kk = (_pcanon(_it['product']), _pcanon(str(_it.get('pack'))), _pcanon(_it.get('party_canon')))
+        if _kk in _seen_rows:
+            _self_check(f"plan shows '{_it['product']}' ({_it.get('pack')}) twice — duplicate row")
+        _seen_rows[_kk] = 1
+
+    # The entry sheet's own ⚠ CHECK columns must never silently break: their
+    # evaluated values come through the xlsx export, so a #REF!/#N/A here means
+    # the in-sheet guardrails have stopped working for the team.
+    try:
+        for _tab in ('➕ Filling Log', '➕ Packing Log',
+                     '➕ Dispatch Log', '➕ RM Dispensing Log'):
+            _raw = pd.read_excel(TEMPLATE, sheet_name=_tab, header=None, skiprows=3)
+            _hdr = [' '.join(str(x).split()) for x in _raw.iloc[0]]
+            if '⚠ CHECK' not in _hdr:
+                _self_check(f'{_tab}: the ⚠ CHECK column is MISSING — someone '
+                            f'overwrote it; the 5-min loop will self-heal it')
+                continue
+            _cv = _raw.iloc[1:, _hdr.index('⚠ CHECK')]
+            _errs = int(_cv.astype(str).str.startswith('#').sum())
+            if _errs:
+                _self_check(f'{_tab}: {_errs} broken ⚠-CHECK cell(s) — the '
+                            f'5-min loop will self-heal the formula')
+    except Exception as _e:
+        _self_check(f'could not audit the sheet check columns: {_e}')
 
     _today_op = ist_today()
     for b in off_plan:
@@ -2770,7 +2810,9 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {{
 </style>
 </head>
 <body>
-
+{('<div style="background:#c62828;color:#fff;padding:12px 18px;font-weight:600;font-size:14px">'
+  '⚠️ DATA SELF-CHECK FAILED — figures below may be unreliable until fixed:<br>'
+  + '<br>'.join('&bull; ' + w for w in SELF_CHECK_WARNS) + '</div>') if SELF_CHECK_WARNS else ''}
 <!-- HEADER -->
 <div class="header">
   <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
