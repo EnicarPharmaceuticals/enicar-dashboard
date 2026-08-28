@@ -2448,7 +2448,9 @@ def director_summary_html():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PRODUCTION INTELLIGENCE (Director asked for a best-in-class dashboard,
+# PRODUCTION INTELLIGENCE — NOT rendered on the dashboard (Director, 29 Aug
+# 2026: 'I will ask when needed'). Kept as an on-demand report function only.
+# (Originally added when he asked for a best-in-class dashboard,
 # 28 Aug 2026): plan pacing + projection, 30-day trend, WIP aging, stage
 # cycle times, line output and entry-sheet data quality — all computed
 # server-side from the same logs, no external libraries.
@@ -3057,8 +3059,6 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
      SECTION A — AT A GLANCE (director summary layer)
 ════════════════════════════════════════════════════════════ -->
 {director_summary_html()}
-
-{production_intel_html()}
 
 
 <div class="expand-bar"><button id="expand-all-btn" onclick="toggleAllDetails()">▸ Expand all detail sections</button></div>
