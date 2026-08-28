@@ -20,6 +20,13 @@ workflow does NOT fail / send error emails before setup is finished.
 import os, sys, json, io, shutil, subprocess
 
 DRIVE_FILE_ID = os.environ.get('DRIVE_FILE_ID', '').strip()
+# 29 Aug 2026: data moved to the validated NATIVE Google Sheet. The workflow
+# still passes the old uploaded-xlsx id via env (workflow files need a token
+# with workflow scope to edit), so translate it here.
+_OLD_XLSX_ID = '1CMNGU9T2pae0rv4dXf3XDXGGqJXWy19O'
+_NEW_SHEET_ID = '1_YW7EdiO5xR3J5p5HKKoQ4ptS5D-RHeFetwjcFRdrpE'
+if DRIVE_FILE_ID in ('', _OLD_XLSX_ID):
+    DRIVE_FILE_ID = _NEW_SHEET_ID
 OAUTH_JSON    = os.environ.get('GOOGLE_OAUTH_TOKEN', '').strip()
 HERE          = os.path.dirname(os.path.abspath(__file__))
 XLSX_OUT      = os.path.join(HERE, 'Enicar_Dashboard_Template.xlsx')
@@ -47,8 +54,10 @@ def main():
     creds.refresh(Request())          # uses refresh_token — no browser
     svc = build('drive', 'v3', credentials=creds)
 
-    # ── Download the .xlsx (raw file, not a native Sheet) ──────
-    request = svc.files().get_media(fileId=DRIVE_FILE_ID)
+    # ── Export the native Google Sheet as .xlsx ──────
+    request = svc.files().export_media(
+        fileId=DRIVE_FILE_ID,
+        mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
     done = False
