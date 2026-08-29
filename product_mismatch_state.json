@@ -5,11 +5,13 @@
   "-|party|shalinahealthcarepvtltd|omexports": "2026-08-28",
   "-|party|shalinahealthcarepvtltd|ronakeximpvtltd": "2026-08-28",
   "-|party|shalinahealthcarepvtltd|socomedpharmapvtltdpvtltd": "2026-08-28",
+  "-|party|shalinahealthcarepvtltd|uniquepharma": "2026-08-29",
   "-|product|polygelsuspensionsachet|azcon": "2026-08-27",
   "-|product|polygelsuspensionsachet|climaxnystatinoralsuspension": "2026-08-28",
   "-|product|polygelsuspensionsachet|ferrolifesyrup": "2026-08-27",
   "-|product|polygelsuspensionsachet|lasominzdrops": "2026-08-28",
   "-|product|polygelsuspensionsachet|princesheptinplussachets": "2026-08-27",
+  "-|product|polygelsuspensionsachet|qenzy": "2026-08-29",
   "-|product|polygelsuspensionsachet|redsunjelly": "2026-08-27",
   "-|product|polygelsuspensionsachet|redsunjellybananaflavour": "2026-08-27",
   "-|product|polygelsuspensionsachet|vitasaph": "2026-08-27",
@@ -291,6 +293,30 @@
       "date": "2026-08-27",
       "product": "DR.ICO",
       "qty": 8060.0,
+      "stage": "RM dispensed"
+    },
+    "RE-011339": {
+      "batch": "RE-011339",
+      "company": "Ronak Exim pvt Ltd.",
+      "date": "2026-08-29",
+      "product": "Icotin 30",
+      "qty": 6060.0,
+      "stage": "RM dispensed"
+    },
+    "RE-011340": {
+      "batch": "RE-011340",
+      "company": "Ronak Exim pvt Ltd.",
+      "date": "2026-08-29",
+      "product": "Icotin 30",
+      "qty": 6060.0,
+      "stage": "RM dispensed"
+    },
+    "RE-031341": {
+      "batch": "RE-031341",
+      "company": "Ronak Exim pvt Ltd.",
+      "date": "2026-08-29",
+      "product": "Alvitmin",
+      "qty": 2320.0,
       "stage": "RM dispensed"
     },
     "RE-161327": {
