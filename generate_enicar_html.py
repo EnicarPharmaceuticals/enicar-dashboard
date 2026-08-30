@@ -784,7 +784,20 @@ def _load_plan():
     try:
         import openpyxl as _ox
         _sheets = pd.ExcelFile(TEMPLATE).sheet_names
-        _tab = next((s for s in _sheets if 'PLAN' in s.upper() and 'DISPENS' not in s.upper()), None)
+        _cands = [s for s in _sheets
+                  if 'PLAN' in s.upper() and 'DISPENS' not in s.upper()]
+        # Prefer the tab for THIS plan month. Picking the first "…PLAN" tab in
+        # sheet order meant that at a month rollover — with both "AUG PLAN" and
+        # "SEP PLAN" present — the plan used depended silently on tab position
+        # (30 Aug 2026). Now the month drives it: set PLAN_MONTH and the right
+        # tab is chosen wherever it sits.
+        _mon3 = date(int(PLAN_MONTH[:4]), int(PLAN_MONTH[5:7]), 1).strftime('%b').upper()
+        _tab = (next((s for s in _cands if _mon3 in s.upper()), None)
+                or (_cands[0] if _cands else None))
+        if _cands and _tab and _mon3 not in _tab.upper():
+            _self_check(f'no "{_mon3}" plan tab found — falling back to "{_tab}". '
+                        f'Add the {_mon3} plan tab, or the dashboard is showing '
+                        f'last month\'s plan.')
     except Exception:
         _tab = None
     if _tab:
