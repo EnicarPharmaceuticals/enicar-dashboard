@@ -1,7 +1,8 @@
 {
   "BATCH|EL2422|EL-2462": "2026-08-30",
+  "BATCH|EL2465|EL-2467": "2026-08-31",
+  "BATCH|EL2466|EL-2467": "2026-08-31",
   "BATCH|L0947|L-0947": "2026-08-31",
-  "BATCH|ME12577|ME-12576": "2026-08-29",
   "BATCH|MUCE196|MUCE-195": "2026-08-30",
   "BATCH|SL05414|SL05415": "2026-08-29",
   "BATCH|SL05416|SL05415": "2026-08-29",
@@ -22,6 +23,7 @@
   "PARTY|EL-2426|pharmatrustlimited|pharmatrustltd": "2026-08-31",
   "PARTY|EL-2427|napoexportsprivatelimited|carethcorporation": "2026-08-29",
   "PARTY|EL-2467|sapphirelifesciencepvtltdp2p|carethcorporation": "2026-08-29",
+  "PARTY|ET-08345|tushupharmasarl|kanvidpharmaceutical": "2026-08-31",
   "PARTY|GE03049|galaxypharmaceuticalsltd|galaxypharma": "2026-08-31",
   "PARTY|GE04045|galaxypharmaceuticalsltd|galaxypharma": "2026-08-31",
   "PARTY|GE04294|galaxypharmaceuticalsltd|galaxypharma": "2026-08-31",

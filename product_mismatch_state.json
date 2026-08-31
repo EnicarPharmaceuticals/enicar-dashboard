@@ -1,4 +1,5 @@
 {
+  "-|party|shalinahealthcarepvtltd|bluemappharmachemp2p": "2026-08-31",
   "-|party|shalinahealthcarepvtltd|enicarpharmaceuticalpvtltd": "2026-08-31",
   "-|party|shalinahealthcarepvtltd|lasohealthcarepvtltd": "2026-08-31",
   "-|party|shalinahealthcarepvtltd|nelpalifescience": "2026-08-31",
@@ -6,6 +7,7 @@
   "-|party|shalinahealthcarepvtltd|ronakeximpvtltd": "2026-08-31",
   "-|party|shalinahealthcarepvtltd|socomedpharmapvtltdpvtltd": "2026-08-31",
   "-|party|shalinahealthcarepvtltd|uniquepharma": "2026-08-29",
+  "-|product|polygelsuspensionsachet|abee400": "2026-08-31",
   "-|product|polygelsuspensionsachet|azcon": "2026-08-30",
   "-|product|polygelsuspensionsachet|climaxnystatinoralsuspension": "2026-08-31",
   "-|product|polygelsuspensionsachet|ferrolifesyrup": "2026-08-30",
@@ -80,6 +82,7 @@
   "EL-2481|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-08-30",
   "EL-2482|product|malegraoraljelly|malegra": "2026-08-30",
   "EO-4040|product|selfcarehyzolointment|hyzolointment": "2026-08-29",
+  "ET-08345|party|tushupharmasarl|kanvidpharmaceutical": "2026-08-31",
   "ET-11337|product|ferrousandfolicacid|ferrousandfolicacidsyrupkanvid": "2026-08-30",
   "ET-12324|product|enicidsuspensionkanvid|enicidsuspension": "2026-08-30",
   "ET-13325|product|enicidsuspensionkanvid|enicidsuspension": "2026-08-30",
@@ -253,6 +256,22 @@
       "date": "2026-08-01",
       "product": "COMIT-100",
       "qty": 500.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2465": {
+      "batch": "EL-2465",
+      "company": "Napo Exports Private Limited",
+      "date": "2026-08-31",
+      "product": "Always",
+      "qty": 2020.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2466": {
+      "batch": "EL-2466",
+      "company": "Napo Exports Private Limited",
+      "date": "2026-08-31",
+      "product": "Always",
+      "qty": 2020.0,
       "stage": "RM dispensed"
     },
     "EL-2489": {
