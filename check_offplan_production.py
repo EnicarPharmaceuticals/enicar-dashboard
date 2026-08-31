@@ -95,6 +95,10 @@ def load_plan_products_and_batches():
                         for x in re.split(r'[,/;]+', str(b)):
                             if x.strip():
                                 batches.add(bk(x))
+            # The June-July carry-over list is part of the plan too. Without
+            # it the end-of-month digest reported 15 planned products as
+            # "manufactured outside the plan" to the Plant Head (30 Aug 2026).
+            _merge_carryover(prods, brands)
             if prods:
                 return prods, batches, brands
     except Exception as e:
@@ -105,7 +109,25 @@ def load_plan_products_and_batches():
         brands = {brand(i['product']) for i in pj.get('items', [])}
     except Exception:
         pass
+    _merge_carryover(prods, brands)
     return prods, batches, brands
+
+
+def _merge_carryover(prods, brands):
+    """Add the June-July pending plan (pending_plan_jun_jul.json) to the
+    planned pools. Products still owed from an earlier month are planned work,
+    not off-plan production."""
+    try:
+        items = json.load(open(os.path.join(HERE, 'pending_plan_jun_jul.json'))).get('items', [])
+    except Exception:
+        return
+    for i in items:
+        p = i.get('product')
+        if p:
+            prods.add(pc(p))
+            b = brand(p)
+            if len(b) >= 4:
+                brands.add(b)
 
 
 def brand(p):
@@ -165,6 +187,14 @@ def find_offplan():
         if pd.notna(d) and (e['first'] is None or d.date() < e['first']):
             e['first'] = d.date()
 
+    # Batch -> the product name RM recorded for it, so a batch can be judged on
+    # BOTH the names it is known by (the logs and RM often spell it differently).
+    rminfo = {}
+    for _, r in rm.iterrows():
+        b = r.get('BATCH NUMBER')
+        if pd.notna(b) and str(b).strip() not in ('', '-'):
+            rminfo.setdefault(bk(b), {'product': str(r.get('NAME OF THE PRODUCT') or '').strip()})
+
     # Products with RM dispensed in the PREVIOUS month were on that month's
     # plan and are simply carrying over — they were deliberately not repeated
     # on this month's plan, so new batches of them are never off-plan
@@ -211,7 +241,12 @@ def find_offplan():
         if str(r.get('PLAN') or '').strip().lower() != 'regular':
             continue
         prod = str(r.get('NAME OF THE PRODUCT') or '').strip()
-        if on_plan(prod, k, plan_prods, plan_batches, plan_brands) or carried_over(prod):
+        # Judge on BOTH names this batch is known by. A spelling slip in one
+        # log ("Promilaes" in filling vs "PROMILASE" on the plan) must not
+        # report a planned batch to the Plant Head as off-plan.
+        _alt = (fmap.get(k) or {}).get('product') or ''
+        if any(on_plan(x, k, plan_prods, plan_batches, plan_brands) or carried_over(x)
+               for x in (prod, _alt) if x):
             continue
         out[k] = {'batch': str(b).strip(), 'product': prod,
                   'company': str(r.get('CUSTOMER') or '').strip(),
@@ -221,7 +256,9 @@ def find_offplan():
     for k, f in fmap.items():
         if k in out or k in baseline or not f['first'] or f['first'] < PLAN_MONTH_START:
             continue
-        if on_plan(f['product'], k, plan_prods, plan_batches, plan_brands) or carried_over(f['product']):
+        _alt = str((rminfo.get(k) or {}).get('product') or '')
+        if any(on_plan(x, k, plan_prods, plan_batches, plan_brands) or carried_over(x)
+               for x in (f['product'], _alt) if x):
             continue
         out[k] = {'batch': k, 'product': f['product'], 'company': '',
                   'stage': 'Filling started', 'date': f['first'].isoformat(),
