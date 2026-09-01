@@ -1300,7 +1300,11 @@ def _build_plan_view():
                 _f = float(_j.get('filled') or 0)
                 _p = float(_j.get('packed') or 0)
                 _d = float(_j.get('dispatched') or 0)
-                if _f > 0 and (_f - _p > 1 or _p - _d > 1):
+                # only batches with MATERIAL work left. A 99%-finished batch
+                # (Nocigel U-132: 625 of 85,000 unpacked) would otherwise drag
+                # its whole history onto the row and contradict the status.
+                _need = max(1000.0, _f * 0.02)
+                if _f > 0 and (_f - _p >= _need or _p - _d >= _need):
                     _open.append((_k, _v, _f, _p, _d))
             if _open:
                 _topack = sum(max(0, f - p) for _k, _v, f, p, d in _open)
