@@ -966,6 +966,7 @@ def _build_plan_view():
     # every row carries a month tag. Pending items whose product is ALREADY on
     # the AUG plan just badge that row ("also pending from JUN/JUL"); the rest
     # join the table as their own rows so the one card is the whole workload.
+    _PLAN_MON3 = date(int(PLAN_MONTH[:4]), int(PLAN_MONTH[5:7]), 1).strftime('%b').upper()
     for it in raw_items:
         # A sheet row whose REMARKS says "carry-over from JUL/JUN" keeps its
         # original month chip — so the Director can paste the pending list
@@ -976,7 +977,7 @@ def _build_plan_view():
         elif 'carr' in _rl and 'jul' in _rl:
             it['month'] = 'JUL'
         else:
-            it['month'] = 'AUG'
+            it['month'] = _PLAN_MON3
     _carry_badge = {}
     # The June-July carry-over list belongs to the AUGUST plan only. From
     # September the plan sheet already carries its own pending lines, so
@@ -1235,7 +1236,12 @@ def _build_plan_view():
             it['flag'] = (it['flag'] + ' · ' if it['flag'] else '') + ' · '.join(_notes)
 
         plan_q = it['planned_units'] or 0
-        if not batches:
+        if plan_q <= 0:
+            # Quantity netted to zero: the stock was already made, usually in an
+            # earlier month, so the batches sit outside this plan's window.
+            # Calling it "Not started" reads as if nothing was done (1 Sep 2026).
+            it['status'], it['srank'] = '✅ Already made — nothing left', 5
+        elif not batches:
             it['status'], it['srank'] = ('🟣 ' + it['rm_status'], 0) if it.get('rm_status') else ('⚪ Not started', 0)
         elif plan_q and it['dispatched'] >= plan_q * 0.95:
             it['status'], it['srank'] = '✅ Done (dispatched)', 5
@@ -1779,6 +1785,7 @@ def _plan_block(view):
     """One month's plan block. All ids are suffixed with the month key so
     several months can live in the same card."""
     K = view['key']
+    _PLAN_MON3_V = K
     items, s = view['items'], view['summary']
     source, off_list = view['source'], view['off']
     window_from = view['window_from']
@@ -1846,10 +1853,13 @@ def _plan_block(view):
                + '</div>')
         _isnext = 1 if ('next' in _sl or 'tomorrow' in _sl) else 0
         _mon = it.get('month', 'AUG')
-        _mcol = {'AUG': ('#E0F2F1', '#00695C'), 'JUL': ('#FFF8E1', '#F57F17'),
-                 'JUN': ('#FBE9E7', '#BF360C')}[_mon if _mon in ('AUG', 'JUL', 'JUN') else 'AUG']
-        _mchip = (f'<span style="background:{_mcol[0]};color:{_mcol[1]};border-radius:3px;'
-                  f'padding:1px 5px;font-size:10px;font-weight:800;margin-right:5px">{_mon}</span>')
+        _mcol = {'SEP': ('#E0F2F1', '#00695C'), 'AUG': ('#E0F2F1', '#00695C'),
+                 'JUL': ('#FFF8E1', '#F57F17'), 'JUN': ('#FBE9E7', '#BF360C'),
+                 'OCT': ('#E8EAF6', '#283593')}.get(_mon, ('#ECEFF1', '#546E7A'))
+        _mchip = ''
+        if _mon != _PLAN_MON3_V:        # only carried-over rows need a month chip
+            _mchip = (f'<span style="background:{_mcol[0]};color:{_mcol[1]};border-radius:3px;'
+                      f'padding:1px 5px;font-size:10px;font-weight:800;margin-right:5px">{_mon}</span>')
         _carry = ''
         if it.get('carry_months'):
             _carry = (f' <span title="This product also had {it["carry_units"]:,} units pending '
@@ -1890,10 +1900,14 @@ def _plan_block(view):
         return (f'<span class="{cls}" onclick="event.stopPropagation();'
                 f"planFilter(this,\'{K}\',{p})\">{lbl}</span>")
     chips = ''.join(_chip(p, lbl, p == -1) for p, lbl in _stage)
-    chips2 = ''.join(_chip(p, lbl) for p, lbl in
-                     [(1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
-                      (4, 'PRIORITY 4'), (-4, '🟣 DISPENSE NEXT'),
-                      (-6, 'THIS MONTH'), (-7, '↩ CARRIED OVER')])
+    # Priority and "dispense next" chips removed (Director, 1 Sep 2026).
+    # The carry-over split only appears when the plan actually holds
+    # rows from an earlier month.
+    _carried = sum(1 for x in items if x.get('month') != _PLAN_MON3_V)
+    chips2 = ('' if not _carried else ''.join(
+        _chip(p, lbl) for p, lbl in
+        [(-6, f'THIS MONTH ({len(items) - _carried})'),
+         (-7, f'↩ CARRIED OVER ({_carried})')]))
     off = ''
     if off_list:
         _futwarn = (' <span style="background:#FBE9E7;color:#BF360C;border-radius:3px;'
@@ -1941,7 +1955,7 @@ def _plan_block(view):
     <span id="plan-search-count-{K}" style="font-size:12px;color:#607D8B;margin-left:8px"></span>
   </div>
   <div class="chip-row" style="padding:0 16px 4px">{chips}</div>
-  <div class="chip-row" style="padding:0 16px 10px;opacity:.85">{chips2}</div>
+{'<div class="chip-row" style="padding:0 16px 10px;opacity:.85">' + chips2 + "</div>" if chips2 else ""}
   <div class="tbl-wrap">
     <table style="min-width:880px">
       <thead><tr class="th-row">
