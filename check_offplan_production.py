@@ -63,8 +63,8 @@ ALERT_KEY  = '_offplan_alerted'
 DIGEST_KEY = '_offplan_digest_sent'
 TO = ['nimishpatil@enicarpharma.com', 'swaralisave@enicarpharma.com']
 
-PLAN_MONTH_START = date(2026, 8, 1)
-PLAN_LABEL = 'AUG 2026'
+PLAN_MONTH_START = date(2026, 9, 1)
+PLAN_LABEL = 'SEP 2026'
 
 
 def bk(b):  return re.sub(r'\s+', '', str(b)).upper()
@@ -77,8 +77,16 @@ def load_plan_products_and_batches():
     prods, batches, brands = set(), set(), set()
     import pandas as pd
     try:
-        tab = next((s for s in pd.ExcelFile(XLSX).sheet_names
-                    if 'PLAN' in s.upper() and 'DISPENS' not in s.upper()), None)
+        # Pick the tab for THIS plan month, not simply the first "…PLAN" tab:
+        # with both "AUG PLAN" and "SEPT PLAN" present the choice would
+        # otherwise depend on sheet order (1 Sep 2026).
+        _cands = [s for s in pd.ExcelFile(XLSX).sheet_names
+                  if 'PLAN' in s.upper() and 'DISPENS' not in s.upper()]
+        _mon3 = PLAN_MONTH_START.strftime('%b').upper()
+        tab = (next((s for s in _cands if _mon3 in s.upper()), None)
+               or (_cands[0] if _cands else None))
+        if tab and _mon3 not in tab.upper():
+            print(f'  ⚠ no "{_mon3}" plan tab — falling back to "{tab}"')
         if tab:
             df = pd.read_excel(XLSX, sheet_name=tab, header=0)
             df.columns = [' '.join(str(c).split()).upper() for c in df.columns]
