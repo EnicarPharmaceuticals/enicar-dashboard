@@ -1452,7 +1452,39 @@ def _build_pending_plan():
 
 PENDING_PLAN = _build_pending_plan()
 
-PLAN_ITEMS, PLAN_SOURCE, PLAN_SUMMARY, PLAN_OFF = _build_plan_view()
+def _build_plan_for(month, window_from, rm_from, title):
+    """Build a plan view for any month by swapping the module constants the
+    builder reads. Lets one dashboard show several months (Director, 1 Sep 2026:
+    "PRODUCTION PLAN" with an AUG / SEPT switch)."""
+    global PLAN_MONTH, PLAN_WINDOW_FROM, PLAN_RM_FROM, PLAN_TITLE
+    keep = (PLAN_MONTH, PLAN_WINDOW_FROM, PLAN_RM_FROM, PLAN_TITLE)
+    PLAN_MONTH, PLAN_WINDOW_FROM, PLAN_RM_FROM, PLAN_TITLE = month, window_from, rm_from, title
+    try:
+        return _build_plan_view()
+    finally:
+        PLAN_MONTH, PLAN_WINDOW_FROM, PLAN_RM_FROM, PLAN_TITLE = keep
+
+
+# Months offered in the card, newest first. Each entry:
+#   key, tab label, plan month, window start, RM-from, title
+PLAN_MONTHS = [
+    ('SEP', 'SEPT PLAN', '2026-09', date(2026, 9, 1), date(2026, 8, 25), 'SEPTEMBER 2026 PLAN'),
+    ('AUG', 'AUG PLAN',  '2026-08', date(2026, 8, 1), date(2026, 7, 25), 'AUGUST 2026 PLAN'),
+]
+PLAN_VIEWS = {}
+for _k, _lbl, _m, _wf, _rf, _t in PLAN_MONTHS:
+    _it, _src, _sum, _off = _build_plan_for(_m, _wf, _rf, _t)
+    PLAN_VIEWS[_k] = {'key': _k, 'label': _lbl, 'title': _t, 'items': _it,
+                      'source': _src, 'summary': _sum, 'off': _off,
+                      'window_from': _wf}
+    print(f'    plan {_lbl}: {len(_it)} lines, '
+          f'{(_sum or {}).get("units", 0):,.0f} units')
+
+# the current month stays the default everywhere else in the build
+PLAN_ITEMS = PLAN_VIEWS[PLAN_MONTHS[0][0]]['items']
+PLAN_SOURCE = PLAN_VIEWS[PLAN_MONTHS[0][0]]['source']
+PLAN_SUMMARY = PLAN_VIEWS[PLAN_MONTHS[0][0]]['summary']
+PLAN_OFF = PLAN_VIEWS[PLAN_MONTHS[0][0]]['off']
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NAME CONSISTENCY  —  same batch, different product name across logs
@@ -1594,10 +1626,10 @@ def name_conflict_html():
   </div>
 </details>'''
 
-def _plan_batch_detail(it, idx):
+def _plan_batch_detail(it, idx, key='SEP'):
     """Hidden row shown when a plan line is clicked — the verification view."""
     if not it['batches']:
-        return (f'<tr id="plan-d-{idx}" style="display:none"><td colspan="11" '
+        return (f'<tr id="plan-d-{key}-{idx}" style="display:none"><td colspan="11" '
                 f'style="background:#FAFDFC;padding:10px 16px;color:#90A4AE;font-size:12px">'
                 f'No RM dispensing recorded yet for this item. Once the store dispenses it, the '
                 f'batch number appears here automatically and filling / packing / dispatch follow it.'
@@ -1627,7 +1659,7 @@ def _plan_batch_detail(it, idx):
                 f'margin-bottom:8px;font-size:12px;color:#E65100">Company differs: plan says '
                 f'<strong>{it["party_canon"]}</strong>, RM says <strong>{", ".join(it["rm_customers"])}</strong>'
                 f' — normal for loan-licence / P2P work. The RM name is treated as correct.</div>')
-    return (f'<tr id="plan-d-{idx}" style="display:none"><td colspan="11" style="background:#FAFDFC;padding:10px 14px">'
+    return (f'<tr id="plan-d-{key}-{idx}" style="display:none"><td colspan="11" style="background:#FAFDFC;padding:10px 14px">'
             f'{warn}'
             f'<div style="font-size:12px;font-weight:700;color:{C_PRI};margin-bottom:5px">'
             f'Batches dispensed by RM for this plan item — verified chain</div>'
@@ -1743,10 +1775,15 @@ def pending_plan_html():
 </details>'''
 
 
-def plan_section_html():
-    if not PLAN_ITEMS:
+def _plan_block(view):
+    """One month's plan block. All ids are suffixed with the month key so
+    several months can live in the same card."""
+    K = view['key']
+    items, s = view['items'], view['summary']
+    source, off_list = view['source'], view['off']
+    window_from = view['window_from']
+    if not items:
         return ''
-    s = PLAN_SUMMARY
     pct_started = (s['started'] / s['items'] * 100) if s['items'] else 0
     tiles = (
         tile('PLAN ITEMS', n(s['items']), f'{n(s["units"])} units planned in total', C_PRI)
@@ -1762,7 +1799,7 @@ def plan_section_html():
              f'{n(s.get("carry_units", 0))} units still pending from earlier plans', '#F57F17')
     )
     rows = ''
-    for i, it in enumerate(PLAN_ITEMS):
+    for i, it in enumerate(items):
         bg = ('#FFEBEE' if it['due_bucket'] == 'overdue' else
               '#FFF3E0' if it['due_bucket'] == 'today' else
               '#FFFDE7' if it['due_bucket'] == 'tomorrow' else
@@ -1824,7 +1861,7 @@ def plan_section_html():
                  f'data-srank="{it["srank"]}" data-next="{_isnext}" data-flag="{1 if it.get("flag") else 0}" '
                  f'data-month="{_mon}" '
                  f'data-company="{(it.get("display_party") or "").lower()}" '
-                 f'onclick="togglePlan({i})" title="Click to verify the RM batches behind this item">'
+                 f'onclick="togglePlan(\'{K}\',{i})" title="Click to verify the RM batches behind this item">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
                  f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
                  f'<td class="td-name" style="color:#546E7A">{it.get("display_party") or "—"}{pflag}</td>'
@@ -1837,21 +1874,28 @@ def plan_section_html():
                  f'<td class="td-name" style="font-size:12px;white-space:nowrap">{it["status"]}{flagchip}</td>'
                  f'<td class="td-name">{wrote}</td>'
                  f'</tr>')
-        rows += _plan_batch_detail(it, i)
-    _sc = {k: sum(1 for x in PLAN_ITEMS if x['srank'] == k) for k in range(6)}
-    chips = ''.join(
-        f'<span class="chip" onclick="event.stopPropagation();planFilter(this,{p})">{lbl}</span>'
-        for p, lbl in [(-1, 'ALL'), (-6, 'AUG PLAN'), (-7, '↩ JUN–JUL CARRY-OVER'),
-                       (1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
-                       (4, 'PRIORITY 4'), (-2, f'NOT STARTED ({_sc[0]})'),
-                       (11, f'🟤 RM DISPENSED ({_sc[1]})'),
-                       (12, f'🔵 FILLING ({_sc[2]})'),
-                       (13, f'🟡 PACKED ({_sc[3]})'),
-                       (14, f'🟠 DISPATCHING ({_sc[4]})'),
-                       (15, f'✅ COMPLETED ({_sc[5]})'),
-                       (-4, '🟣 DISPENSE NEXT'), (-5, '⚠ NEEDS ATTENTION')])
+        rows += _plan_batch_detail(it, i, K)
+    _sc = {k: sum(1 for x in items if x['srank'] == k) for k in range(6)}
+    _nflag = sum(1 for x in items if x.get('flag'))
+    _stage = [(-1, f'ALL PLAN ({len(items)})'),
+              (11, f'🟤 RM DISPENSED ({_sc[1]})'),
+              (12, f'🔵 FILLING ({_sc[2]})'),
+              (13, f'🟡 PACKED ({_sc[3]})'),
+              (14, f'🟠 DISPATCHED ({_sc[4]})'),
+              (15, f'✅ COMPLETED ({_sc[5]})'),
+              (-2, f'⚪ NOT STARTED ({_sc[0]})'),
+              (-5, f'⚠ NEEDS ATTENTION ({_nflag})')]
+    def _chip(p, lbl, active=False):
+        cls = "chip active" if active else "chip"
+        return (f'<span class="{cls}" onclick="event.stopPropagation();'
+                f"planFilter(this,\'{K}\',{p})\">{lbl}</span>")
+    chips = ''.join(_chip(p, lbl, p == -1) for p, lbl in _stage)
+    chips2 = ''.join(_chip(p, lbl) for p, lbl in
+                     [(1, 'PRIORITY 1'), (2, 'PRIORITY 2'), (3, 'PRIORITY 3'),
+                      (4, 'PRIORITY 4'), (-4, '🟣 DISPENSE NEXT'),
+                      (-6, 'THIS MONTH'), (-7, '↩ CARRIED OVER')])
     off = ''
-    if PLAN_OFF:
+    if off_list:
         _futwarn = (' <span style="background:#FBE9E7;color:#BF360C;border-radius:3px;'
                     'padding:1px 5px;font-size:10px;font-weight:700">⚠ future date — check RM entry</span>')
         orows = ''.join(
@@ -1859,29 +1903,22 @@ def plan_section_html():
             f'<td class="td-name">{b["date"].strftime("%d %b")}{_futwarn if b.get("future") else ""}</td>'
             f'<td class="td-name">{b["product"] or "—"}</td>'
             f'<td class="td-name" style="color:#546E7A">{b["customer"] or "—"}</td></tr>'
-            for b in PLAN_OFF)
+            for b in off_list)
         off = (f'<div style="padding:10px 16px 0;font-size:12px;font-weight:700;color:{C_AMB}">'
-               f'⚠ Dispensed by RM but not matched to any plan line ({len(PLAN_OFF)}) — '
+               f'⚠ Dispensed by RM but not matched to any plan line ({len(off_list)}) — '
                f'either extra production, or the product name differs from the plan. '
-               f'Batches whose filling already began before {PLAN_WINDOW_FROM.strftime("%d %b")} are '
+               f'Batches whose filling already began before {window_from.strftime("%d %b")} are '
                f'last month\'s work and are not listed here.</div>'
                f'<div class="tbl-wrap"><table style="min-width:520px"><thead><tr class="th-row">'
                f'<th>BATCH</th><th>RM DATE</th><th>PRODUCT (RM)</th><th>COMPANY (RM)</th></tr></thead>'
                f'<tbody>{orows}</tbody></table></div>')
     return f'''
-<details class="card" id="plan-card">
-  <summary>{sec(f'  ━━&nbsp;&nbsp;🗓 {PLAN_TITLE} &nbsp;—&nbsp; PLANNED &nbsp; vs &nbsp; ACTUAL &nbsp;━━', C_PRI)}</summary>
+<div class="planblk" id="planblk-{K}" style="display:{'block' if view.get('default') else 'none'}">
   <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
-    Plan source: <strong>{PLAN_SOURCE}</strong>, consolidated with the <strong>June–July pending plan</strong> —
-    the month chip on each row shows which plan it belongs to, and AUG items that were also pending
-    earlier carry an <strong>↩ carried from</strong> tag. <strong>Click any row</strong> to see the RM batches behind it
-    and verify the chain. Plan lines carry no batch number — the link is made on <strong>product name</strong>,
-    and the <strong>batch number and company name are taken from RM</strong> (under loan-licence / P2P the plan
-    company can differ; that is marked ⇄, not treated as an error). Filling, packing and dispatch are then
-    tracked by batch number, so shifting dates never break the tracking.
-    <br><strong>RM store / Mr. Verma write directly in the plan tab</strong> (RM STATUS, RM DATE, BATCH NO.,
-    UPDATED BY) — those entries show in the last column, are reconciled against the logs, and any change is
-    emailed to the store team automatically.
+    Plan source: <strong>{source}</strong>. <strong>Click any row</strong> to see the RM batches
+    behind it. Plan lines carry no batch number — the link is made on <strong>product name</strong>,
+    and the <strong>batch number and company come from RM</strong> (loan-licence / P2P differences
+    are marked ⇄, not errors). Filling, packing and dispatch are then tracked by batch number.
   </div>
   <div class="tile-row">{tiles}</div>
   <div style="padding:2px 18px 12px">
@@ -1898,12 +1935,13 @@ def plan_section_html():
     </table>
   </div>
   <div style="padding:0 16px 8px">
-    <input id="plan-search" type="search" placeholder="🔍 Search the plan — product, customer, pack, batch…"
-           oninput="planSearch(this.value)" onclick="event.stopPropagation()"
+    <input id="plan-search-{K}" type="search" placeholder="🔍 Search the plan — product, customer, pack, batch…"
+           oninput="planSearch('{K}',this.value)" onclick="event.stopPropagation()"
            style="width:100%;max-width:430px;padding:7px 12px;border:1px solid #B0BEC5;border-radius:6px;font-size:13px;color:#37474F">
-    <span id="plan-search-count" style="font-size:12px;color:#607D8B;margin-left:8px"></span>
+    <span id="plan-search-count-{K}" style="font-size:12px;color:#607D8B;margin-left:8px"></span>
   </div>
-  <div class="chip-row" style="padding:0 16px 10px">{chips}</div>
+  <div class="chip-row" style="padding:0 16px 4px">{chips}</div>
+  <div class="chip-row" style="padding:0 16px 10px;opacity:.85">{chips2}</div>
   <div class="tbl-wrap">
     <table style="min-width:880px">
       <thead><tr class="th-row">
@@ -1911,11 +1949,34 @@ def plan_section_html():
         <th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PIPELINE (RM→F→P→D)</th><th>TRACKED STATUS</th>
         <th>RM / PLANT HEAD ENTRY</th>
       </tr></thead>
-      <tbody id="plan-rows">{rows}</tbody>
+      <tbody id="plan-rows-{K}">{rows}</tbody>
     </table>
   </div>
   {off}
-</details>'''
+</div>'''
+
+
+
+def plan_section_html():
+    """The PRODUCTION PLAN card: a tab per month, each with its own stage tabs."""
+    views = [PLAN_VIEWS[k] for k, *_ in PLAN_MONTHS if PLAN_VIEWS.get(k, {}).get('items')]
+    if not views:
+        return ''
+    views[0]['default'] = True
+    tabs = ''.join(
+        f'<span class="chip{" active" if i == 0 else ""}" style="font-weight:800"'
+        f' onclick="event.stopPropagation();planMonth(this,\'{v["key"]}\')">'
+        f'{v["label"]} &nbsp;<span style="opacity:.7;font-weight:600">'
+        f'{v["summary"]["items"]} lines · {n(v["summary"]["units"])}</span></span>'
+        for i, v in enumerate(views))
+    blocks = ''.join(_plan_block(v) for v in views)
+    return f"""
+<details class="card" id="plan-card" open>
+  <summary>{sec('  ━━&nbsp;&nbsp;🗓 PRODUCTION &nbsp; PLAN &nbsp;—&nbsp; PLANNED &nbsp; vs &nbsp; ACTUAL &nbsp;━━', C_PRI)}</summary>
+  <div class="chip-row" style="padding:10px 16px 4px;border-bottom:1px solid #E0E0E0">{tabs}</div>
+  {blocks}
+</details>"""
+
 
 # ── Monthly summary (RM → Fill → Pack → Disp) ─────────────────────────────────
 # Tracking-start cutoff: dispenses before this date were from the pre-system
@@ -3912,8 +3973,8 @@ function jumpToBatch(b) {{
 }}
 
 // ── Plan card: click a row to verify its RM batches ───
-function togglePlan(i) {{
-  const d = document.getElementById('plan-d-' + i);
+function togglePlan(k, i) {{
+  const d = document.getElementById('plan-d-' + k + '-' + i);
   if (d) d.style.display = (d.style.display === 'none' ? '' : 'none');
 }}
 
@@ -3933,71 +3994,88 @@ function pendFilter(el, mode) {{
 // company to decide what the store dispenses next, so it sorts alphabetically
 // by company instead of by priority (26 Aug 2026). Every other chip keeps the
 // original priority/due-date order.
-let _planOrigOrder = null;
-function _planSortByCompany(on) {{
-  const tb = document.getElementById('plan-rows');
+// ── PRODUCTION PLAN card: month tabs + stage tabs ─────
+// Each month renders its own block and table, so every function is scoped by
+// the month key (Director, 1 Sep 2026).
+let _planOrig = {{}}, _planState = {{}};
+function _planRows(k) {{ return document.getElementById('plan-rows-' + k); }}
+
+function _planSortByCompany(k, on) {{
+  const tb = _planRows(k);
   if (!tb) return;
-  if (!_planOrigOrder) _planOrigOrder = Array.from(tb.children);
-  if (!on) {{ _planOrigOrder.forEach(n => tb.appendChild(n)); return; }}
+  if (!_planOrig[k]) _planOrig[k] = Array.from(tb.children);
+  const orig = _planOrig[k];
+  if (!on) {{ orig.forEach(n => tb.appendChild(n)); return; }}
   const pairs = [];
-  for (let i = 0; i < _planOrigOrder.length; i++) {{
-    const r = _planOrigOrder[i];
+  for (let i = 0; i < orig.length; i++) {{
+    const r = orig[i];
     if (r.nodeType !== 1 || !r.hasAttribute('data-prio')) continue;
-    const d = _planOrigOrder[i + 1];
+    const d = orig[i + 1];
     pairs.push([r, (d && d.id && d.id.indexOf('plan-d-') === 0) ? d : null]);
   }}
   pairs.sort((a, b) => {{
     const ca = a[0].getAttribute('data-company') || '';
     const cb = b[0].getAttribute('data-company') || '';
-    if (!ca && cb) return 1;            // blank company sorts last
+    if (!ca && cb) return 1;
     if (ca && !cb) return -1;
     return ca.localeCompare(cb);
   }});
   pairs.forEach(([r, d]) => {{ tb.appendChild(r); if (d) tb.appendChild(d); }});
 }}
 
-let _planChipP = -1, _planQ = '';
-function _planApply() {{
+function _planApply(k) {{
+  const st = _planState[k] || (_planState[k] = {{p: -1, q: ''}});
   let shown = 0, total = 0;
-  document.querySelectorAll('#plan-rows tr[data-prio]').forEach(tr => {{
+  document.querySelectorAll('#plan-rows-' + k + ' tr[data-prio]').forEach(tr => {{
     const prio = parseInt(tr.getAttribute('data-prio') || '0');
     const srank = parseInt(tr.getAttribute('data-srank') || '0');
     const isnext = tr.getAttribute('data-next') === '1';
     const isflag = tr.getAttribute('data-flag') === '1';
-    const p = _planChipP;
+    const mon = tr.getAttribute('data-month');
+    const p = st.p;
     let show = true;
     if (p >= 11 && p <= 15) show = (srank === p - 10);
     else if (p >= 1) show = (prio === p);
     else if (p === -2) show = (srank === 0);
-    else if (p === -3) show = (srank > 0 && srank < 5);
     else if (p === -4) show = isnext;
     else if (p === -5) show = isflag;
-    else if (p === -6) show = (tr.getAttribute('data-month') === 'AUG');
-    else if (p === -7) show = (tr.getAttribute('data-month') !== 'AUG');
-    const det = tr.nextElementSibling;                 // paired detail row
-    if (show && _planQ) {{
-      // match the visible row text, or the batch numbers inside its detail row
-      show = tr.textContent.toLowerCase().includes(_planQ)
-          || !!(det && det.id && det.id.startsWith('plan-d-')
-                && det.textContent.toLowerCase().includes(_planQ));
+    else if (p === -6) show = (mon === 'AUG' || mon === 'SEP');
+    else if (p === -7) show = (mon === 'JUL' || mon === 'JUN');
+    const det = tr.nextElementSibling;
+    if (show && st.q) {{
+      show = tr.textContent.toLowerCase().includes(st.q)
+          || !!(det && det.id && det.id.indexOf('plan-d-') === 0
+                && det.textContent.toLowerCase().includes(st.q));
     }}
     total++; if (show) shown++;
     tr.style.display = show ? '' : 'none';
-    if (det && det.id && det.id.startsWith('plan-d-')) det.style.display = 'none';
+    if (det && det.id && det.id.indexOf('plan-d-') === 0) det.style.display = 'none';
   }});
-  const c = document.getElementById('plan-search-count');
-  if (c) c.textContent = _planQ ? `${{shown}} of ${{total}} plan lines` : '';
+  const c = document.getElementById('plan-search-count-' + k);
+  if (c) c.textContent = (st.q || st.p !== -1) ? `${{shown}} of ${{total}} plan lines` : '';
 }}
-function planFilter(chipEl, p) {{
-  document.querySelectorAll('#plan-card .chip-row .chip').forEach(c => c.classList.remove('active'));
+
+function planFilter(chipEl, k, p) {{
+  const blk = document.getElementById('planblk-' + k);
+  if (blk) blk.querySelectorAll('.chip-row .chip').forEach(c => c.classList.remove('active'));
   if (chipEl) chipEl.classList.add('active');
-  _planChipP = p;
-  _planSortByCompany(p === -2);        // NOT STARTED → alphabetical by company
-  _planApply();
+  (_planState[k] = _planState[k] || {{p: -1, q: ''}}).p = p;
+  _planSortByCompany(k, p === -2);     // NOT STARTED reads best by company
+  _planApply(k);
 }}
-function planSearch(q) {{
-  _planQ = (q || '').trim().toLowerCase();
-  _planApply();
+
+function planSearch(k, q) {{
+  (_planState[k] = _planState[k] || {{p: -1, q: ''}}).q = (q || '').trim().toLowerCase();
+  _planApply(k);
+}}
+
+function planMonth(el, k) {{
+  const card = document.getElementById('plan-card');
+  card.querySelectorAll(':scope > .chip-row .chip').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  card.querySelectorAll('.planblk').forEach(b => {{
+    b.style.display = (b.id === 'planblk-' + k) ? 'block' : 'none';
+  }});
 }}
 
 // ── Init on load ──────────────────────────────────────
