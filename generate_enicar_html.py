@@ -1841,13 +1841,14 @@ def _plan_block(view):
       + tile('STARTED', f"{s['started']} / {s['items']}", f'{pct_started:.0f}% begun · {s["batches"]} RM batches linked', C_SEC)
       + tile('COMPLETED', n(s['done']), 'items fully dispatched (≥95% of plan)', C_GRN)
       + tile('UNITS FILLED VS PLAN', n(s['filled']), f'of {n(s["units"])} planned', C_AMB)
-      + tile('MARKED BY RM / PLANT HEAD', n(s['written']),
-             (f'{s["next"]} marked to dispense next · {s["flags"]} need attention'
-              if s['written'] else 'add the RM STATUS column to the plan tab to use this'), '#7B1FA2')
-      + tile('DISPENSING SCHEDULE', n(s['overdue'] + s['due_today'] + s['due_tomorrow'] + s['due_later']),
-             f'{s["overdue"]} overdue · {s["due_today"]} today · {s["due_tomorrow"]} tomorrow', C_ORG)
-      + tile('↩ JUN–JUL CARRY-OVER', n(s.get('carry_items', 0)),
-             f'{n(s.get("carry_units", 0))} units still pending from earlier plans', '#F57F17')
+      + tile('PACKED VS PLAN', n(s['packed_sum']), f'of {n(s["units"])} planned', C_ORG)
+      + tile('DISPATCHED VS PLAN', n(s['disp_sum']), f'of {n(s["units"])} planned', '#7B1FA2')
+      # "MARKED BY RM / PLANT HEAD" and "DISPENSING SCHEDULE" removed
+      # (Director, 1 Sep 2026 — the SEPT tab has no RM STATUS column, so both
+      # only ever read zero). The carry-over tile shows only when it applies.
+      + (tile('↩ CARRIED OVER', n(s.get('carry_items', 0)),
+              f'{n(s.get("carry_units", 0))} units still pending from earlier plans', '#F57F17')
+         if s.get('carry_items') else '')
     )
     rows = ''
     for i, it in enumerate(items):
