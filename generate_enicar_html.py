@@ -848,6 +848,56 @@ def _load_plan():
 
 _journey_by_key = {_bkey(e['batch']): e for e in BATCH_JOURNEY}
 
+# ── Product category for the plan card ────────────────────────────────────────
+# Bottles / sachets / tubes / external run on different lines, so the Director
+# reads plan progress per category (1 Sep 2026). History wins where we have it;
+# a gm pack is decided by the product name, never by history — the logs record
+# "Funbact Cream 15 gm" as External because the 50 ml antiseptic of the same
+# brand is External, which would file 12,00,000 tubes under bottles.
+_PTYPE_HIST = {}
+for _df, _tc in ((fill_df, 'ProductType'), (pack_df, 'ProdType'), (disp_df, 'ProductType')):
+    try:
+        for _p, _t in zip(_df['Product'], _df[_tc]):
+            if _p is None or _t is None or (not isinstance(_t, str) and pd.isna(_t)):
+                continue
+            _c = _pcanon(_p)
+            if _c and _c not in _PTYPE_HIST:
+                _PTYPE_HIST[_c] = str(_t).strip()
+    except Exception:
+        pass
+
+_CAT_OINT = ('cream', 'ointment', 'gel', 'antiseptic')
+_CAT_SACH = ('sachet', 'jelly', 'powerfil', 'malegra', 'redsun', 'bedisyl', 'davigra',
+             'viscid', 'magascon', 'alaize', 'nocigel', 'cyproplex', 'worminix',
+             'algicore', 'gavinique', 'kifaru', 'nocold', 'no cold')
+
+
+def plan_category(product, pack):
+    """One of: Bottles / Sachets / Tubes / External."""
+    nm = str(product or '').lower()
+    pk = str(pack or '').lower()
+    if 'gm' in pk or 'kg' in pk:
+        return 'Tubes' if any(w in nm for w in _CAT_OINT) else 'Sachets'
+    c = _pcanon(product)
+    t = _PTYPE_HIST.get(c)
+    if t is None:
+        t = next((v for k, v in _PTYPE_HIST.items()
+                  if len(c) >= 6 and len(k) >= 6 and (c in k or k in c)), None)
+    if t:
+        tl = t.lower()
+        if 'sachet' in tl or 'pouch' in tl or 'stick' in tl:
+            return 'Sachets'
+        if 'oint' in tl or 'tube' in tl:
+            return 'Tubes'
+        if 'external' in tl:
+            return 'External'
+    if 'antiseptic' in nm or 'funbact' in nm:
+        return 'External'
+    if any(w in nm for w in _CAT_SACH):
+        return 'Sachets'
+    return 'Bottles'
+
+
 def _packnum(v):
     """Leading number of a pack size — "15 ml", "15.0", "200 ml (Angola)" → 15.0/200.0."""
     m = re.search(r'\d+(?:\.\d+)?', str(v or ''))
@@ -1235,6 +1285,7 @@ def _build_plan_view():
         if _notes:
             it['flag'] = (it['flag'] + ' · ' if it['flag'] else '') + ' · '.join(_notes)
 
+        it['cat'] = plan_category(it['product'], it.get('pack'))
         plan_q = it['planned_units'] or 0
         if plan_q <= 0 and not batches:
             # Netted to zero because the stock is already filled — but filled is
@@ -1916,6 +1967,7 @@ def _plan_block(view):
                  f'data-srank="{it["srank"]}" data-next="{_isnext}" data-flag="{1 if it.get("flag") else 0}" '
                  f'data-month="{_mon}" '
                  f'data-company="{(it.get("display_party") or "").lower()}" '
+                 f'data-cat="{it.get("cat", "Bottles")}" '
                  f'onclick="togglePlan(\'{K}\',{i})" title="Click to verify the RM batches behind this item">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
                  f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
@@ -1945,14 +1997,45 @@ def _plan_block(view):
         return (f'<span class="{cls}" onclick="event.stopPropagation();'
                 f"planFilter(this,\'{K}\',{p})\">{lbl}</span>")
     chips = ''.join(_chip(p, lbl, p == -1) for p, lbl in _stage)
-    # Priority and "dispense next" chips removed (Director, 1 Sep 2026).
-    # The carry-over split only appears when the plan actually holds
-    # rows from an earlier month.
+    # Category tabs — bottles / sachets / tubes / external run on different
+    # lines, so progress is read per category (Director, 1 Sep 2026).
+    _CATS = ['Bottles', 'Sachets', 'Tubes', 'External']
+    _CATCODE = {'Bottles': -20, 'Sachets': -21, 'Tubes': -22, 'External': -23}
+    _catrows = {c: [x for x in items if x.get('cat') == c] for c in _CATS}
+    chips2 = ''.join(_chip(_CATCODE[c], f'{c.upper()} ({len(_catrows[c])})')
+                     for c in _CATS if _catrows[c])
     _carried = sum(1 for x in items if x.get('month') != _PLAN_MON3_V)
-    chips2 = ('' if not _carried else ''.join(
-        _chip(p, lbl) for p, lbl in
-        [(-6, f'THIS MONTH ({len(items) - _carried})'),
-         (-7, f'↩ CARRIED OVER ({_carried})')]))
+    if _carried:
+        chips2 += ''.join(_chip(p, lbl) for p, lbl in
+                          [(-6, f'THIS MONTH ({len(items) - _carried})'),
+                           (-7, f'↩ CARRIED OVER ({_carried})')])
+    _crows = ''
+    for c in _CATS:
+        _r = _catrows[c]
+        if not _r:
+            continue
+        _pl = sum(x['planned_units'] or 0 for x in _r)
+        _fi = sum(x['filled'] for x in _r)
+        _pa = sum(x['packed'] for x in _r)
+        _di = sum(x['dispatched'] for x in _r)
+        _pcf = (_fi / _pl * 100) if _pl else 0
+        _crows += (f'<tr><td class="td-name" style="font-weight:700;color:{C_PRI}">{c}</td>'
+                   f'<td class="td-num">{len(_r)}</td>'
+                   f'<td class="td-num" style="font-weight:700">{n(_pl)}</td>'
+                   f'<td class="td-num" style="color:{C_SEC}">{n(_fi)}</td>'
+                   f'<td class="td-num" style="color:{C_AMB}">{n(_pa)}</td>'
+                   f'<td class="td-num" style="color:{C_ORG}">{n(_di)}</td>'
+                   f'<td style="min-width:120px"><div style="background:#ECEFF1;border-radius:4px;height:14px">'
+                   f'<div style="width:{min(100, _pcf):.0f}%;background:{C_SEC};height:14px;border-radius:4px"></div>'
+                   f'</div></td>'
+                   f'<td class="td-num" style="font-size:11px;color:#607D8B">{_pcf:.0f}% filled</td></tr>')
+    cat_table = (f'<div style="padding:4px 18px 12px">'
+                 f'<div style="font-weight:700;color:{C_PRI};font-size:12px;margin-bottom:5px">'
+                 f'BY CATEGORY</div>'
+                 f'<table style="width:100%;font-size:12px;border-collapse:collapse">'
+                 f'<thead><tr class="th-row"><th>CATEGORY</th><th>LINES</th><th>PLANNED</th>'
+                 f'<th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th></th></tr></thead>'
+                 f'<tbody>{_crows}</tbody></table></div>') if _crows else ''
     off = ''
     if off_list:
         _futwarn = (' <span style="background:#FBE9E7;color:#BF360C;border-radius:3px;'
@@ -1993,6 +2076,7 @@ def _plan_block(view):
           <td><div style="display:inline-block;background:{C_ORG};color:#fff;padding:2px 8px;border-radius:4px;min-width:60px;width:{min(100,(s['disp_sum']/s['units']*100) if s['units'] else 0):.0f}%;box-sizing:border-box">{n(s['disp_sum'])} &nbsp;({(s['disp_sum']/s['units']*100) if s['units'] else 0:.1f}%)</div></td></tr>
     </table>
   </div>
+  {cat_table}
   <div style="padding:0 16px 8px">
     <input id="plan-search-{K}" type="search" placeholder="🔍 Search the plan — product, customer, pack, batch…"
            oninput="planSearch('{K}',this.value)" onclick="event.stopPropagation()"
@@ -4098,6 +4182,10 @@ function _planApply(k) {{
     else if (p === -2) show = (srank === 0);
     else if (p === -4) show = isnext;
     else if (p === -5) show = isflag;
+    else if (p <= -20 && p >= -23) {{
+      const cats = {{'-20': 'Bottles', '-21': 'Sachets', '-22': 'Tubes', '-23': 'External'}};
+      show = (tr.getAttribute('data-cat') === cats[String(p)]);
+    }}
     else if (p === -6) show = (mon === 'AUG' || mon === 'SEP');
     else if (p === -7) show = (mon === 'JUL' || mon === 'JUN');
     const det = tr.nextElementSibling;
