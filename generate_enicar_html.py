@@ -1491,8 +1491,10 @@ def _build_plan_view():
         'packed_sum': sum(x['packed'] for x in items),
         'disp_sum': sum(x['dispatched'] for x in items),
         'rm_started': sum(1 for x in items if x['batches']),
-        'carry_items': sum(1 for x in items if x.get('month') != 'AUG'),
-        'carry_units': sum((x['planned_units'] or 0) for x in items if x.get('month') != 'AUG'),
+        # carried over = tagged with a month other than this plan's own
+        'carry_items': sum(1 for x in items if x.get('month') != _PLAN_MON3),
+        'carry_units': sum((x['planned_units'] or 0) for x in items
+                           if x.get('month') != _PLAN_MON3),
     }
     return items, source, summary, off_plan
 
