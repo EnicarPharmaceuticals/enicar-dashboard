@@ -713,10 +713,10 @@ STUCK_BATCHES.sort(key=lambda e: -e['stuck_days'])
 # comes from what actually happened for that product+party from the plan
 # window onward, no matter which exact day it happened.
 # ══════════════════════════════════════════════════════════════════════════════
-PLAN_MONTH       = '2026-08'
-PLAN_TITLE       = 'AUGUST 2026 PLAN'
-PLAN_WINDOW_FROM = date(2026, 8, 1)    # fill/pack/disp counted from here
-PLAN_RM_FROM     = date(2026, 7, 25)   # RM dispensing may start a few days early
+PLAN_MONTH       = '2026-09'
+PLAN_TITLE       = 'SEPTEMBER 2026 PLAN'
+PLAN_WINDOW_FROM = date(2026, 9, 1)    # fill/pack/disp counted from here
+PLAN_RM_FROM     = date(2026, 8, 25)   # RM dispensing may start a few days early
 _PLAN_JSON       = os.path.join(HERE, 'plan_aug_2026.json')
 
 def _pcanon(s):
@@ -978,9 +978,15 @@ def _build_plan_view():
         else:
             it['month'] = 'AUG'
     _carry_badge = {}
-    try:
-        _pending = json.load(open(os.path.join(HERE, 'pending_plan_jun_jul.json'))).get('items', [])
-    except Exception:
+    # The June-July carry-over list belongs to the AUGUST plan only. From
+    # September the plan sheet already carries its own pending lines, so
+    # injecting Jun-Jul again would add 12 stale rows (1 Sep 2026).
+    if PLAN_MONTH == '2026-08':
+        try:
+            _pending = json.load(open(os.path.join(HERE, 'pending_plan_jun_jul.json'))).get('items', [])
+        except Exception:
+            _pending = []
+    else:
         _pending = []
     def _pp_match(a, b):
         A, B = _pcanon(a), _pcanon(b)
