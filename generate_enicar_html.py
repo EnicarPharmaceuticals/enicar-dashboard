@@ -1236,10 +1236,54 @@ def _build_plan_view():
             it['flag'] = (it['flag'] + ' · ' if it['flag'] else '') + ' · '.join(_notes)
 
         plan_q = it['planned_units'] or 0
-        if plan_q <= 0:
-            # Quantity netted to zero: the stock was already made, usually in an
-            # earlier month, so the batches sit outside this plan's window.
-            # Calling it "Not started" reads as if nothing was done (1 Sep 2026).
+        if plan_q <= 0 and not batches:
+            # Netted to zero because the stock is already filled — but filled is
+            # not finished. Pull in that product's still-open batches (they were
+            # made in an earlier month, so the window above skipped them) and
+            # report the packing / dispatch still outstanding.
+            _open = []
+            for _k, _v in RM_INFO.items():
+                if not prod_match(it['product'], _v.get('product') or ''):
+                    continue
+                _j = _journey_by_key.get(_k, {})
+                _f = float(_j.get('filled') or 0)
+                _p = float(_j.get('packed') or 0)
+                _d = float(_j.get('dispatched') or 0)
+                if _f > 0 and (_f - _p > 1 or _p - _d > 1):
+                    _open.append((_k, _v, _f, _p, _d))
+            if _open:
+                _topack = sum(max(0, f - p) for _k, _v, f, p, d in _open)
+                _todisp = sum(max(0, p - d) for _k, _v, f, p, d in _open)
+                for _k, _v, _f, _p, _d in _open:
+                    used_keys.add(_k)
+                    _fd, _pd3, _dd3 = FILL_DATES.get(_k), PACK_DATES.get(_k), DISP_DATES.get(_k)
+                    batches.append({
+                        'batch': (_journey_by_key.get(_k, {}) or {}).get('batch', _k),
+                        'rm_date': _v.get('date'), 'rm_customer': _v.get('customer') or '',
+                        'rm_product': _v.get('product') or '', 'size': _v.get('size') or 0,
+                        'rm_missing': False, 'filled': _f, 'packed': _p, 'dispatched': _d,
+                        'status': 'made earlier — still to finish',
+                        'f_first': _fd and _fd['first'], 'f_last': _fd and _fd['last'],
+                        'p_first': _pd3 and _pd3['first'], 'p_last': _pd3 and _pd3['last'],
+                        'd_first': _dd3 and _dd3['first'], 'd_last': _dd3 and _dd3['last'],
+                    })
+                batches.sort(key=lambda x: x['rm_date'] or date(2000, 1, 1))
+                it['batches'] = batches
+                it['filled'] = sum(b['filled'] for b in batches)
+                it['packed'] = sum(b['packed'] for b in batches)
+                it['dispatched'] = sum(b['dispatched'] for b in batches)
+                it['carry_work'] = True
+                if _topack > 1:
+                    it['status'] = f'🟡 To pack — {_topack:,.0f} units filled earlier'
+                    it['srank'] = 2
+                elif _todisp > 1:
+                    it['status'] = f'🟠 To dispatch — {_todisp:,.0f} units packed earlier'
+                    it['srank'] = 3
+                else:
+                    it['status'], it['srank'] = '✅ Already made', 5
+            else:
+                it['status'], it['srank'] = '✅ Already made — nothing left', 5
+        elif plan_q <= 0:
             it['status'], it['srank'] = '✅ Already made — nothing left', 5
         elif not batches:
             it['status'], it['srank'] = ('🟣 ' + it['rm_status'], 0) if it.get('rm_status') else ('⚪ Not started', 0)
