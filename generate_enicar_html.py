@@ -1210,7 +1210,17 @@ def _build_plan_view():
                 # with a flag, instead of letting the units vanish — but only
                 # when the log's own product name is exactly this line's.
                 extra = None
-                if _pcanon(b['product']) == _me:
+                # Only for work that STARTED in this plan's window. A batch
+                # filled last month in a pack this month does not plan is the
+                # previous order being finished — flag it, do not credit it.
+                _fd0 = FILL_DATES.get(b['key'])
+                _started_here = not _fd0 or _fd0['first'] >= PLAN_WINDOW_FROM
+                # Only when the product has a SINGLE plan line, so the pack
+                # can only be a typo. Polybion Lc is planned in 300 and 400 ml;
+                # a 150 ml batch there is a genuinely different SKU and must
+                # not be credited to the 400 ml row (2 Sep 2026).
+                _single = _lines_by_canon.get(_me, 0) == 1
+                if _pcanon(b['product']) == _me and _started_here and _single:
                     _own = _packs_by_canon.get(_me, set())
                     for _pk, _q in sl.items():
                         if _pk is None or _pk in _own:
@@ -1224,6 +1234,12 @@ def _build_plan_view():
                             f"{b['batch']} logged as {_pk:g} (plan: {it.get('pack')})")
                 if mine is None and blank is None and extra is None:
                     if not wanted:          # produced in other packs only
+                        if _pcanon(b['product']) == _me:
+                            _why = ('from an earlier month' if not _started_here
+                                    else 'a pack size this plan does not list')
+                            it.setdefault('pack_notes', []).append(
+                                f"{b['batch']} is {'/'.join(f'{p:g}' for p in sorted(sl) if p)} "
+                                f"— {_why}, not counted here")
                         continue
                     mine = {'filled': 0.0, 'packed': 0.0, 'dispatched': 0.0}
                 qty = {f: (mine or {}).get(f, 0.0) + (blank or {}).get(f, 0.0)
@@ -1339,7 +1355,14 @@ def _build_plan_view():
             else:
                 it['status'], it['srank'] = '✅ Already made — nothing left', 5
         elif plan_q <= 0:
-            it['status'], it['srank'] = '✅ Already made — nothing left', 5
+            _tp = sum(max(0.0, b['filled'] - b['packed']) for b in batches)
+            _td = sum(max(0.0, b['packed'] - b['dispatched']) for b in batches)
+            if _tp > 1000:
+                it['status'], it['srank'] = f'🟡 To pack — {_tp:,.0f} units', 2
+            elif _td > 1000:
+                it['status'], it['srank'] = f'🟠 To dispatch — {_td:,.0f} units', 3
+            else:
+                it['status'], it['srank'] = '✅ Already made — nothing left', 5
         elif not batches:
             it['status'], it['srank'] = ('🟣 ' + it['rm_status'], 0) if it.get('rm_status') else ('⚪ Not started', 0)
         elif plan_q and it['dispatched'] >= plan_q * 0.95:
