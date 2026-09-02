@@ -536,7 +536,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
-        "priority": "4",
+        "priority": "",
         "product": "ABC Cold Syrup",
         "status": "",
         "units": 1000.0
@@ -546,7 +546,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
-        "priority": "4",
+        "priority": "",
         "product": "ABC Loratdine",
         "status": "",
         "units": 10000.0
@@ -576,7 +576,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Sapphire",
-        "priority": "2",
+        "priority": "",
         "product": "Alaize",
         "status": "",
         "units": 30000.0
@@ -586,7 +586,7 @@
         "date": "",
         "pack": "10 ml",
         "party": "Tushu",
-        "priority": "1",
+        "priority": "",
         "product": "Albendazole Oral Suspension USP (Kanvid)",
         "status": "",
         "units": 40000.0
@@ -706,7 +706,7 @@
         "date": "",
         "pack": "150 ml",
         "party": "Unique",
-        "priority": "1",
+        "priority": "",
         "product": "Amylase",
         "status": "",
         "units": 50000.0
@@ -726,7 +726,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Tushu",
-        "priority": "1",
+        "priority": "",
         "product": "Analgin Syrup (Kanvid)",
         "status": "",
         "units": 20000.0
@@ -756,7 +756,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "LUEX",
-        "priority": "4",
+        "priority": "",
         "product": "Anticid Plus",
         "status": "",
         "units": 48000.0
@@ -766,7 +766,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "LUEX",
-        "priority": "1",
+        "priority": "",
         "product": "Asthalex Syrup",
         "status": "",
         "units": 12000.0
@@ -776,7 +776,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Navketan",
-        "priority": "1",
+        "priority": "",
         "product": "Becatone-L Syrup",
         "status": "",
         "units": 20000.0
@@ -816,7 +816,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Sapphire",
-        "priority": "1",
+        "priority": "",
         "product": "Bioforce Tonic",
         "status": "",
         "units": 15000.0
@@ -846,7 +846,7 @@
         "date": "",
         "pack": "250 ml",
         "party": "UNICHEM (GHANA) LIMITED",
-        "priority": "4",
+        "priority": "",
         "product": "Bonaplex Syrup",
         "status": "",
         "units": 74000.0
@@ -856,7 +856,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
-        "priority": "4",
+        "priority": "",
         "product": "B.OVERGREENS ABC BABY COUGH SYRUP",
         "status": "",
         "units": 7000.0
@@ -876,7 +876,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
-        "priority": "4",
+        "priority": "",
         "product": "B.OVERGREENS ABC METRONIDAZOLE+FURAZOLIDONE SUSPENSION",
         "status": "",
         "units": 10000.0
@@ -886,7 +886,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
-        "priority": "4",
+        "priority": "",
         "product": "B.OVERGREENS ABC ORAL PARACETAMOL SUSPENSION",
         "status": "",
         "units": 9900.0
@@ -896,7 +896,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Menzbek",
-        "priority": "4",
+        "priority": "",
         "product": "B.OVERGREENS ABC TEETHING MIXTURE",
         "status": "",
         "units": 10000.0
@@ -906,7 +906,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "Bromovan Plus",
         "status": "",
         "units": 10000.0
@@ -916,7 +916,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Tushu",
-        "priority": "1",
+        "priority": "",
         "product": "Carbocisteine Syrup 5% W/V (Kanvid)",
         "status": "",
         "units": 125000.0
@@ -946,7 +946,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "P&G",
-        "priority": "3",
+        "priority": "",
         "product": "Cosome Cough Syrup",
         "status": "",
         "units": 50000.0
@@ -966,7 +966,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Galaxy",
-        "priority": "2",
+        "priority": "",
         "product": "Cypro B Plus",
         "status": "",
         "units": 165000.0
@@ -976,7 +976,7 @@
         "date": "",
         "pack": "15 ml",
         "party": "Unique",
-        "priority": "1",
+        "priority": "",
         "product": "Cyproplex-Plus",
         "status": "",
         "units": 250000.0
@@ -1016,7 +1016,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "LUEX",
-        "priority": "4",
+        "priority": "",
         "product": "Ferrolex Syrup",
         "status": "",
         "units": 24000.0
@@ -1026,7 +1026,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Ferrolife Syrup",
         "status": "",
         "units": 5000.0
@@ -1036,7 +1036,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Ferrolife Syrup",
         "status": "",
         "units": 5000.0
@@ -1046,7 +1046,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Unique",
-        "priority": "3",
+        "priority": "",
         "product": "Fortomega",
         "status": "",
         "units": 10000.0
@@ -1116,7 +1116,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Ryvis",
-        "priority": "2",
+        "priority": "",
         "product": "Gasstop",
         "status": "",
         "units": 28750.0
@@ -1126,7 +1126,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Ryvis",
-        "priority": "2",
+        "priority": "",
         "product": "Gasstop",
         "status": "",
         "units": 8700.0
@@ -1156,7 +1156,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Gelucid O",
         "status": "",
         "units": 7500.0
@@ -1166,7 +1166,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Gelucid O",
         "status": "",
         "units": 7500.0
@@ -1176,7 +1176,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Gelucid",
         "status": "",
         "units": 7500.0
@@ -1186,7 +1186,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Gelucid",
         "status": "",
         "units": 7500.0
@@ -1216,7 +1216,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Ibumed",
         "status": "",
         "units": 30000.0
@@ -1226,7 +1226,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Umedica",
-        "priority": "1",
+        "priority": "",
         "product": "Ibuprofen Oral Suspension BP 100 mg/5 ml (Umedica)",
         "status": "",
         "units": 25000.0
@@ -1236,7 +1236,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Tushu",
-        "priority": "1",
+        "priority": "",
         "product": "Ibuprofen Oral Suspension BP (Kanvid)",
         "status": "",
         "units": 40000.0
@@ -1246,7 +1246,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "Kaonique",
         "status": "",
         "units": 30000.0
@@ -1276,7 +1276,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "LUEX",
-        "priority": "1",
+        "priority": "",
         "product": "Lexofen Plus Junior Suspension",
         "status": "",
         "units": 10000.0
@@ -1286,7 +1286,7 @@
         "date": "",
         "pack": "150 ml",
         "party": "LUEX",
-        "priority": "1",
+        "priority": "",
         "product": "Lexofen Suspension",
         "status": "",
         "units": 40000.0
@@ -1296,7 +1296,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "P&G",
-        "priority": "1",
+        "priority": "",
         "product": "Livogen Iron",
         "status": "",
         "units": 150000.0
@@ -1326,7 +1326,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Menzbek",
-        "priority": "4",
+        "priority": "",
         "product": "Magdox Antacid",
         "status": "",
         "units": 10000.0
@@ -1346,7 +1346,7 @@
         "date": "",
         "pack": "30 ml",
         "party": "Sapphire",
-        "priority": "4",
+        "priority": "",
         "product": "Mebox Suspension",
         "status": "",
         "units": 50000.0
@@ -1356,7 +1356,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Unique",
-        "priority": "3",
+        "priority": "",
         "product": "Megalax",
         "status": "",
         "units": 50000.0
@@ -1396,7 +1396,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "MON-LC",
         "status": "",
         "units": 10000.0
@@ -1406,7 +1406,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Sapphire",
-        "priority": "1",
+        "priority": "",
         "product": "Mucoril Expectorant",
         "status": "",
         "units": 45000.0
@@ -1426,7 +1426,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Tushu",
-        "priority": "1",
+        "priority": "",
         "product": "Multivitamin Syrup (Kanvid)",
         "status": "",
         "units": 75000.0
@@ -1456,7 +1456,7 @@
         "date": "",
         "pack": "10 ml",
         "party": "Galaxy",
-        "priority": "2",
+        "priority": "",
         "product": "Nilworm Suspension",
         "status": "",
         "units": 595200.0
@@ -1466,7 +1466,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Unique",
-        "priority": "1",
+        "priority": "",
         "product": "Nocigel-O",
         "status": "",
         "units": 20000.0
@@ -1476,7 +1476,7 @@
         "date": "",
         "pack": "15 ml",
         "party": "Unique",
-        "priority": "1",
+        "priority": "",
         "product": "Nocigel (Sachet)",
         "status": "",
         "units": 240000.0
@@ -1486,7 +1486,7 @@
         "date": "",
         "pack": "7 ml",
         "party": "Unique",
-        "priority": "3",
+        "priority": "",
         "product": "Nocold Dx",
         "status": "",
         "units": 100000.0
@@ -1496,7 +1496,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Sapphire",
-        "priority": "1",
+        "priority": "",
         "product": "Nutrisang Tonic",
         "status": "",
         "units": 60000.0
@@ -1506,7 +1506,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Tushu",
-        "priority": "1",
+        "priority": "",
         "product": "Nystatin Oral Suspension USP (Kanvid)",
         "status": "",
         "units": 45000.0
@@ -1526,7 +1526,7 @@
         "date": "",
         "pack": "300 ml",
         "party": "P&G",
-        "priority": "2",
+        "priority": "",
         "product": "Osto-Polybion (Suspension of Calcium with Vitamin D3 & Vitamin B12)",
         "status": "",
         "units": 33300.0
@@ -1536,7 +1536,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Unique",
-        "priority": "1",
+        "priority": "",
         "product": "PA-C",
         "status": "",
         "units": 40000.0
@@ -1546,7 +1546,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Tushu",
-        "priority": "1",
+        "priority": "",
         "product": "Paediatric Cotrimoxazole Oral Suspension BP (Kanvid)",
         "status": "",
         "units": 50000.0
@@ -1566,7 +1566,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "Perfac C",
         "status": "",
         "units": 20000.0
@@ -1576,7 +1576,7 @@
         "date": "",
         "pack": "120 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "PH-Alka",
         "status": "",
         "units": 10000.0
@@ -1586,7 +1586,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Picron Baby Cold Cough & Fever Syrup",
         "status": "",
         "units": 30000.0
@@ -1596,7 +1596,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Picron Baby Cold Cough & Fever Syrup",
         "status": "",
         "units": 40000.0
@@ -1606,7 +1606,7 @@
         "date": "",
         "pack": "150 ml",
         "party": "P&G",
-        "priority": "1",
+        "priority": "",
         "product": "Polybion Active",
         "status": "",
         "units": 66600.0
@@ -1616,7 +1616,7 @@
         "date": "",
         "pack": "300 ml",
         "party": "P&G",
-        "priority": "2",
+        "priority": "",
         "product": "Polybion Active",
         "status": "",
         "units": 33300.0
@@ -1626,7 +1626,7 @@
         "date": "",
         "pack": "150 ml",
         "party": "P&G",
-        "priority": "1",
+        "priority": "",
         "product": "Polybion Lc",
         "status": "",
         "units": 200000.0
@@ -1636,7 +1636,7 @@
         "date": "",
         "pack": "300 ml",
         "party": "P&G",
-        "priority": "2",
+        "priority": "",
         "product": "Polybion Lc",
         "status": "",
         "units": 33300.0
@@ -1646,7 +1646,7 @@
         "date": "",
         "pack": "400 ml",
         "party": "P&G",
-        "priority": "3",
+        "priority": "",
         "product": "Polybion Lc",
         "status": "",
         "units": 50000.0
@@ -1766,7 +1766,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Unique",
-        "priority": "1",
+        "priority": "",
         "product": "Q-Amino",
         "status": "",
         "units": 50000.0
@@ -1776,7 +1776,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Unique",
-        "priority": "1",
+        "priority": "",
         "product": "Q-Enzy",
         "status": "",
         "units": 20000.0
@@ -1786,7 +1786,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronak Multivitamin",
         "status": "",
         "units": 20000.0
@@ -1796,7 +1796,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronak Multivitamin",
         "status": "",
         "units": 10000.0
@@ -1806,7 +1806,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronaktone",
         "status": "",
         "units": 9000.0
@@ -1816,7 +1816,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronaktone",
         "status": "",
         "units": 9000.0
@@ -1826,7 +1826,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronanutra Forte",
         "status": "",
         "units": 12000.0
@@ -1836,7 +1836,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronanutra Forte",
         "status": "",
         "units": 12000.0
@@ -1846,7 +1846,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronfit cold forte ( LL034)",
         "status": "",
         "units": 3000.0
@@ -1856,7 +1856,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronfit Cold-W",
         "status": "",
         "units": 30000.0
@@ -1866,7 +1866,7 @@
         "date": "",
         "pack": "30 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronvit Drops",
         "status": "",
         "units": 50000.0
@@ -1876,7 +1876,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronvit Drops",
         "status": "",
         "units": 25000.0
@@ -1886,7 +1886,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Ronak",
-        "priority": "3",
+        "priority": "",
         "product": "Ronvit Extra (POLL010)",
         "status": "",
         "units": 15000.0
@@ -1926,7 +1926,7 @@
         "date": "",
         "pack": "120 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "Sortoux",
         "status": "",
         "units": 10000.0
@@ -1956,7 +1956,7 @@
         "date": "",
         "pack": "60 ml",
         "party": "Navketan",
-        "priority": "1",
+        "priority": "",
         "product": "Tempact-250 Suspension",
         "status": "",
         "units": 65000.0
@@ -1966,7 +1966,7 @@
         "date": "",
         "pack": "175 ml",
         "party": "Sapphire",
-        "priority": "4",
+        "priority": "",
         "product": "Topicidal",
         "status": "",
         "units": 25000.0
@@ -1986,7 +1986,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Trustymin Syrup",
         "status": "",
         "units": 7500.0
@@ -1996,7 +1996,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Pharmatrust Limited",
-        "priority": "3",
+        "priority": "",
         "product": "Trustymin Syrup",
         "status": "",
         "units": 7500.0
@@ -2056,7 +2056,7 @@
         "date": "",
         "pack": "50 ml",
         "party": "Unique",
-        "priority": "3",
+        "priority": "",
         "product": "Unicaine",
         "status": "",
         "units": 5000.0
@@ -2066,7 +2066,7 @@
         "date": "",
         "pack": "10 gm",
         "party": "Unique",
-        "priority": "3",
+        "priority": "",
         "product": "Unidakt Gel Oral",
         "status": "",
         "units": 10000.0
@@ -2076,7 +2076,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "Uniforce Tonic",
         "status": "",
         "units": 150000.0
@@ -2086,7 +2086,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Unique",
-        "priority": "2",
+        "priority": "",
         "product": "Unisang Tonic",
         "status": "",
         "units": 20000.0
@@ -2126,7 +2126,7 @@
         "date": "",
         "pack": "10 ml",
         "party": "Unique",
-        "priority": "3",
+        "priority": "",
         "product": "Worminix",
         "status": "",
         "units": 300000.0
@@ -2143,6 +2143,6 @@
       }
     },
     "source": "sheet tab \"AUG PLAN\"",
-    "ts": "2026-08-27T16:32:24"
+    "ts": "2026-09-02T18:46:56"
   }
 }
