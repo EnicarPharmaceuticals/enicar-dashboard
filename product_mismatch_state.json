@@ -110,6 +110,7 @@
   "BM-29278|party|bluemappharmachemp2p|bluemappharmachem": "2026-09-03",
   "CNJ015|party|proctergamble|blissgvspharmaltdp2p": "2026-09-02",
   "EF-142|product|ambroxolhydrochloridesyrup15mg5mlflamingo|ambroxolhydrochloride": "2026-09-01",
+  "EF002|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-03",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-09-02",
   "EL-2413|party|yelloworangepharmacy|pharmatrustltd": "2026-09-02",
   "EL-2414|party|yelloworangepharmacy|pharmatrustltd": "2026-09-02",
@@ -141,6 +142,7 @@
   "EL-2480|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-09-02",
   "EL-2481|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-09-02",
   "EL-2482|product|malegraoraljelly|malegra": "2026-09-02",
+  "EL-2483|product|paediatriccotrimoxazoleoralsuspensionbpselfcare|cotrimoxazoleoralsuspensionbp": "2026-09-03",
   "EO-4040|product|selfcarehyzolointment|hyzolointment": "2026-09-01",
   "ET-08345|party|tushupharmasarl|kanvidpharmaceutical": "2026-09-03",
   "ET-11337|product|ferrousandfolicacid|ferrousandfolicacidsyrupkanvid": "2026-09-02",
@@ -246,6 +248,7 @@
   "SL05410|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-09-03",
   "SL05411|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-09-03",
   "SL05414|party|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-03",
+  "SL05419|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-09-03",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-09-02",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsuspensionbp100mg5ml": "2026-09-03",
   "T16002|product|azithromycinoralsuspensionumedica|azithromycin": "2026-09-02",
@@ -263,6 +266,8 @@
   "U-163|party|pharmatrustlimited|uniquepharma": "2026-09-03",
   "U-170|product|worminixsachet|worminix": "2026-09-01",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-09-02",
+  "VP-1028|party|vitacurapharmaceuticals|up": "2026-09-03",
+  "VP-1028|product|telovasyrup|60ml": "2026-09-03",
   "_offplan_alerted": {
     "AP02893": {
       "batch": "AP02893",
