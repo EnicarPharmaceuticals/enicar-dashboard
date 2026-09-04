@@ -1246,8 +1246,10 @@ def _build_plan_view():
                        + (extra or {}).get(f, 0.0)
                        for f in ('filled', 'packed', 'dispatched')}
             used_keys.add(b['key'])
+            _slice = _want if (_want is not None and sl) else None
             _fd, _pd2, _dd2 = FILL_DATES.get(b['key']), PACK_DATES.get(b['key']), DISP_DATES.get(b['key'])
             batches.append({
+                '_slice': _slice,
                 'batch': b['batch'], 'rm_date': b['date'], 'rm_customer': b['customer'],
                 'rm_product': b['product'], 'size': b['size'], 'rm_missing': b.get('rm_missing', False), **qty,
                 'status': j.get('status') or 'RM dispensed — no production yet',
@@ -1355,12 +1357,18 @@ def _build_plan_view():
             else:
                 it['status'], it['srank'] = '✅ Already made — nothing left', 5
         elif plan_q <= 0:
+            # Nothing left to PLAN, but there may be work left to DO. The stage
+            # follows the furthest point reached (so the row files under the
+            # right tab); the text names what is still outstanding.
             _tp = sum(max(0.0, b['filled'] - b['packed']) for b in batches)
             _td = sum(max(0.0, b['packed'] - b['dispatched']) for b in batches)
+            it['srank'] = (4 if it['dispatched'] > 0 else
+                           3 if it['packed'] > 0 else
+                           2 if it['filled'] > 0 else 1)
             if _tp > 1000:
-                it['status'], it['srank'] = f'🟡 To pack — {_tp:,.0f} units', 2
+                it['status'] = f'🟡 Made already · {_tp:,.0f} units still to pack'
             elif _td > 1000:
-                it['status'], it['srank'] = f'🟠 To dispatch — {_td:,.0f} units', 3
+                it['status'] = f'🟠 Made already · {_td:,.0f} units still to dispatch'
             else:
                 it['status'], it['srank'] = '✅ Already made — nothing left', 5
         elif not batches:
@@ -1376,6 +1384,36 @@ def _build_plan_view():
         else:
             it['status'], it['srank'] = '🟤 RM dispensed', 1
         it['pct'] = min(100.0, (it['filled'] / plan_q * 100) if plan_q else 0)
+
+    # ── Share a batch slice claimed by more than one plan line ───────────
+    # Same product, same pack, two rows (Magascon RD + Angola): each had taken
+    # the whole slice, double-counting the work. Split it by planned quantity.
+    _claims = {}
+    for _it in items:
+        for _b in _it['batches']:
+            _claims.setdefault((_b['batch'], _b.get('_slice')), []).append((_it, _b))
+    _shared = 0
+    for _key, _lst in _claims.items():
+        if len(_lst) < 2:
+            continue
+        _tot = sum((_i['planned_units'] or 0) for _i, _b in _lst)
+        for _i, _b in _lst:
+            _share = ((_i['planned_units'] or 0) / _tot) if _tot > 0 else 1.0 / len(_lst)
+            for _f in ('filled', 'packed', 'dispatched'):
+                _b[_f] = _b[_f] * _share
+            _b['shared_with'] = len(_lst)
+        _shared += 1
+    if _shared:
+        for _it in items:
+            if any(b.get('shared_with') for b in _it['batches']):
+                _it['filled'] = sum(b['filled'] for b in _it['batches'])
+                _it['packed'] = sum(b['packed'] for b in _it['batches'])
+                _it['dispatched'] = sum(b['dispatched'] for b in _it['batches'])
+                _pq2 = _it['planned_units'] or 0
+                _it['pct'] = min(100.0, (_it['filled'] / _pq2 * 100) if _pq2 else 0)
+                _it.setdefault('pack_notes', []).append(
+                    'batches shared with another line of the same product and pack '
+                    '— quantities split by planned share')
 
     # ── Dispensing schedule ──────────────────────────────────────────────
     # Anything the Plant Head / store gave a target date to is an instruction:
