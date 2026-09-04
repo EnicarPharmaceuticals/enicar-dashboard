@@ -51,6 +51,7 @@
   "-|product|polygelsuspensionsachet|vitasaph": "2026-09-02",
   "14000|party|bc|up": "2026-09-02",
   "14000|product|60ml|15gm": "2026-09-02",
+  "20000|product|15gm|20ml": "2026-09-04",
   "24000|party|up|bc": "2026-09-02",
   "30000|party|up|bc": "2026-09-02",
   "34000|product|10ml|15gm": "2026-09-02",
@@ -110,6 +111,7 @@
   "BM-29278|party|bluemappharmachemp2p|bluemappharmachem": "2026-09-03",
   "CNJ015|party|proctergamble|blissgvspharmaltdp2p": "2026-09-02",
   "EF-142|product|ambroxolhydrochloridesyrup15mg5mlflamingo|ambroxolhydrochloride": "2026-09-04",
+  "EF001|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-04",
   "EF002|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-03",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-09-02",
   "EL-2413|party|yelloworangepharmacy|pharmatrustltd": "2026-09-02",
@@ -247,10 +249,13 @@
   "SL05409|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-09-03",
   "SL05410|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-09-03",
   "SL05411|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-09-03",
+  "SL05412|party|socomedpharmapvtltdpvtltd|socomedpharmapvtltd": "2026-09-04",
   "SL05414|party|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-03",
   "SL05417|party|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-04",
   "SL05419|party|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-04",
   "SL05419|product|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-04",
+  "SL05420|party|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-04",
+  "SL05420|product|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-04",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-09-02",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsuspensionbp100mg5ml": "2026-09-03",
   "T16002|product|azithromycinoralsuspensionumedica|azithromycin": "2026-09-02",
@@ -463,6 +468,22 @@
       "qty": 7000.0,
       "stage": "Filling started"
     },
+    "SL05412": {
+      "batch": "SL05412",
+      "company": "SOCOMED PHARMA PVT. LTD",
+      "date": "2026-09-04",
+      "product": "Davigra (Strawberry)",
+      "qty": 760.0,
+      "stage": "RM dispensed"
+    },
+    "SL05413": {
+      "batch": "SL05413",
+      "company": "SOCOMED PHARMA PVT. LTD",
+      "date": "2026-09-04",
+      "product": "Davigra (Pineapple)",
+      "qty": 760.0,
+      "stage": "RM dispensed"
+    },
     "SL05415": {
       "batch": "SL05415",
       "company": "SOCOMED PHARMA PVT. LTD",
@@ -534,6 +555,14 @@
       "product": "Supertone",
       "qty": 11800.0,
       "stage": "Filling started"
+    },
+    "VM-53720": {
+      "batch": "VM-53720",
+      "company": "VARDHMAN EXPORTS (P2P)",
+      "date": "2026-09-04",
+      "product": "Go Coff Cough Syrup",
+      "qty": 4040.0,
+      "stage": "RM dispensed"
     }
   },
   "_offplan_digest_sent": "2026-08-31",
