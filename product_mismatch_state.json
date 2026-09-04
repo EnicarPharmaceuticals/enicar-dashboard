@@ -144,7 +144,6 @@
   "EL-2480|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-09-02",
   "EL-2481|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-09-02",
   "EL-2482|product|malegraoraljelly|malegra": "2026-09-02",
-  "EL-2483|product|paediatriccotrimoxazoleoralsuspensionbpselfcare|cotrimoxazoleoralsuspensionbp": "2026-09-03",
   "EO-4040|product|selfcarehyzolointment|hyzolointment": "2026-09-04",
   "ET-08345|party|tushupharmasarl|kanvidpharmaceutical": "2026-09-03",
   "ET-11337|product|ferrousandfolicacid|ferrousandfolicacidsyrupkanvid": "2026-09-02",
@@ -273,8 +272,6 @@
   "U-163|party|pharmatrustlimited|uniquepharma": "2026-09-03",
   "U-170|product|worminixsachet|worminix": "2026-09-04",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-09-02",
-  "VP-1028|party|vitacurapharmaceuticals|up": "2026-09-03",
-  "VP-1028|product|telovasyrup|60ml": "2026-09-03",
   "_offplan_alerted": {
     "AP02893": {
       "batch": "AP02893",
