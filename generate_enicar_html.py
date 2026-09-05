@@ -810,6 +810,21 @@ def _load_plan():
             cq, cpack, cprio = _c('QTY', 'PLANNED'), _c('PACK'), _c('PRIORITY')
             # Store-writable columns (optional — added by RM / Plant Head)
             cstat = _c('RM STATUS', 'STATUS')
+            # Director-verified pack type (SEPT PLAN col K, 5 Sep 2026) —
+            # 'PACK' alone would match PACK SIZE, so require TYPE. The header
+            # cell has been overwritten by a stray dropdown pick before
+            # (K1 said "Bottle", 5 Sep 2026), so if no TYPE header exists,
+            # recognise the column by its VALUES instead.
+            cptype = next((c for c in pdf.columns if 'TYPE' in c), None)
+            if not cptype:
+                _PTV = {'bottle', 'flat sachet', 'stick pack sachet',
+                        'ointment', 'external'}
+                for _cc in pdf.columns:
+                    _vv = [str(v).strip().lower() for v in pdf[_cc]
+                           if isinstance(v, str) and str(v).strip()]
+                    if len(_vv) >= 5 and sum(v in _PTV for v in _vv) / len(_vv) >= 0.8:
+                        cptype = _cc
+                        break
             cdate = _c('DISPENSE ON', 'DISPENSE BY', 'TARGET', 'RM DATE', 'DISPENSE DATE')
             cbatch, cby = _c('BATCH'), _c('UPDATED BY', 'BY')
             crem = _c('REMARK', 'NOTE')
@@ -829,6 +844,7 @@ def _load_plan():
                               'planned_units': _num(r.get(cq)),
                               'pack': _txt(r.get(cpack)),
                               'priority': int(_num(r.get(cprio))) or None,
+                              'ptype': _txt(r.get(cptype)) if cptype else '',
                               'rm_status': _txt(r.get(cstat)) if cstat else '',
                               'rm_date': (_d.date() if _d is not None and pd.notna(_d) else None),
                               'rm_batch': _txt(r.get(cbatch)) if cbatch else '',
@@ -1303,7 +1319,14 @@ def _build_plan_view():
         if _notes:
             it['flag'] = (it['flag'] + ' · ' if it['flag'] else '') + ' · '.join(_notes)
 
-        it['cat'] = plan_category(it['product'], it.get('pack'))
+        # The sheet's PACK TYPE column is Director-verified (5 Sep 2026) and
+        # beats the name/history heuristic; heuristic covers tabs without it.
+        _pt = str(it.get('ptype') or '').lower()
+        it['cat'] = ('Sachets' if 'sachet' in _pt else
+                     'Tubes' if 'oint' in _pt else
+                     'External' if 'external' in _pt else
+                     'Bottles' if 'bottle' in _pt else
+                     plan_category(it['product'], it.get('pack')))
         plan_q = it['planned_units'] or 0
         if plan_q <= 0 and not batches:
             # Netted to zero because the stock is already filled — but filled is
