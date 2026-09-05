@@ -2181,7 +2181,7 @@ def plan_section_html():
         for i, v in enumerate(views))
     blocks = ''.join(_plan_block(v) for v in views)
     return f"""
-<details class="card" id="plan-card" open>
+<details class="card" id="plan-card">
   <summary>{sec('  ━━&nbsp;&nbsp;🗓 PRODUCTION &nbsp; PLAN &nbsp;—&nbsp; PLANNED &nbsp; vs &nbsp; ACTUAL &nbsp;━━', C_PRI)}</summary>
   <div class="chip-row" style="padding:10px 16px 4px;border-bottom:1px solid #E0E0E0">{tabs}</div>
   {blocks}
