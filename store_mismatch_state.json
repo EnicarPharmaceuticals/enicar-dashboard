@@ -1,7 +1,7 @@
 {
-  "BATCH|EF003|EF002": "2026-09-03",
   "BATCH|EF004|EF002": "2026-09-04",
   "BATCH|EF005|EF002": "2026-09-04",
+  "BATCH|EF143|EF-142": "2026-09-05",
   "BATCH|EL2422|EL-2462": "2026-09-05",
   "BATCH|EL2465|EL-2467": "2026-09-03",
   "BATCH|EL2466|EL-2467": "2026-09-03",
@@ -9,8 +9,6 @@
   "BATCH|EL2493|EL-2491": "2026-09-03",
   "BATCH|EL2494|EL-2491": "2026-09-04",
   "BATCH|L0947|L-0947": "2026-09-03",
-  "BATCH|SL05416|SL05415": "2026-09-04",
-  "BATCH|SL05421|SL05411": "2026-09-04",
   "BATCH|SL05422|SL05420": "2026-09-04",
   "BATCH|SL05423|SL05420": "2026-09-04",
   "BATCH|U148|U-158": "2026-09-03",
@@ -42,6 +40,7 @@
   "PARTY|CNJ015|proctergamble|blissgvspharmaltdp2p": "2026-09-05",
   "PARTY|EF001|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-04",
   "PARTY|EF002|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-03",
+  "PARTY|EF003|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-05",
   "PARTY|EL-2425|pharmatrustlimited|pharmatrustltd": "2026-09-03",
   "PARTY|EL-2426|pharmatrustlimited|pharmatrustltd": "2026-09-03",
   "PARTY|EL-2427|napoexportsprivatelimited|carethcorporation": "2026-09-04",
@@ -172,6 +171,7 @@
   "PRODUCT|SL05407|abytonefortesyrup|abytonefortered": "2026-09-03",
   "PRODUCT|SL05419|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-04",
   "PRODUCT|SL05420|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-04",
+  "PRODUCT|SL05421|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-05",
   "PRODUCT|T16001|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-09-05",
   "PRODUCT|T16002|azithromycinoralsuspensionumedica|azithromycin": "2026-09-05",
   "PRODUCT|U-147|qenzy|": "2026-09-05"
