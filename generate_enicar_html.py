@@ -640,6 +640,52 @@ FILL_DATES = _stage_dates(fill_df)
 PACK_DATES = _stage_dates(pack_df)
 DISP_DATES = _stage_dates(disp_df)
 
+# ── Production Log: bulk manufacturing (the stage between RM and filling) ────
+# Read by header name — the tab is newer than the others and may still move.
+# A batch can be made in LOTS, and the same lot may be re-entered as its
+# status advances (Under Process one day, Completed the next — Bedisyl
+# SL05417). An Under-Process row therefore only counts as "in the tank now"
+# when it is dated AFTER the batch's latest completion.
+try:
+    _mfg_raw = pd.read_excel(TEMPLATE, sheet_name='➕ Production Log', header=3)
+    _mfg_raw.columns = [' '.join(str(c).split()) for c in _mfg_raw.columns]
+    def _mcol(name):
+        return _mfg_raw[name] if name in _mfg_raw.columns else pd.Series([None] * len(_mfg_raw))
+    _mfg_rows = pd.DataFrame({
+        'Date':   pd.to_datetime(_mcol('Date'), format='mixed', dayfirst=True, errors='coerce').dt.date,
+        'Product': _mcol('Product Name'), 'Batch': _mcol('Batch No.'),
+        'Size':   pd.to_numeric(_mcol('Batch Size'), errors='coerce').fillna(0),
+        'UOM':    _mcol('UOM'), 'Vessel': _mcol('Vessel / Tank'),
+        'Status': _mcol('Mfg Status'),
+        'Done':   pd.to_datetime(_mcol('Mfg Completed On'), format='mixed', dayfirst=True, errors='coerce').dt.date,
+    }).dropna(subset=['Date'])
+except Exception as _e:
+    _mfg_rows = pd.DataFrame(columns=['Date', 'Product', 'Batch', 'Size', 'UOM', 'Vessel', 'Status', 'Done'])
+    print(f'  Note: Production Log not read — {_e}')
+
+MFG = {}
+_mfg_by_batch = {}
+for _, _r in _mfg_rows.iterrows():
+    _k = _bkey(_r['Batch'])
+    if _k:
+        _mfg_by_batch.setdefault(_k, []).append(_r)
+for _k, _rows in _mfg_by_batch.items():
+    _comp = [r for r in _rows if 'complet' in str(r['Status'] or '').lower()]
+    _done = max((r['Done'] or r['Date'] for r in _comp), default=None)
+    _open = [r for r in _rows if 'complet' not in str(r['Status'] or '').lower()
+             and (_done is None or r['Date'] > _done)]
+    _any = _rows[0]
+    def _ms(v):
+        # NaN is truthy — `v or ''` would print "nan" (Funbact-A EF004, 5 Sep)
+        return '' if v is None or (not isinstance(v, str) and pd.isna(v)) else str(v).strip()
+    MFG[_k] = {'product': _ms(_any['Product']),
+               'uom': _ms(_any['UOM']),
+               'made': sum(float(r['Size'] or 0) for r in _comp),
+               'wip': sum(float(r['Size'] or 0) for r in _open),
+               'lots': len(_comp),
+               'start': min(r['Date'] for r in _rows),
+               'done': _done, 'open': bool(_open)}
+
 def _rm_info():
     """Batch key → RM dispensing record (earliest date, customer, product, batch size)."""
     info = {}
@@ -1405,7 +1451,15 @@ def _build_plan_view():
         elif it['filled'] > 0:
             it['status'], it['srank'] = '🔵 Filling', 2
         else:
-            it['status'], it['srank'] = '🟤 RM dispensed', 1
+            # Production Log fills the blind spot between RM and filling:
+            # say WHERE the batch is instead of a bare "RM dispensed".
+            _mfg = [MFG[_bkey(b['batch'])] for b in batches if _bkey(b['batch']) in MFG]
+            if any(m['open'] for m in _mfg):
+                it['status'], it['srank'] = '🧪 Bulk in tank — under process', 1
+            elif _mfg:
+                it['status'], it['srank'] = '🧪 Bulk made — waiting for filling', 1
+            else:
+                it['status'], it['srank'] = '🟤 RM dispensed', 1
         it['pct'] = min(100.0, (it['filled'] / plan_q * 100) if plan_q else 0)
 
     # ── Share a batch slice claimed by more than one plan line ───────────
@@ -1781,6 +1835,65 @@ def _name_conflicts():
 
 NAME_CONFLICTS = _name_conflicts()
 
+
+
+def manufacturing_html():
+    """Small card: bulk batches in tanks now, or made but not yet filling.
+
+    Deliberately short — a batch disappears the moment filling starts (it
+    is then visible in the plan card), and completed batches older than 30
+    days are dropped as stale. The two groups are the two actions the
+    Director can take: chase the tank, or chase the filling line.
+    """
+    _today = ist_today()
+    in_tank, ready = [], []
+    for k, m in MFG.items():
+        if m['open']:
+            in_tank.append((k, m))
+        elif m['done'] and k not in FILL_DATES and (_today - m['done']).days <= 30:
+            ready.append((k, m))
+    in_tank.sort(key=lambda x: x[1]['start'])
+    ready.sort(key=lambda x: x[1]['done'])
+
+    def _qty(m, wip):
+        v = m['wip'] if wip else m['made']
+        if not v:
+            return '—'
+        lots = f' · {m["lots"]} lots' if (not wip and m['lots'] > 1) else ''
+        return f'{v:,.0f} {m["uom"]}{lots}'.strip()
+
+    rows = ''
+    for k, m in in_tank:
+        d = (_today - m['start']).days
+        rows += (f'<tr><td class="td-name">{m["product"]}</td>'
+                 f'<td class="td-name" style="font-weight:600;white-space:nowrap">{k}</td>'
+                 f'<td class="td-num">{_qty(m, True)}</td>'
+                 f'<td class="td-name">🧪 In tank since {m["start"].strftime("%d %b")}</td>'
+                 f'<td class="td-num" style="color:{C_AMB if d >= 3 else "#607D8B"}">{d} day{"s" if d != 1 else ""}</td></tr>')
+    for k, m in ready:
+        d = (_today - m['done']).days
+        rows += (f'<tr><td class="td-name">{m["product"]}</td>'
+                 f'<td class="td-name" style="font-weight:600;white-space:nowrap">{k}</td>'
+                 f'<td class="td-num">{_qty(m, False)}</td>'
+                 f'<td class="td-name" style="color:{C_GRN}">✅ Bulk ready since {m["done"].strftime("%d %b")} — filling not started</td>'
+                 f'<td class="td-num" style="color:{C_AMB if d >= 3 else "#607D8B"}">{d} day{"s" if d != 1 else ""}</td></tr>')
+    if not rows:
+        rows = ('<tr><td class="td-name" colspan="5" style="color:#607D8B">'
+                'Nothing in tanks, and every completed bulk batch has moved to filling.</td></tr>')
+    return f'''
+<details class="card" id="mfg-card">
+  <summary>{sec(f'  ━━&nbsp;&nbsp;🧪 MANUFACTURING &nbsp;—&nbsp; BULK &nbsp; IN &nbsp; PROGRESS &nbsp; ({len(in_tank)} in tank · {len(ready)} ready) &nbsp;━━', C_PRI)}</summary>
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
+    From the <strong>Production Log</strong>: bulk batches <strong>in the tank right now</strong>, and batches whose bulk is
+    <strong>made but filling has not started</strong>. A batch leaves this list the moment filling begins.
+  </div>
+  <div class="tbl-wrap" style="padding-top:10px">
+    <table style="min-width:640px">
+      <tr class="th-row"><th>PRODUCT</th><th>BATCH</th><th>BULK QTY</th><th>STATUS</th><th>WAITING</th></tr>
+      {rows}
+    </table>
+  </div>
+</details>'''
 
 
 def name_conflict_html():
@@ -3411,6 +3524,8 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 {dispense_schedule_html()}
 
 {plan_section_html()}
+
+{manufacturing_html()}
 
 {name_conflict_html()}
 
