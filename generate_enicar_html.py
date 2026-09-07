@@ -1417,47 +1417,49 @@ def _build_plan_view():
                 it['carry_work'] = True
                 if _topack > 1:
                     it['status'] = f'🟡 To pack — {_topack:,.0f} units filled earlier'
-                    it['srank'] = 2
+                    it['srank'] = 3
                 elif _todisp > 1:
                     it['status'] = f'🟠 To dispatch — {_todisp:,.0f} units packed earlier'
-                    it['srank'] = 3
+                    it['srank'] = 4
                 else:
-                    it['status'], it['srank'] = '✅ Already made', 5
+                    it['status'], it['srank'] = '✅ Already made', 6
             else:
-                it['status'], it['srank'] = '✅ Already made — nothing left', 5
+                it['status'], it['srank'] = '✅ Already made — nothing left', 6
         elif plan_q <= 0:
             # Nothing left to PLAN, but there may be work left to DO. The stage
             # follows the furthest point reached (so the row files under the
             # right tab); the text names what is still outstanding.
             _tp = sum(max(0.0, b['filled'] - b['packed']) for b in batches)
             _td = sum(max(0.0, b['packed'] - b['dispatched']) for b in batches)
-            it['srank'] = (4 if it['dispatched'] > 0 else
-                           3 if it['packed'] > 0 else
-                           2 if it['filled'] > 0 else 1)
+            it['srank'] = (5 if it['dispatched'] > 0 else
+                           4 if it['packed'] > 0 else
+                           3 if it['filled'] > 0 else 1)
             if _tp > 1000:
                 it['status'] = f'🟡 Made already · {_tp:,.0f} units still to pack'
             elif _td > 1000:
                 it['status'] = f'🟠 Made already · {_td:,.0f} units still to dispatch'
             else:
-                it['status'], it['srank'] = '✅ Already made — nothing left', 5
+                it['status'], it['srank'] = '✅ Already made — nothing left', 6
         elif not batches:
             it['status'], it['srank'] = ('🟣 ' + it['rm_status'], 0) if it.get('rm_status') else ('⚪ Not started', 0)
         elif plan_q and it['dispatched'] >= plan_q * 0.95:
-            it['status'], it['srank'] = '✅ Done (dispatched)', 5
+            it['status'], it['srank'] = '✅ Done (dispatched)', 6
         elif it['dispatched'] > 0:
-            it['status'], it['srank'] = '🟠 Dispatching', 4
+            it['status'], it['srank'] = '🟠 Dispatching', 5
         elif it['packed'] > 0:
-            it['status'], it['srank'] = '🟡 Packed', 3
+            it['status'], it['srank'] = '🟡 Packed', 4
         elif it['filled'] > 0:
-            it['status'], it['srank'] = '🔵 Filling', 2
+            it['status'], it['srank'] = '🔵 Filling', 3
         else:
-            # Production Log fills the blind spot between RM and filling:
-            # say WHERE the batch is instead of a bare "RM dispensed".
+            # Production (bulk manufacturing) is its own stage between RM and
+            # filling (Director, 7 Sep 2026): rm → production → filling →
+            # packing → dispatch. A batch counts as in production from the
+            # Production Log, whatever its logged status, until filling starts.
             _mfg = [MFG[_bkey(b['batch'])] for b in batches if _bkey(b['batch']) in MFG]
             if any(m['open'] for m in _mfg):
-                it['status'], it['srank'] = '🧪 Bulk in tank — under process', 1
+                it['status'], it['srank'] = '🧪 Production — bulk in tank', 2
             elif _mfg:
-                it['status'], it['srank'] = '🧪 Bulk made — waiting for filling', 1
+                it['status'], it['srank'] = '🧪 Production done — waiting for filling', 2
             else:
                 it['status'], it['srank'] = '🟤 RM dispensed', 1
         it['pct'] = min(100.0, (it['filled'] / plan_q * 100) if plan_q else 0)
@@ -1618,7 +1620,7 @@ def _build_plan_view():
         'items': len(items),
         'units': sum(x['planned_units'] or 0 for x in items),
         'started': sum(1 for x in items if x['srank'] > 0),
-        'done': sum(1 for x in items if x['srank'] == 5),
+        'done': sum(1 for x in items if x['srank'] == 6),
         'filled': sum(x['filled'] for x in items),
         'batches': sum(len(x['batches']) for x in items),
         'off_plan': len(off_plan),
@@ -1835,70 +1837,6 @@ def _name_conflicts():
 
 NAME_CONFLICTS = _name_conflicts()
 
-
-
-def manufacturing_html():
-    """Small card: bulk batches in tanks now, or made but not yet filling.
-
-    Deliberately short — a batch disappears the moment filling starts (it
-    is then visible in the plan card), and completed batches older than 30
-    days are dropped as stale. The two groups are the two actions the
-    Director can take: chase the tank, or chase the filling line.
-    """
-    _today = ist_today()
-    in_tank, ready = [], []
-    for k, m in MFG.items():
-        if k in FILL_DATES:
-            # Filling has started, so the bulk is done no matter what the
-            # Production Log status says — the team often forgets to flip
-            # "Under Process" to "Completed" (ME-13577, 7 Sep 2026).
-            continue
-        if m['open']:
-            in_tank.append((k, m))
-        elif m['done'] and (_today - m['done']).days <= 30:
-            ready.append((k, m))
-    in_tank.sort(key=lambda x: x[1]['start'])
-    ready.sort(key=lambda x: x[1]['done'])
-
-    def _qty(m, wip):
-        v = m['wip'] if wip else m['made']
-        if not v:
-            return '—'
-        lots = f' · {m["lots"]} lots' if (not wip and m['lots'] > 1) else ''
-        return f'{v:,.0f} {m["uom"]}{lots}'.strip()
-
-    rows = ''
-    for k, m in in_tank:
-        d = (_today - m['start']).days
-        rows += (f'<tr><td class="td-name">{m["product"]}</td>'
-                 f'<td class="td-name" style="font-weight:600;white-space:nowrap">{k}</td>'
-                 f'<td class="td-num">{_qty(m, True)}</td>'
-                 f'<td class="td-name">🧪 In tank since {m["start"].strftime("%d %b")}</td>'
-                 f'<td class="td-num" style="color:{C_AMB if d >= 3 else "#607D8B"}">{d} day{"s" if d != 1 else ""}</td></tr>')
-    for k, m in ready:
-        d = (_today - m['done']).days
-        rows += (f'<tr><td class="td-name">{m["product"]}</td>'
-                 f'<td class="td-name" style="font-weight:600;white-space:nowrap">{k}</td>'
-                 f'<td class="td-num">{_qty(m, False)}</td>'
-                 f'<td class="td-name" style="color:{C_GRN}">✅ Bulk ready since {m["done"].strftime("%d %b")} — filling not started</td>'
-                 f'<td class="td-num" style="color:{C_AMB if d >= 3 else "#607D8B"}">{d} day{"s" if d != 1 else ""}</td></tr>')
-    if not rows:
-        rows = ('<tr><td class="td-name" colspan="5" style="color:#607D8B">'
-                'Nothing in tanks, and every completed bulk batch has moved to filling.</td></tr>')
-    return f'''
-<details class="card" id="mfg-card">
-  <summary>{sec(f'  ━━&nbsp;&nbsp;🧪 MANUFACTURING &nbsp;—&nbsp; BULK &nbsp; IN &nbsp; PROGRESS &nbsp; ({len(in_tank)} in tank · {len(ready)} ready) &nbsp;━━', C_PRI)}</summary>
-  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
-    From the <strong>Production Log</strong>: bulk batches <strong>in the tank right now</strong>, and batches whose bulk is
-    <strong>made but filling has not started</strong>. A batch leaves this list the moment filling begins.
-  </div>
-  <div class="tbl-wrap" style="padding-top:10px">
-    <table style="min-width:640px">
-      <tr class="th-row"><th>PRODUCT</th><th>BATCH</th><th>BULK QTY</th><th>STATUS</th><th>WAITING</th></tr>
-      {rows}
-    </table>
-  </div>
-</details>'''
 
 
 def name_conflict_html():
@@ -2190,14 +2128,15 @@ def _plan_block(view):
                  f'<td class="td-name">{wrote}</td>'
                  f'</tr>')
         rows += _plan_batch_detail(it, i, K)
-    _sc = {k: sum(1 for x in items if x['srank'] == k) for k in range(6)}
+    _sc = {k: sum(1 for x in items if x['srank'] == k) for k in range(7)}
     _nflag = sum(1 for x in items if x.get('flag'))
     _stage = [(-1, f'ALL PLAN ({len(items)})'),
               (11, f'🟤 RM DISPENSED ({_sc[1]})'),
-              (12, f'🔵 FILLING ({_sc[2]})'),
-              (13, f'🟡 PACKED ({_sc[3]})'),
-              (14, f'🟠 DISPATCHED ({_sc[4]})'),
-              (15, f'✅ COMPLETED ({_sc[5]})'),
+              (12, f'🧪 PRODUCTION ({_sc[2]})'),
+              (13, f'🔵 FILLING ({_sc[3]})'),
+              (14, f'🟡 PACKED ({_sc[4]})'),
+              (15, f'🟠 DISPATCHED ({_sc[5]})'),
+              (16, f'✅ COMPLETED ({_sc[6]})'),
               (-2, f'⚪ NOT STARTED ({_sc[0]})'),
               (-5, f'⚠ NEEDS ATTENTION ({_nflag})')]
     def _chip(p, lbl, active=False):
@@ -3530,8 +3469,6 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 
 {plan_section_html()}
 
-{manufacturing_html()}
-
 {name_conflict_html()}
 
 <!-- ════════════════════════════════════════════════════════════
@@ -4387,7 +4324,7 @@ function _planApply(k) {{
     const mon = tr.getAttribute('data-month');
     const p = st.p;
     let show = true;
-    if (p >= 11 && p <= 15) show = (srank === p - 10);
+    if (p >= 11 && p <= 16) show = (srank === p - 10);
     else if (p >= 1) show = (prio === p);
     else if (p === -2) show = (srank === 0);
     else if (p === -4) show = isnext;
