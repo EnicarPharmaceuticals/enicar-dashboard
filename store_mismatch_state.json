@@ -1,5 +1,4 @@
 {
-  "BATCH|EF004|EF002": "2026-09-07",
   "BATCH|EF005|EF002": "2026-09-07",
   "BATCH|EF143|EF-142": "2026-09-05",
   "BATCH|EL2422|EL-2462": "2026-09-05",
@@ -9,7 +8,6 @@
   "BATCH|EL2493|EL-2491": "2026-09-06",
   "BATCH|EL2494|EL-2491": "2026-09-07",
   "BATCH|L0947|L-0947": "2026-09-06",
-  "BATCH|SL05422|SL05420": "2026-09-07",
   "BATCH|SL05423|SL05420": "2026-09-07",
   "BATCH|U148|U-158": "2026-09-06",
   "BATCH|U164|U-162": "2026-09-06",
@@ -41,6 +39,7 @@
   "PARTY|EF001|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-07",
   "PARTY|EF002|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-06",
   "PARTY|EF003|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-05",
+  "PARTY|EF004|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-07",
   "PARTY|EL-2425|pharmatrustlimited|pharmatrustltd": "2026-09-06",
   "PARTY|EL-2426|pharmatrustlimited|pharmatrustltd": "2026-09-06",
   "PARTY|EL-2427|napoexportsprivatelimited|carethcorporation": "2026-09-07",
@@ -88,6 +87,7 @@
   "PARTY|SL05417|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-07",
   "PARTY|SL05419|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-07",
   "PARTY|SL05420|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-07",
+  "PARTY|SL05422|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-09-07",
   "PARTY|U-136|unichemghanalimited|uniquepharma": "2026-09-06",
   "PARTY|U-139|unichemghanalimited|uniquepharma": "2026-09-06",
   "PARTY|U-140|unichemghanalimited|uniquepharma": "2026-09-06",
@@ -172,6 +172,7 @@
   "PRODUCT|SL05419|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-07",
   "PRODUCT|SL05420|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-07",
   "PRODUCT|SL05421|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-05",
+  "PRODUCT|SL05422|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-09-07",
   "PRODUCT|T16001|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-09-05",
   "PRODUCT|T16002|azithromycinoralsuspensionumedica|azithromycin": "2026-09-05",
   "PRODUCT|U-147|qenzy|": "2026-09-05"
