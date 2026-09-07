@@ -1848,9 +1848,14 @@ def manufacturing_html():
     _today = ist_today()
     in_tank, ready = [], []
     for k, m in MFG.items():
+        if k in FILL_DATES:
+            # Filling has started, so the bulk is done no matter what the
+            # Production Log status says — the team often forgets to flip
+            # "Under Process" to "Completed" (ME-13577, 7 Sep 2026).
+            continue
         if m['open']:
             in_tank.append((k, m))
-        elif m['done'] and k not in FILL_DATES and (_today - m['done']).days <= 30:
+        elif m['done'] and (_today - m['done']).days <= 30:
             ready.append((k, m))
     in_tank.sort(key=lambda x: x[1]['start'])
     ready.sort(key=lambda x: x[1]['done'])
