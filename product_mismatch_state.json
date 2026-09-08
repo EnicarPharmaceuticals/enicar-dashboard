@@ -49,6 +49,8 @@
   "-|product|polygelsuspensionsachet|redsunjellybananaflavour": "2026-09-08",
   "-|product|polygelsuspensionsachet|telovasyrup": "2026-09-08",
   "-|product|polygelsuspensionsachet|vitasaph": "2026-09-08",
+  "12000|party|up|bc": "2026-09-08",
+  "12000|product|15gm|100ml": "2026-09-08",
   "14000|party|bc|up": "2026-09-08",
   "14000|product|60ml|15gm": "2026-09-08",
   "20000|product|15gm|20ml": "2026-09-07",
@@ -99,6 +101,7 @@
   "650007|product|polygelsuspension|polygelsuspensionsachet": "2026-09-06",
   "6560010|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-09-07",
   "66240|party|bc|up": "2026-09-08",
+  "7000|product|15gm|100ml": "2026-09-08",
   "ALE-141|party|sapphirelifesciencepvtltdp2p|ronakeximpvtltd": "2026-09-06",
   "AP08891|party|stanmarcenterprisep2p|aurapharmaceuticalspvtltdp2p": "2026-09-08",
   "AP08891|product|promilase|promilaes": "2026-09-08",
@@ -358,6 +361,14 @@
       "product": "BR-PARACETAMOL CHILDREN ELIXIR",
       "qty": 30400.0,
       "stage": "Filling started"
+    },
+    "M-03298": {
+      "batch": "M-03298",
+      "company": "MEDICO REMEDIES LTD (P2P)",
+      "date": "2026-09-07",
+      "product": "Medcisteine Syrup",
+      "qty": 1315.0,
+      "stage": "RM dispensed"
     },
     "MUCE-196": {
       "batch": "MUCE-196",
