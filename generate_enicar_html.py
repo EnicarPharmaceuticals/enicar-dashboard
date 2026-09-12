@@ -712,7 +712,8 @@ def _rm_info():
             e['product'] = str(r.get('NAME OF THE PRODUCT')).strip()
         if e['pack'] is None and pd.notna(r.get('PACK SIZE')):
             e['pack'] = str(r.get('PACK SIZE')).strip()
-        e['size'] += float(pd.to_numeric(r.get('BATCH SIZE'), errors='coerce') or 0)
+        _bs = pd.to_numeric(str(r.get('BATCH SIZE')).replace(',', ''), errors='coerce')
+        e['size'] += 0.0 if pd.isna(_bs) else float(_bs)   # NaN is truthy — never `or 0` it
     return info
 
 RM_INFO = _rm_info()
@@ -1790,6 +1791,10 @@ _dyn_months = _detect_plan_months()
 if _dyn_months:
     PLAN_MONTHS = _dyn_months
     _, _, PLAN_MONTH, PLAN_WINDOW_FROM, PLAN_RM_FROM, PLAN_TITLE = _dyn_months[0]
+    if PLAN_WINDOW_FROM.replace(day=1) < ist_today().replace(day=1):
+        _self_check(f'the newest plan tab is {PLAN_TITLE} but the month has moved on — '
+                    f'add the {ist_today().strftime("%b").upper()} PLAN tab so the '
+                    f'dashboard tracks the current month.')
 
 PLAN_VIEWS = {}
 for _k, _lbl, _m, _wf, _rf, _t in PLAN_MONTHS:
@@ -1976,7 +1981,8 @@ def purchase_orders_html():
         _d = [pd.to_datetime(r.get('Month'), errors='coerce'),
               pd.to_datetime(r.get('PO Date'), dayfirst=True, errors='coerce')]
         _d = [x for x in _d if pd.notna(x)]
-        if not _d or max(_d).date() < cutoff:
+        # undated lines stay IN: only a line that is provably old is skipped
+        if _d and max(_d).date() < cutoff:
             continue
         if any(_matches(r.get(c)) for c in ('Product', 'Customer') if pd.notna(r.get(c))):
             continue
