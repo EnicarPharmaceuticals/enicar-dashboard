@@ -717,6 +717,43 @@ def _rm_info():
 
 RM_INFO = _rm_info()
 
+# ── Physical-yield check ─────────────────────────────────────────────────────
+# Filled/packed units × pack size must fit inside the bulk batch RM dispensed.
+# The 11 Sep 2026 audit found 20 impossible batches (Magascon SL05423 claimed
+# 50,200 × 150 ml from a 760 L bulk) that no per-row check could see. Only
+# batches active in the last 45 days are surfaced — old rows are history.
+def _yield_warns():
+    out, agg = [], {}
+    recent = ist_today() - _td_ist(days=45)
+    def _pnum(v):
+        m = re.search(r'(\d+(?:\.\d+)?)', str(v or ''))
+        return float(m.group(1)) if m else None
+    for df, qc in ((fill_df, 'Qty'), (pack_df, 'TotalPacked')):
+        for _, r in df.iterrows():
+            k = _bkey(r['Batch']) if pd.notna(r['Batch']) else ''
+            p = _pnum(r['PackSize'])
+            q = pd.to_numeric(r[qc], errors='coerce')
+            q = 0.0 if pd.isna(q) else float(q)
+            if not k or not p or not q:
+                continue
+            e = agg.setdefault(k, {'fv': 0.0, 'pv': 0.0, 'last': r['Date'],
+                                   'product': str(r['Product'] or '')})
+            e['fv' if qc == 'Qty' else 'pv'] += q * p / 1000.0
+            if r['Date'] and r['Date'] > e['last']:
+                e['last'] = r['Date']
+    for k, e in agg.items():
+        rmv = (RM_INFO.get(k) or {}).get('size') or 0
+        if rmv <= 0 or e['last'] < recent:
+            continue
+        worst = max(e['fv'], e['pv'])
+        if worst > rmv * 1.15 + 5:
+            out.append({'batch': k, 'product': e['product'][:34], 'rm': rmv,
+                        'fv': e['fv'], 'pv': e['pv'], 'ratio': worst / rmv})
+    out.sort(key=lambda x: -x['ratio'])
+    return out[:10]
+
+YIELD_WARNS = _yield_warns()
+
 # ── Stuck batches ─────────────────────────────────────────────────────────────
 # A batch is "stuck" when it has sat at one stage with no movement to the next:
 #   filled but nothing packed for STUCK_FILL_DAYS+
@@ -1718,6 +1755,42 @@ PLAN_MONTHS = [
     ('SEP', 'SEPT PLAN', '2026-09', date(2026, 9, 1), date(2026, 8, 25), 'SEPTEMBER 2026 PLAN'),
     ('AUG', 'AUG PLAN',  '2026-08', date(2026, 8, 1), date(2026, 7, 25), 'AUGUST 2026 PLAN'),
 ]
+# Derive the month list from the workbook's own PLAN tabs so a new month
+# (OCT PLAN) goes live without a code edit (Director, 12 Sep 2026). The
+# hardcoded list above is only the fallback when no tab parses.
+_M3N = {'JAN': 1, 'FEB': 2, 'MAR': 3, 'APR': 4, 'MAY': 5, 'JUN': 6,
+        'JUL': 7, 'AUG': 8, 'SEP': 9, 'OCT': 10, 'NOV': 11, 'DEC': 12}
+
+def _detect_plan_months():
+    try:
+        _tabs = pd.ExcelFile(TEMPLATE).sheet_names
+    except Exception:
+        return []
+    _t = ist_today()
+    found = {}
+    for _tab in _tabs:
+        _up = _tab.upper()
+        if 'PLAN' not in _up or 'DISPENS' in _up:
+            continue
+        _m = re.match(r'\s*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)', _up)
+        if not _m:
+            continue
+        _mon = _M3N[_m.group(1)]
+        # year = the reading closest to today (a DEC tab seen in Jan is last year's)
+        _start = min((date(_y, _mon, 1) for _y in (_t.year - 1, _t.year, _t.year + 1)),
+                     key=lambda d: abs((d - _t).days))
+        if (_start - _t).days > 45:      # far-future tab — ignore until its time comes
+            continue
+        found[_start] = (_m.group(1), _tab, _start.strftime('%Y-%m'), _start,
+                         _start - _td_ist(days=7),
+                         f'{calendar.month_name[_mon].upper()} {_start.year} PLAN')
+    return [found[_s] for _s in sorted(found, reverse=True)][:2]
+
+_dyn_months = _detect_plan_months()
+if _dyn_months:
+    PLAN_MONTHS = _dyn_months
+    _, _, PLAN_MONTH, PLAN_WINDOW_FROM, PLAN_RM_FROM, PLAN_TITLE = _dyn_months[0]
+
 PLAN_VIEWS = {}
 for _k, _lbl, _m, _wf, _rf, _t in PLAN_MONTHS:
     _it, _src, _sum, _off = _build_plan_for(_m, _wf, _rf, _t)
@@ -1837,6 +1910,102 @@ def _name_conflicts():
 
 NAME_CONFLICTS = _name_conflicts()
 
+
+
+def yield_check_html():
+    """Impossible-yield card — only rendered when there is something to fix."""
+    if not YIELD_WARNS:
+        return ''
+    rows = ''.join(
+        f'<tr><td class="td-name">{w["product"]}</td>'
+        f'<td class="td-name" style="font-weight:600;white-space:nowrap">{w["batch"]}</td>'
+        f'<td class="td-num">{w["rm"]:,.0f}</td>'
+        f'<td class="td-num">{w["fv"]:,.0f}</td>'
+        f'<td class="td-num">{w["pv"]:,.0f}</td>'
+        f'<td class="td-num" style="color:#B71C1C;font-weight:700">×{w["ratio"]:.2f}</td></tr>'
+        for w in YIELD_WARNS)
+    return f"""
+<details class="card" id="yield-card">
+  <summary>{sec(f'  ━━&nbsp;&nbsp;⚠ IMPOSSIBLE &nbsp; YIELD &nbsp;—&nbsp; MORE &nbsp; UNITS &nbsp; THAN &nbsp; THE &nbsp; BULK &nbsp; ({len(YIELD_WARNS)}) &nbsp;━━', C_AMB)}</summary>
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
+    Filled / packed units × pack size add up to <strong>more bulk than RM dispensed</strong> —
+    a quantity or a pack size is entered wrong on one of the rows. Volumes in litres / kg;
+    batches active in the last 45 days only.
+  </div>
+  <div class="tbl-wrap" style="padding-top:10px">
+    <table style="min-width:640px">
+      <tr class="th-row"><th>PRODUCT</th><th>BATCH</th><th>RM BULK</th><th>FILLED VOL</th><th>PACKED VOL</th><th>RATIO</th></tr>
+      {rows}
+    </table>
+  </div>
+</details>"""
+
+
+def purchase_orders_html():
+    """PO lines (Purchase Order tab) that do not appear in the current plan.
+
+    The tab is free-typed and its Customer column sometimes holds the product
+    name, so BOTH cells are tried against the plan. Only POs dated within 60
+    days before the plan month are considered — the 2025 backlog is history.
+    An unmatched line is a question, not an error: covered by stock, planned
+    next month, or genuinely missed."""
+    try:
+        po = pd.read_excel(TEMPLATE, sheet_name='Purchase Order', header=0)
+    except Exception:
+        return ''
+    po.columns = [' '.join(str(c).split()) for c in po.columns]
+    if 'PO Number' not in po.columns:
+        return ''
+    po = po[po['PO Number'].notna()]
+    from difflib import SequenceMatcher
+    _plan_c = {_pcanon(x['product']) for x in PLAN_ITEMS if x.get('product')}
+    _plan_c.discard('')
+
+    def _matches(v):
+        c = _pcanon(v)
+        if not c or len(c) < 4:
+            return False
+        for k in _plan_c:
+            if c == k or (len(c) >= 5 and len(k) >= 5 and (c in k or k in c)):
+                return True
+        return any(SequenceMatcher(None, c, k).ratio() >= 0.85 for k in _plan_c)
+
+    cutoff = PLAN_WINDOW_FROM - _td_ist(days=60)
+    rows, miss = '', 0
+    for _, r in po.iterrows():
+        _d = [pd.to_datetime(r.get('Month'), errors='coerce'),
+              pd.to_datetime(r.get('PO Date'), dayfirst=True, errors='coerce')]
+        _d = [x for x in _d if pd.notna(x)]
+        if not _d or max(_d).date() < cutoff:
+            continue
+        if any(_matches(r.get(c)) for c in ('Product', 'Customer') if pd.notna(r.get(c))):
+            continue
+        miss += 1
+        if miss <= 40:
+            _txt = lambda v: '' if pd.isna(v) else str(v).strip()
+            rows += (f'<tr><td class="td-name" style="white-space:nowrap">{_txt(r.get("PO Number"))[:24]}</td>'
+                     f'<td class="td-name">{_txt(r.get("Customer"))[:26]}</td>'
+                     f'<td class="td-name">{_txt(r.get("Product"))[:30]}</td>'
+                     f'<td class="td-num">{_txt(r.get("Quantity"))}</td>'
+                     f'<td class="td-name">{_txt(r.get("Pack Size"))}</td>'
+                     f'<td class="td-name" style="white-space:nowrap">{_txt(r.get("Tentative Delivery"))[:12]}</td></tr>')
+    if not miss:
+        rows = ('<tr><td class="td-name" colspan="6" style="color:#607D8B">'
+                'Every recent PO line matches a product on the current plan.</td></tr>')
+    return f"""
+<details class="card" id="po-card">
+  <summary>{sec(f'  ━━&nbsp;&nbsp;📋 PURCHASE &nbsp; ORDERS &nbsp; NOT &nbsp; IN &nbsp; PLAN &nbsp; ({miss}) &nbsp;━━', C_AMB if miss else C_PRI)}</summary>
+  <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
+    Recent lines from the <strong>Purchase Order</strong> tab whose product is <strong>not on the {PLAN_TITLE}</strong>.
+    Each one deserves a look: already covered by stock, planned for next month — or missed.
+  </div>
+  <div class="tbl-wrap" style="padding-top:10px">
+    <table style="min-width:680px">
+      <tr class="th-row"><th>PO NUMBER</th><th>CUSTOMER</th><th>PRODUCT</th><th>QTY</th><th>PACK</th><th>DELIVERY</th></tr>
+      {rows}
+    </table>
+  </div>
+</details>"""
 
 
 def name_conflict_html():
@@ -3470,6 +3639,10 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 {plan_section_html()}
 
 {name_conflict_html()}
+
+{yield_check_html()}
+
+{purchase_orders_html()}
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 1 — PRODUCT TYPE BREAKDOWN
