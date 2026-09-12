@@ -89,10 +89,13 @@ def load_plan_products_and_batches():
         _cands = [s for s in pd.ExcelFile(XLSX).sheet_names
                   if 'PLAN' in s.upper() and 'DISPENS' not in s.upper()]
         _mon3 = PLAN_MONTH_START.strftime('%b').upper()
-        tab = (next((s for s in _cands if _mon3 in s.upper()), None)
-               or (_cands[0] if _cands else None))
-        if tab and _mon3 not in tab.upper():
-            print(f'  ⚠ no "{_mon3}" plan tab — falling back to "{tab}"')
+        tab = next((s for s in _cands if _mon3 in s.upper()), None)
+        # NO fallback to another month's tab: judging this month's production
+        # against LAST month's plan would mass-flag everything as off-plan and
+        # email management garbage (recheck, 13 Sep 2026). No tab = no run.
+        if tab is None:
+            print(f'  ⚠ no "{_mon3}" plan tab yet — off-plan check skipped')
+            return prods, batches, brands
         if tab:
             df = pd.read_excel(XLSX, sheet_name=tab, header=0)
             df.columns = [' '.join(str(c).split()).upper() for c in df.columns]
