@@ -63,8 +63,14 @@ ALERT_KEY  = '_offplan_alerted'
 DIGEST_KEY = '_offplan_digest_sent'
 TO = ['nimishpatil@enicarpharma.com', 'swaralisave@enicarpharma.com']
 
-PLAN_MONTH_START = date(2026, 9, 1)
-PLAN_LABEL = 'SEP 2026'
+# The plan month follows the calendar (IST) — no code edit at rollover
+# (Director, 12 Sep 2026). The generator picks its plan tab the same way.
+def _ist_today():
+    from datetime import timezone
+    return (datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)).date()
+
+PLAN_MONTH_START = _ist_today().replace(day=1)
+PLAN_LABEL = PLAN_MONTH_START.strftime('%b %Y').upper()
 
 
 def bk(b):  return re.sub(r'\s+', '', str(b)).upper()
