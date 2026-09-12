@@ -1949,6 +1949,9 @@ def yield_check_html():
 def purchase_orders_html():
     """PO lines (Purchase Order tab) that do not appear in the current plan.
 
+    NOT RENDERED as of 13 Sep 2026 (Director: "remove ... as of now") —
+    re-add {purchase_orders_html()} to the page assembly to bring it back.
+
     The tab is free-typed and its Customer column sometimes holds the product
     name, so BOTH cells are tried against the plan. Only POs dated within 60
     days before the plan month are considered — the 2025 backlog is history.
@@ -3647,8 +3650,6 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 {name_conflict_html()}
 
 {yield_check_html()}
-
-{purchase_orders_html()}
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 1 — PRODUCT TYPE BREAKDOWN
