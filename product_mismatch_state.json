@@ -144,7 +144,6 @@
   "EF008|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-14",
   "EF009|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-16",
   "EF009|party|blissgvspharmaltdll|bluemappharmachemp2p": "2026-09-15",
-  "EF010|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-16",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-09-14",
   "EL-2413|party|yelloworangepharmacy|pharmatrustltd": "2026-09-14",
   "EL-2414|party|yelloworangepharmacy|pharmatrustltd": "2026-09-14",
@@ -395,6 +394,14 @@
       "date": "2026-08-05",
       "product": "BR-PARACETAMOL CHILDREN ELIXIR",
       "qty": 30400.0,
+      "stage": "Filling started"
+    },
+    "EL-2536": {
+      "batch": "EL-2536",
+      "company": "",
+      "date": "2026-09-16",
+      "product": "Smical susp",
+      "qty": 8900.0,
       "stage": "Filling started"
     },
     "M-03298": {
