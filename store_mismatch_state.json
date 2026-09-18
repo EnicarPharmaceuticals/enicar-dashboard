@@ -1,6 +1,5 @@
 {
   "BATCH|ALG002|ALG-001": "2026-09-17",
-  "BATCH|EF011|EF001": "2026-09-16",
   "BATCH|EL2422|EL-2462": "2026-09-17",
   "BATCH|EL2495|EL-2491": "2026-09-17",
   "BATCH|L0947|L-0947": "2026-09-18",
@@ -57,6 +56,7 @@
   "PARTY|EF008|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-17",
   "PARTY|EF009|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-17",
   "PARTY|EF010|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-17",
+  "PARTY|EF011|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-18",
   "PARTY|EL-2425|pharmatrustlimited|pharmatrustltd": "2026-09-18",
   "PARTY|EL-2426|pharmatrustlimited|pharmatrustltd": "2026-09-18",
   "PARTY|EL-2427|napoexportsprivatelimited|carethcorporation": "2026-09-16",
