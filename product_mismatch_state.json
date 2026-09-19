@@ -429,6 +429,14 @@
       "qty": 4540.0,
       "stage": "RM dispensed"
     },
+    "NE-12154": {
+      "batch": "NE-12154",
+      "company": "",
+      "date": "2026-09-19",
+      "product": "NECTALLIN",
+      "qty": 20000.0,
+      "stage": "Filling started"
+    },
     "RE-011338": {
       "batch": "RE-011338",
       "company": "Ronak Exim pvt Ltd.",
