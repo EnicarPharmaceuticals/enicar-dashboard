@@ -2292,7 +2292,7 @@ def _plan_block(view):
                  f'data-month="{_mon}" '
                  f'data-company="{(it.get("display_party") or "").lower()}" '
                  f'data-cat="{it.get("cat", "Bottles")}" '
-                 f'onclick="togglePlan(\'{K}\',{i})" title="Click to verify the RM batches behind this item">'
+                 f'onclick="togglePlan(\'{K}\',{i})">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
                  f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
                  f'<td class="td-name" style="color:#546E7A">{it.get("display_party") or "—"}{pflag}</td>'
@@ -2689,12 +2689,47 @@ for e in BATCH_JOURNEY:
          'dispD': _stage_json(DISP_DATES, k),
          'stuck': {'stage': st[0], 'days': st[1]} if st else None})
 
+_POOL, _POOL_IX = [], {}
+def _pool_ix(v):
+    if v not in _POOL_IX:
+        _POOL_IX[v] = len(_POOL)
+        _POOL.append(v)
+    return _POOL_IX[v]
+
+def _columnar(rows):
+    """[{k: v}, ...] -> {'k': keys, 's': [pooled col idx], 'r': [[...]]}.
+    Long keys are written once, and columns that hold only strings (dates,
+    products, parties — endlessly repeated) become indexes into one shared
+    string pool. The page's expander rebuilds the exact original rows before
+    any consumer JS runs, so nothing else changes."""
+    if not rows or not isinstance(rows[0], dict):
+        return rows
+    keys = []
+    for r in rows:
+        for k in r:
+            if k not in keys:
+                keys.append(k)
+    cols = list(range(len(keys)))
+    pooled = [i for i in cols if all(
+        isinstance(r.get(keys[i]), str) or r.get(keys[i]) is None for r in rows)]
+    out = []
+    for r in rows:
+        row = []
+        for i in cols:
+            v = r.get(keys[i])
+            row.append(_pool_ix(v) if i in pooled and isinstance(v, str) else v)
+        out.append(row)
+    return {'k': keys, 's': pooled, 'r': out}
+
+_tables = {
+    'fill': _columnar(fill_rows), 'pack': _columnar(pack_rows),
+    'disp': _columnar(disp_rows), 'staff': _columnar(staff_rows),
+    'batches': _columnar(batch_rows)}
 DATA_JSON = json.dumps({
-    'fill': fill_rows, 'pack': pack_rows, 'disp': disp_rows, 'staff': staff_rows,
+    **_tables, 'pool': _POOL,
     'lines': LINES, 'productTypes': PRODUCT_TYPES,
     'bsrOpening': BSR_OPENING, 'fillAll': float(f_all), 'dispAll': float(d_all),
-    'batches': batch_rows
-})
+}, separators=(',', ':'))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -3805,7 +3840,16 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 </div>
 
 <script>
-const ENICAR = {DATA_JSON};
+const ENICAR_C = {DATA_JSON};
+// expand columnar tables back to the row-object shape all code below expects
+const ENICAR = {{}};
+for (const [t, v] of Object.entries(ENICAR_C)) {{
+  if (v && v.k && v.r) {{
+    const pooled = new Set(v.s || []);
+    ENICAR[t] = v.r.map(row => Object.fromEntries(row.map((x, i) =>
+      [v.k[i], (pooled.has(i) && typeof x === 'number') ? ENICAR_C.pool[x] : x])));
+  }} else ENICAR[t] = v;
+}}
 const PT = ENICAR.productTypes;
 const LINES = ENICAR.lines;
 
@@ -4553,6 +4597,8 @@ function planMonth(el, k) {{
 }}
 
 // ── Init on load ──────────────────────────────────────
+document.querySelectorAll('tr[data-prio]').forEach(t =>
+  t.title = 'Click to verify the RM batches behind this item');
 lookupBatch();
 applyFilter();
 renderFilterUI();
@@ -4564,6 +4610,41 @@ renderFilterUI();
 # ══════════════════════════════════════════════════════════════════════════════
 # WRITE OUTPUT
 # ══════════════════════════════════════════════════════════════════════════════
+def _compress_html(page):
+    """Shrink the page without changing what it shows (2.4 MB -> ~1 MB):
+    inline styles repeated 4+ times become shared CSS classes (injected at the
+    END of <head> so they win ties exactly like the inline styles did), and
+    indentation goes. Styles mentioning 'display' stay inline — the JS month/
+    filter toggles read el.style.display back and must see the initial value."""
+    import collections as _cc
+    cnt = _cc.Counter(re.findall(r'style="([^"]*)"', page))
+    common = {}
+    for v, c in cnt.items():
+        # only display:NONE is read back by JS toggles (togglePlan etc.);
+        # display:flex etc. is pure layout and safe to move into a class
+        if c >= 3 and 'display:none' not in v and '"' not in v and '<' not in v and '&' not in v:
+            common[v] = f'c{len(common)}'
+    def _cs(m):
+        return (f'class="{m.group(1)} {common[m.group(2)]}"'
+                if m.group(2) in common else m.group(0))
+    page = re.sub(r'class="([^"]*)" style="([^"]*)"', _cs, page)
+    def _sc(m):
+        return (f'class="{common[m.group(1)]} {m.group(2)}"'
+                if m.group(1) in common else m.group(0))
+    page = re.sub(r'style="([^"]*)" class="([^"]*)"', _sc, page)
+    page = re.sub(r'style="([^"]*)"',
+                  lambda m: (f'class="{common[m.group(1)]}"'
+                             if m.group(1) in common else m.group(0)), page)
+    css = ''.join(f'.{k}{{{v}}}' for v, k in common.items())
+    page = page.replace('</head>', f'<style>{css}</style>\n</head>', 1)
+    page = '\n'.join(l.lstrip() for l in page.split('\n'))
+    page = re.sub(r'\n{2,}', '\n', page)
+    # whitespace between structural tags never renders — join those lines
+    return re.sub(r'>\n<(tr|/?t[dhr]|/?tbody|/?thead|/?table|/?div|/?details|/?summary|/?section)\b',
+                  r'><\1', page)
+
+html = _compress_html(html)
+
 with open(OUTPUT, 'w', encoding='utf-8') as f:
     f.write(html)
 
