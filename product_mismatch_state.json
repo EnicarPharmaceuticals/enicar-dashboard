@@ -12,6 +12,7 @@
   "-|party|shalinahealthcarepvtltd|uf": "2026-09-20",
   "-|party|shalinahealthcarepvtltd|uniquepharma": "2026-09-19",
   "-|party|shalinahealthcarepvtltd|up": "2026-09-20",
+  "-|party|shalinahealthcarepvtltd|vardhmanexportsp2p": "2026-09-21",
   "-|party|shalinahealthcarepvtltd|vitacurapharmaceuticals": "2026-09-20",
   "-|product|polygelsuspensionsachet|100ml": "2026-09-20",
   "-|product|polygelsuspensionsachet|10ml": "2026-09-20",
@@ -39,6 +40,7 @@
   "-|product|polygelsuspensionsachet|abee400": "2026-09-21",
   "-|product|polygelsuspensionsachet|climaxnystatinoralsuspension": "2026-09-21",
   "-|product|polygelsuspensionsachet|ferrolifesyrup": "2026-09-20",
+  "-|product|polygelsuspensionsachet|gocoffcoughsyrup": "2026-09-21",
   "-|product|polygelsuspensionsachet|lasominzdrops": "2026-09-21",
   "-|product|polygelsuspensionsachet|paediatriccotrimoxazoleoralsuspensionbpselfcare": "2026-09-20",
   "-|product|polygelsuspensionsachet|princesheptinplussachets": "2026-09-20",
@@ -51,7 +53,7 @@
   "12000|party|up|bc": "2026-09-20",
   "12000|product|15gm|100ml": "2026-09-20",
   "14000|party|bc|up": "2026-09-20",
-  "14000|product|60ml|15gm": "2026-09-20",
+  "14000|product|15gm|60ml": "2026-09-21",
   "16000|product|15ml|100ml": "2026-09-21",
   "20000|product|15gm|20ml": "2026-09-19",
   "24000|party|up|bc": "2026-09-20",
@@ -151,6 +153,7 @@
   "EF009|party|blissgvspharmaltdll|bluemappharmachemp2p": "2026-09-21",
   "EF010|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-20",
   "EF011|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-21",
+  "EF012|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-21",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-09-20",
   "EL-2413|party|yelloworangepharmacy|pharmatrustltd": "2026-09-20",
   "EL-2414|party|yelloworangepharmacy|pharmatrustltd": "2026-09-20",
@@ -185,6 +188,7 @@
   "EL-2481|party|twinimpex|enicarpharmaceuticalpvtltd": "2026-09-20",
   "EL-2482|product|malegraoraljelly|malegra": "2026-09-20",
   "EL-2535|party|workcellsolutionsprivatelimited|workcellsolution": "2026-09-20",
+  "EL-2536|product|smicalsuspension|smicalsusp": "2026-09-21",
   "EO-4040|product|selfcarehyzolointment|hyzolointment": "2026-09-19",
   "ET-11337|product|ferrousandfolicacid|ferrousandfolicacidsyrupkanvid": "2026-09-20",
   "ET-12324|product|enicidsuspensionkanvid|enicidsuspension": "2026-09-20",
@@ -341,6 +345,14 @@
       "product": "Promilaes",
       "qty": 22000.0,
       "stage": "Filling started"
+    },
+    "AQ-12154": {
+      "batch": "AQ-12154",
+      "company": "AQUATIC REMEDIES LTD",
+      "date": "2026-09-18",
+      "product": "NECTALLIN",
+      "qty": 2020.0,
+      "stage": "RM dispensed"
     },
     "CNJ017": {
       "batch": "CNJ017",
@@ -564,6 +576,14 @@
       "date": "2026-08-14",
       "product": "BEDISYL 100 JELLY (Strawberry Flavour)",
       "qty": 505.0,
+      "stage": "RM dispensed"
+    },
+    "SL05418": {
+      "batch": "SL05418",
+      "company": "SOCOMED PHARMA PVT. LTD",
+      "date": "2026-09-19",
+      "product": "Princes Heptin Plus",
+      "qty": 6860.0,
       "stage": "RM dispensed"
     },
     "SN142802": {
