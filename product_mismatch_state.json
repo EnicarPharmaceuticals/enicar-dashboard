@@ -3,6 +3,7 @@
   "-|party|shalinahealthcarepvtltd|bc": "2026-09-23",
   "-|party|shalinahealthcarepvtltd|bluemappharmachemp2p": "2026-09-21",
   "-|party|shalinahealthcarepvtltd|enicarpharmaceuticalpvtltd": "2026-09-21",
+  "-|party|shalinahealthcarepvtltd|indocoremediesltd": "2026-09-23",
   "-|party|shalinahealthcarepvtltd|kamalinternational": "2026-09-23",
   "-|party|shalinahealthcarepvtltd|lasohealthcarepvtltd": "2026-09-21",
   "-|party|shalinahealthcarepvtltd|ok": "2026-09-23",
@@ -49,6 +50,7 @@
   "-|product|polygelsuspensionsachet|redsunjellybananaflavour": "2026-09-23",
   "-|product|polygelsuspensionsachet|telovasyrup": "2026-09-23",
   "-|product|polygelsuspensionsachet|unicaine": "2026-09-23",
+  "-|product|polygelsuspensionsachet|viscid": "2026-09-23",
   "10000|party|bc|up": "2026-09-22",
   "12000|party|up|bc": "2026-09-23",
   "12000|product|15gm|100ml": "2026-09-23",
@@ -437,6 +439,14 @@
       "product": "Smical susp",
       "qty": 8900.0,
       "stage": "Filling started"
+    },
+    "M-02300": {
+      "batch": "M-02300",
+      "company": "MEDICO REMEDIES LTD (P2P)",
+      "date": "2026-09-23",
+      "product": "Zitrosyn",
+      "qty": 305.0,
+      "stage": "RM dispensed"
     },
     "M-03298": {
       "batch": "M-03298",
