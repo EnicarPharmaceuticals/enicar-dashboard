@@ -170,6 +170,7 @@
   "EF015|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-27",
   "EF016|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-28",
   "EF017|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-28",
+  "EF018|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-09-28",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-09-26",
   "EL-2413|party|yelloworangepharmacy|pharmatrustltd": "2026-09-26",
   "EL-2414|party|yelloworangepharmacy|pharmatrustltd": "2026-09-26",
@@ -196,7 +197,6 @@
   "EL-2468|product|selfcarepainfever250mg|selfcarepainfeveroralsuspension125mg5ml": "2026-09-26",
   "EL-2469|product|selfcarepainfeveroralsuspension125mg5ml|selfcarepainfever250mg": "2026-09-26",
   "EL-2471|party|londonunitedmedimpexpvtltd|londonunitedexportsltd": "2026-09-26",
-  "EL-2472|party|bohralifescienceprivatelimited|bohralifesciencespvtltd": "2026-09-26",
   "EL-2474|party|yelloworangepharmacy|pharmatrustltd": "2026-09-26",
   "EL-2474|product|apetabonyelloworange|apetabon": "2026-09-26",
   "EL-2477|party|londonunitedmedimpexpvtltd|londonunitedexportsltd": "2026-09-28",
@@ -480,6 +480,22 @@
       "product": "NECTALLIN",
       "qty": 20000.0,
       "stage": "Filling started"
+    },
+    "O6008": {
+      "batch": "O6008",
+      "company": "OXFORD LABORATORIES PVT.LTD. (P2P)",
+      "date": "2026-09-28",
+      "product": "Oxcoril Expectorant",
+      "qty": 6060.0,
+      "stage": "RM dispensed"
+    },
+    "O6009": {
+      "batch": "O6009",
+      "company": "OXFORD LABORATORIES PVT.LTD. (P2P)",
+      "date": "2026-09-28",
+      "product": "Oxcoril Expectorant",
+      "qty": 6060.0,
+      "stage": "RM dispensed"
     },
     "RE-011338": {
       "batch": "RE-011338",
