@@ -1278,7 +1278,7 @@ def _build_plan_view():
     _lines_by_canon = {}
     for _it in items:
         _c = _pcanon(_it['product'])
-        _packs_by_canon.setdefault(_c, set()).add(_packnum(_it.get('pack')))
+        _packs_by_canon.setdefault(_c, set()).update(_packnums(_it.get('pack')) or {None})
         _lines_by_canon[_c] = _lines_by_canon.get(_c, 0) + 1
     _orphan_claimed = set()
 
@@ -1314,7 +1314,13 @@ def _build_plan_view():
         # from the log rows for THIS pack; a batch that produced only other
         # packs is not this line's batch at all. Rows where the log left the
         # pack blank go to the first line that claims the batch.
-        _want = _packnum(it.get('pack'))
+        # A plan line may cover TWO pack sizes in one cell — Algate-O is
+        # planned as "200 ml (Sale Pack) and 60 ml (P.S)" (Director, 30 Sep
+        # 2026). RM cells have allowed this since the Proliser case; the plan
+        # side now does too, so the second size is credited instead of looking
+        # untouched. _want stays the leading pack for the slice-sharing key.
+        _wants = sorted(x for x in (_packnums(it.get('pack')) or set()) if x)
+        _want = _wants[0] if _wants else None
         batches = []
         for b in hits:
             sl = _batch_pack_window(PLAN_WINDOW_FROM).get(b['key'], {})
@@ -1338,7 +1344,9 @@ def _build_plan_view():
                         f"{b['batch']} RM pack cell says {b.get('pack')} (plan: {it.get('pack')})")
                 qty = _batch_totals_window(b['key'], PLAN_WINDOW_FROM)
             else:
-                mine = sl.get(_want)
+                _got = [sl[p] for p in _wants if p in sl]
+                mine = ({f: sum(g[f] for g in _got)
+                         for f in ('filled', 'packed', 'dispatched')} if _got else None)
                 blank = sl.get(None) if b['key'] not in _blank_claimed else None
                 if blank is not None:
                     _blank_claimed.add(b['key'])
