@@ -1011,7 +1011,7 @@ def _packnums(v):
     return {float(m) for m in re.findall(r'\d+(?:\.\d+)?', str(v or ''))}
 
 
-def _batch_pack_actuals():
+def _batch_pack_actuals(window_from=None):
     """(batch key) → {pack number or None: filled/packed/dispatched}.
 
     Pack size is a property of the FILLING / PACKING / DISPATCH row, not of the
@@ -1025,8 +1025,14 @@ def _batch_pack_actuals():
     def add(df, field, qcol):
         if df is None or len(df) == 0 or qcol not in df.columns:
             return
-        for b, pk, q in zip(df['Batch'], df['PackSize'], df[qcol]):
+        for b, pk, q, d in zip(df['Batch'], df['PackSize'], df[qcol], df['Date']):
             if b is None or (not isinstance(b, str) and pd.isna(b)):
+                continue
+            # Work done BEFORE the plan month is not that month's progress.
+            # A batch dispensed 24 Sep for the October plan still has to be
+            # filled in October to count (Director, 30 Sep 2026) — without
+            # this, October opened showing September's output.
+            if window_from is not None and (d is None or d < window_from):
                 continue
             k = _bkey(b)
             if not k or k == '-':
@@ -1039,6 +1045,20 @@ def _batch_pack_actuals():
     add(pack_df, 'packed',     'TotalPacked')
     add(disp_df, 'dispatched', 'Qty')
     return out
+
+_BP_CACHE = {}
+def _batch_pack_window(window_from):
+    """_batch_pack_actuals for one plan window, computed once per window."""
+    if window_from not in _BP_CACHE:
+        _BP_CACHE[window_from] = _batch_pack_actuals(window_from)
+    return _BP_CACHE[window_from]
+
+
+def _batch_totals_window(key, window_from):
+    """Whole-batch filled/packed/dispatched inside the window (all pack sizes)."""
+    sl = _batch_pack_window(window_from).get(key, {})
+    return {f: sum(v[f] for v in sl.values())
+            for f in ('filled', 'packed', 'dispatched')}
 
 BATCH_PACK = _batch_pack_actuals()
 
@@ -1276,7 +1296,7 @@ def _build_plan_view():
         _want = _packnum(it.get('pack'))
         batches = []
         for b in hits:
-            sl = BATCH_PACK.get(b['key'], {})
+            sl = _batch_pack_window(PLAN_WINDOW_FROM).get(b['key'], {})
             j = _journey_by_key.get(b['key'], {})
             if _want is None or not sl:
                 # No pack on the plan row, or nothing produced yet: fall back to
@@ -1295,9 +1315,7 @@ def _build_plan_view():
                         continue
                     it.setdefault('pack_notes', []).append(
                         f"{b['batch']} RM pack cell says {b.get('pack')} (plan: {it.get('pack')})")
-                qty = {'filled': float(j.get('filled') or 0),
-                       'packed': float(j.get('packed') or 0),
-                       'dispatched': float(j.get('dispatched') or 0)}
+                qty = _batch_totals_window(b['key'], PLAN_WINDOW_FROM)
             else:
                 mine = sl.get(_want)
                 blank = sl.get(None) if b['key'] not in _blank_claimed else None
@@ -2357,6 +2375,16 @@ def _plan_block(view):
     cat_table = (f'<div style="padding:4px 18px 12px">'
                  f'<div style="font-weight:700;color:{C_PRI};font-size:12px;margin-bottom:5px">'
                  f'BY CATEGORY</div>'
+                 # These figures count ONLY work credited to this month's plan
+                 # lines, and only work done inside the month. The PRODUCT TYPE
+                 # BREAKDOWN lower down counts ALL production instead, so the
+                 # two legitimately differ — say so, or the gap reads as a bug
+                 # (Director, 30 Sep 2026).
+                 f'<div style="font-size:11px;color:#607D8B;padding:0 0 6px">'
+                 f'Counts only work done <strong>this month</strong> on batches matched to a '
+                 f'plan line. The <strong>PRODUCT TYPE BREAKDOWN</strong> section counts '
+                 f'<strong>all</strong> production including off-plan work, so its totals are higher.'
+                 f'</div>'
                  f'<table style="width:100%;font-size:12px;border-collapse:collapse">'
                  f'<thead><tr class="th-row"><th>CATEGORY</th><th>LINES</th><th>PLANNED</th>'
                  f'<th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th></th></tr></thead>'
