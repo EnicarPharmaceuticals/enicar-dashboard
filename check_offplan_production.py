@@ -344,6 +344,15 @@ def main():
         state = {}
     alerted = state.get(ALERT_KEY, {})
     today = date.today()
+    # Keep the "already alerted" memory scoped to THIS plan month, so a new
+    # month starts clean instead of re-reporting last month's batches.
+    _keep = {k: v for k, v in alerted.items()
+             if not isinstance(v, dict) or not v.get('date')
+             or str(v['date'])[:7] >= PLAN_MONTH_START.strftime('%Y-%m')}
+    if len(_keep) != len(alerted):
+        print(f'  (dropped {len(alerted) - len(_keep)} alert(s) from earlier months)')
+        alerted = _keep
+        state[ALERT_KEY] = alerted
 
     # 1. IMMEDIATE alerts for newly-seen off-plan batches
     new = {k: v for k, v in off.items() if k not in alerted}
@@ -372,8 +381,12 @@ def main():
     last_day = calendar.monthrange(today.year, today.month)[1]
     if today.day in (15, last_day) or '--force-digest' in sys.argv:
         if state.get(DIGEST_KEY) != today.isoformat() or '--force-digest' in sys.argv:
-            allrows = sorted({**{k: v for k, v in alerted.items() if not k.startswith('_')},
-                              **off}.values(), key=lambda r: r.get('date', ''))
+            # Report what is off-plan RIGHT NOW. Merging the remembered
+            # `alerted` entries sent the Director 45 batches on 30 Sep 2026 —
+            # 33 of them August work, and 8 products that had since been ADDED
+            # to the September plan. `off` is recomputed from the sheet every
+            # run, so it is the only trustworthy basis.
+            allrows = sorted(off.values(), key=lambda r: r.get('date', ''))
             allrows = [r for r in allrows if 'batch' in r]
             period = 'mid-month' if today.day == 15 else 'end-of-month'
             if allrows:
