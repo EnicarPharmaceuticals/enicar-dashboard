@@ -2343,6 +2343,10 @@ def _plan_block(view):
                  f'data-month="{_mon}" '
                  f'data-company="{(it.get("display_party") or "").lower()}" '
                  f'data-cat="{it.get("cat", "Bottles")}" '
+                 # the line's own five-way PACK TYPE (Bottle / Flat Sachet /
+                 # Stick Pack Sachet / Ointment / External) — read by the
+                 # monthly review video, which reports all five separately
+                 f'data-ptype="{html_escape(str(it.get("ptype") or ""))}" '
                  f'onclick="togglePlan(\'{K}\',{i})">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
                  f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
@@ -2799,6 +2803,8 @@ DATA_JSON = json.dumps({
 # ══════════════════════════════════════════════════════════════════════════════
 # HTML HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
+from html import escape as html_escape
+
 def n(v):    return f'{int(v):,}'
 def pct(v):  return f'{v*100:.1f}%'
 def pctd(v): return f'{v*100:.2f}%'
