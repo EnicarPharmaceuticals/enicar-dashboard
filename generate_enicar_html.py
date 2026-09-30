@@ -1047,6 +1047,27 @@ def _batch_pack_actuals(window_from=None):
     return out
 
 _BP_CACHE = {}
+def _off_plan_units(plan_items):
+    """Units filled inside the plan window on batches no plan line claims."""
+    claimed = set()
+    for _it in plan_items:
+        for _b in _it.get('batches', ()):
+            claimed.add(_bkey(_b['batch']))
+    _end = date(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month,
+                calendar.monthrange(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month)[1])
+    tot = 0.0
+    for _b, _q, _d in zip(fill_df['Batch'], fill_df['Qty'], fill_df['Date']):
+        if _d is None or _d < PLAN_WINDOW_FROM or _d > _end:
+            continue
+        if _b is None or (not isinstance(_b, str) and pd.isna(_b)):
+            continue
+        if _bkey(_b) in claimed:
+            continue
+        v = pd.to_numeric(_q, errors='coerce')
+        tot += 0.0 if pd.isna(v) else float(v)
+    return tot
+
+
 def _batch_pack_window(window_from):
     """_batch_pack_actuals for one plan window, computed once per window."""
     if window_from not in _BP_CACHE:
@@ -1680,6 +1701,10 @@ def _build_plan_view():
         'filled': sum(x['filled'] for x in items),
         'batches': sum(len(x['batches']) for x in items),
         'off_plan': len(off_plan),
+        # Units MADE this month on batches no plan line claims. Without this
+        # number the BY CATEGORY totals look broken next to the PRODUCT TYPE
+        # BREAKDOWN, which counts all production (Director, 30 Sep 2026).
+        'off_units': _off_plan_units(items),
         'written': sum(1 for x in items if x.get('rm_status')),
         'flags': sum(1 for x in items if x.get('flag')),
         'next': sum(1 for x in items if 'next' in (x.get('rm_status') or '').lower()
@@ -2382,8 +2407,11 @@ def _plan_block(view):
                  # (Director, 30 Sep 2026).
                  f'<div style="font-size:11px;color:#607D8B;padding:0 0 6px">'
                  f'Counts only work done <strong>this month</strong> on batches matched to a '
-                 f'plan line. The <strong>PRODUCT TYPE BREAKDOWN</strong> section counts '
-                 f'<strong>all</strong> production including off-plan work, so its totals are higher.'
+                 f'plan line. A further <strong>{n(view["summary"].get("off_units", 0))} units</strong> '
+                 f'were filled this month on batches no plan line claims (listed under '
+                 f'&ldquo;Dispensed by RM but not matched&rdquo; below) — that is why the '
+                 f'<strong>PRODUCT TYPE BREAKDOWN</strong> section, which counts <strong>all</strong> '
+                 f'production, shows higher totals.'
                  f'</div>'
                  f'<table style="width:100%;font-size:12px;border-collapse:collapse">'
                  f'<thead><tr class="th-row"><th>CATEGORY</th><th>LINES</th><th>PLANNED</th>'
