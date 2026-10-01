@@ -1,6 +1,5 @@
 {
   "BATCH|26CH0067|26CH0057": "2026-09-29",
-  "BATCH|26CH0076|26CH0036": "2026-10-01",
   "BATCH|26CH0077|26CH0037": "2026-09-30",
   "BATCH|26CH0078|26CH0038": "2026-09-30",
   "BATCH|EL2422|EL-2462": "2026-09-29",
@@ -8,7 +7,6 @@
   "BATCH|FA082|FA080": "2026-09-29",
   "BATCH|FA083|FA080": "2026-09-29",
   "BATCH|L0947|L-0947": "2026-09-30",
-  "BATCH|O6008|O6007": "2026-10-01",
   "BATCH|O6009|O6007": "2026-10-01",
   "BATCH|SL05426|SL05424": "2026-09-29",
   "BATCH|U164|U-162": "2026-09-30",
@@ -193,6 +191,7 @@
   "PRODUCT|L-0744|hemoplusgoldlifeon|hemoplusgold": "2026-09-30",
   "PRODUCT|L-0845|hemoplusgoldlifeon|hemoplusgold": "2026-10-01",
   "PRODUCT|L-0946|troloxlifeon|trolox": "2026-10-01",
+  "PRODUCT|O6008|oxcorilexpectorant|oxcoril": "2026-10-01",
   "PRODUCT|REO-334|naomitripleactioncream|naomitripleaction": "2026-09-29",
   "PRODUCT|REO-336|naomitripleactioncream|naomitripleaction": "2026-09-29",
   "PRODUCT|REO-337|naomitripleactioncream|naomitripleaction": "2026-09-30",
