@@ -254,6 +254,7 @@
   "LH-7826|product|feraminoplus|feraminoplussyrup": "2026-10-02",
   "MIO-008|party|mvcpharmaceuticalsp2p|mvc": "2026-10-02",
   "O6008|product|oxcorilexpectorant|oxcoril": "2026-10-01",
+  "O6009|product|oxcorilexpectorant|oxcoril": "2026-10-02",
   "RE-011329|product|ronfitcolddfevercoldcoughsyrupsachetronaklic|ronfitcolddfevercoldcoughsyrup": "2026-10-02",
   "RE-021330|product|ronfitcolddfevercoldcoughsyrupsachetronaklic|ronfitcolddfevercoldcoughsyrup": "2026-10-02",
   "RE-031331|product|ronfitcolddfevercoldcoughsyrupsachetronaklic|ronfitcolddfevercoldcoughsyrup": "2026-10-02",
@@ -363,6 +364,7 @@
   "VM-16725|party|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-09-30",
   "VM-16726|party|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-09-30",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-10-02",
+  "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-10-02",
   "_offplan_alerted": {},
   "_offplan_digest_sent": "2026-09-30",
   "_plan_snapshot": {
