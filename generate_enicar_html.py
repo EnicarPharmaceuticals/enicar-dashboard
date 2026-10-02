@@ -1381,6 +1381,13 @@ def _build_plan_view():
                             f"{b['batch']} logged as {_pk:g} (plan: {it.get('pack')})")
                 if mine is None and blank is None and extra is None:
                     if not wanted:          # produced in other packs only
+                        # Silent when another line of this product plans those
+                        # packs — the batch is counted THERE, so it is not a
+                        # mismatch (Proliser 100 ml / 200 ml, 2 Oct 2026: each
+                        # line warned about the other line's batch).
+                        _bp = {p for p in sl if p}
+                        if _bp and _bp <= _packs_by_canon.get(_me, set()):
+                            continue
                         if _pcanon(b['product']) == _me:
                             _why = ('from an earlier month' if not _started_here
                                     else 'a pack size this plan does not list')
