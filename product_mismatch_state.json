@@ -65,6 +65,7 @@
   "34000|product|10ml|15gm": "2026-10-02",
   "36000|party|bc|up": "2026-10-02",
   "36000|product|15gm|10ml": "2026-10-02",
+  "38000|party|up|uf": "2026-10-03",
   "40000|party|up|bc": "2026-10-02",
   "40000|product|10ml|15gm": "2026-10-02",
   "4000|party|bc|up": "2026-10-02",
@@ -228,6 +229,7 @@
   "ET-35332|product|paediatriccotrimoxazoleoralsuspensionbpkanvid|paediatriccotrimoxazoleoralsuspensionbp": "2026-10-02",
   "ET-36333|product|paediatriccotrimoxazoleoralsuspensionbpkanvid|paediatriccotrimoxazoleoralsuspensionbp": "2026-10-02",
   "ET-37334|product|paediatriccotrimoxazoleoralsuspensionbpkanvid|paediatriccotrimoxazoleoralsuspensionbp": "2026-10-02",
+  "FA082|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-03",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-03",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-03",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-03",
@@ -341,6 +343,7 @@
   "SL05422|product|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-10-01",
   "SL05423|product|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-10-03",
   "SL05423|product|magascon|megascon": "2026-10-01",
+  "SL05425|product|princesheptinplussachets|flucoldexesuspensionplacebo": "2026-10-03",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-10-02",
   "T16001|product|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsuspensionbp100mg5ml": "2026-10-03",
   "T16002|product|azithromycinoralsuspensionumedica|azithromycin": "2026-10-02",
@@ -365,7 +368,16 @@
   "VM-16726|party|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-10-03",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-10-02",
   "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-10-02",
-  "_offplan_alerted": {},
+  "_offplan_alerted": {
+    "EL-2484": {
+      "batch": "EL-2484",
+      "company": "KAMAL INTERNATIONAL",
+      "date": "2026-10-03",
+      "product": "Chloramphenicol Palmitate Oral Suspension USP (Self Care)",
+      "qty": 1010.0,
+      "stage": "RM dispensed"
+    }
+  },
   "_offplan_digest_sent": "2026-09-30",
   "_plan_snapshot": {
     "fp": {
