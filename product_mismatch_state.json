@@ -74,7 +74,6 @@
   "56000|product|15gm|10ml": "2026-10-02",
   "60000|party|bc|up": "2026-10-02",
   "600|product|30gm|10ml": "2026-10-02",
-  "6055C85001|product|polybionactive150mlps|polybionactive": "2026-10-03",
   "6126C85001|party|proctergamblehealthlimitedllu|proctergamble": "2026-10-01",
   "6126C85001|product|polybionlc150|polybionlc": "2026-10-02",
   "6128C85001|party|proctergamblehealthlimitedllu|proctergamble": "2026-10-01",
@@ -133,6 +132,7 @@
   "6241C85001|party|proctergamblehealthlimited|proctergamblehealthlimitedllu": "2026-10-02",
   "6241C85001|product|cosomecoughsyrup|cosomecough": "2026-10-03",
   "6254C85001|product|ostopolybion300ml|ostopolybion": "2026-10-03",
+  "6255C85001|product|polybionactive150mlps|polybionactive": "2026-10-03",
   "6259C85002|product|livogenirontonic10000ltr|livogenirontonic": "2026-10-01",
   "6260C85001|product|livogenirontonic10000ltr|livogenirontonic": "2026-10-01",
   "650007|product|polygelsuspension|polygelsuspensionsachet": "2026-10-03",
@@ -937,7 +937,7 @@
         "priority": "2",
         "product": "Cremoaid plus SF Syrup",
         "status": "",
-        "units": 13000.0
+        "units": 26000.0
       },
       "cyprobplus|galaxypharmaceuticalsltd|200ml": {
         "batch": "",
@@ -947,7 +947,7 @@
         "priority": "1",
         "product": "Cypro B Plus",
         "status": "",
-        "units": 218000.0
+        "units": 383000.0
       },
       "cyproplex|uniquepharma|15ml": {
         "batch": "",
@@ -1577,7 +1577,7 @@
         "priority": "2",
         "product": "Nutrisang Tonique",
         "status": "",
-        "units": 15000.0
+        "units": 30000.0
       },
       "nystatinoralsuspensionusp|omexport|30ml": {
         "batch": "",
@@ -1777,7 +1777,7 @@
         "priority": "2",
         "product": "Procal Syrup",
         "status": "",
-        "units": 10000.0
+        "units": 17500.0
       },
       "procalsyrup|lesantolaboratories|200ml": {
         "batch": "",
@@ -1787,7 +1787,7 @@
         "priority": "2",
         "product": "Procal Syrup",
         "status": "",
-        "units": 25000.0
+        "units": 36250.0
       },
       "prodexforte|delight|200ml": {
         "batch": "",
@@ -1814,7 +1814,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Delight",
-        "priority": "2",
+        "priority": "1",
         "product": "Prodin Syrup",
         "status": "",
         "units": 30000.0
@@ -1879,6 +1879,206 @@
         "status": "",
         "units": 15000.0
       },
+      "redsunjellyalmond|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Almond)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyamla|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Amla)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyapple|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Apple)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyapricot|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Apricot)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyavacado|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Avacado)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellybanana|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "RONAK EXIM PVT LTD",
+        "priority": "1",
+        "product": "Redsun Jelly (Banana)",
+        "status": "",
+        "units": 61000.0
+      },
+      "redsunjellyblackberry|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Blackberry)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyblackcurrent|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Blackcurrent)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyblueberry|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Blueberry)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellybutterscotch|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Butter Scotch)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellycherry|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Cherry)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellycocktail|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Cocktail)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellycoconut|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Coconut)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellycoffee|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Coffee)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellycoola|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Coola)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellydragonfruit|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Dragon Fruit)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyginger|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Ginger)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellygrapes|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Grapes)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyguvava|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Guvava)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyhoney|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Honey)",
+        "status": "",
+        "units": 160000.0
+      },
       "redsunjellyin42flavour|ronakeximpvtltd|5gm": {
         "batch": "",
         "date": "",
@@ -1888,6 +2088,166 @@
         "product": "Redsun Jelly in 42 Flavour",
         "status": "",
         "units": 5040000.0
+      },
+      "redsunjellykiwi|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Kiwi)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellylemon|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Lemon)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellylychee|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Lychee)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellymelon|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Melon)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellymint|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (mint)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellymixfruit|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Mix Fruit)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellymouthfresh|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (mouth fresh)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyorangesoda|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Orange Soda)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellypassionfruit|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Passionfruit)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellypistacheo|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Pistacheo)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellypomegranate|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Pomegranate)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyraspberry|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Raspberry)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyroseapple|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Rose Apple)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellytamarind|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Tamarind)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellyvanilla|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Vanilla)",
+        "status": "",
+        "units": 160000.0
+      },
+      "redsunjellywatermelon|ronakeximpvtltd|5gm": {
+        "batch": "",
+        "date": "",
+        "pack": "5 gm",
+        "party": "Ronak Exim pvt Ltd",
+        "priority": "1",
+        "product": "Redsun Jelly (Watermelon)",
+        "status": "",
+        "units": 160000.0
       },
       "ronadolsuspensionpo017|ronakeximpvtltd|100ml": {
         "batch": "",
@@ -1957,7 +2317,7 @@
         "priority": "1",
         "product": "Ronametro TP42",
         "status": "",
-        "units": 30000.0
+        "units": 80000.0
       },
       "ronaneutraforte|ronakeximpvtltd|200ml": {
         "batch": "",
@@ -2147,7 +2507,7 @@
         "priority": "2",
         "product": "Stomache",
         "status": "",
-        "units": 20000.0
+        "units": 40000.0
       },
       "supade|omexport|200ml": {
         "batch": "",
@@ -2217,7 +2577,7 @@
         "priority": "2",
         "product": "Tricaine AR",
         "status": "",
-        "units": 15000.0
+        "units": 16400.0
       },
       "tuspelsyp2lots|indocoremediesltd|100ml": {
         "batch": "",
@@ -2257,7 +2617,7 @@
         "priority": "1",
         "product": "Uniforce",
         "status": "",
-        "units": 10000.0
+        "units": 160000.0
       },
       "unisang|uniquepharma|200ml": {
         "batch": "",
@@ -2267,7 +2627,7 @@
         "priority": "1",
         "product": "Unisang",
         "status": "",
-        "units": 20000.0
+        "units": 70000.0
       },
       "vardameghoralsolution|amegh|100ml": {
         "batch": "",
@@ -2334,7 +2694,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "AURA PHARMACEUTICALS PVT. LTD(P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Vitamoon Plus",
         "status": "",
         "units": 40000.0
@@ -2364,7 +2724,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "IPC",
-        "priority": "2",
+        "priority": "1",
         "product": "Zerosick PS",
         "status": "",
         "units": 3000.0
@@ -2374,13 +2734,13 @@
         "date": "",
         "pack": "200 ml",
         "party": "IPC",
-        "priority": "2",
+        "priority": "1",
         "product": "Zerosick",
         "status": "",
         "units": 20000.0
       }
     },
     "source": "sheet tab \"OCT PLAN\"",
-    "ts": "2026-10-02T07:33:23"
+    "ts": "2026-10-03T07:59:08"
   }
 }
