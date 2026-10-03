@@ -1211,6 +1211,11 @@ def _build_plan_view():
         m = merged.setdefault(key, {**it, 'party_canon': _plan_party_canon(it['party']),
                                     'planned_units': 0, 'lots': 0, 'prio_list': []})
         m['planned_units'] += float(it.get('planned_units') or 0)
+        # Units on lots that are LAST month's balance (remark written by the
+        # carry-over: "Carry-over from SEPT plan…" / "This IS the SEPT plan
+        # balance") — the split card shows leftover vs new orders (3 Oct 2026)
+        if re.search(r'carry-over from \w+ plan|is the \w+ plan balance', (it.get('remark') or '').lower()):
+            m['prev_units'] = m.get('prev_units', 0) + float(it.get('planned_units') or 0)
         m['lots'] += 1
         if it.get('priority'):
             m['prio_list'].append(it['priority'])
@@ -1708,7 +1713,24 @@ def _build_plan_view():
     _today_op = ist_today()
     for b in off_plan:
         b['future'] = b['date'] > _today_op
+    # Leftover vs new: on a line holding both, work counts against last
+    # month's balance first (it is priority 1), the rest against the new order.
+    from collections import Counter as _Ctr
+    _split = {'prev': _Ctr(), 'new': _Ctr()}
+    for x in items:
+        pl = float(x['planned_units'] or 0)
+        pu = min(float(x.get('prev_units') or 0), pl)
+        nu = pl - pu
+        for side, u in (('prev', pu), ('new', nu)):
+            if u > 0:
+                _split[side]['lines'] += 1; _split[side]['planned'] += u
+        for f in ('filled', 'packed', 'dispatched'):
+            v = float(x.get(f) or 0)
+            to_prev = v if nu <= 0 else min(v, pu)   # leftover first; all of it if no new part
+            _split['prev'][f] += to_prev
+            _split['new'][f] += v - to_prev
     summary = {
+        'split': {k: dict(v) for k, v in _split.items()},
         'items': len(items),
         'units': sum(x['planned_units'] or 0 for x in items),
         'started': sum(1 for x in items if x['srank'] > 0),
@@ -2396,9 +2418,15 @@ def _plan_block(view):
         chips2 += ''.join(_chip(p, lbl) for p, lbl in
                           [(-6, f'THIS MONTH ({len(items) - _carried})'),
                            (-7, f'↩ CARRIED OVER ({_carried})')])
+    # BY CATEGORY in the Director's five categories (pack type column), not
+    # the old four — Flat and Stick Pack sachets run on different lines.
+    _P5 = ['Bottle', 'Flat Sachet', 'Stick Pack Sachet', 'Ointment', 'External']
+    _P5_OF = {'Bottles': 'Bottle', 'Sachets': 'Flat Sachet', 'Tubes': 'Ointment', 'External': 'External'}
+    _p5 = lambda x: x.get('ptype') if x.get('ptype') in _P5 else _P5_OF.get(x.get('cat'), 'Bottle')
+    _catrows5 = {c: [x for x in items if _p5(x) == c] for c in _P5}
     _crows = ''
-    for c in _CATS:
-        _r = _catrows[c]
+    for c in _P5:
+        _r = _catrows5[c]
         if not _r:
             continue
         _pl = sum(x['planned_units'] or 0 for x in _r)
@@ -2416,7 +2444,40 @@ def _plan_block(view):
                    f'<div style="width:{min(100, _pcf):.0f}%;background:{C_SEC};height:14px;border-radius:4px"></div>'
                    f'</div></td>'
                    f'<td class="td-num" style="font-size:11px;color:#607D8B">{_pcf:.0f}% filled</td></tr>')
-    cat_table = (f'<div style="padding:4px 18px 12px">'
+    # Last month's leftover vs this month's new orders (Director, 3 Oct 2026)
+    _sp = (view['summary'] or {}).get('split') or {}
+    split_table = ''
+    if (_sp.get('prev') or {}).get('planned'):
+        _pm = window_from.replace(day=1) if hasattr(window_from, 'replace') else date.today().replace(day=1)
+        _prevm = (_pm - _td_ist(days=1)).strftime('%B').upper()
+        _thism = _pm.strftime('%B').upper()
+        def _srow(lbl, d, col):
+            pl = d.get('planned', 0); fi = d.get('filled', 0)
+            pc_ = fi / pl * 100 if pl else 0
+            return (f'<tr><td class="td-name" style="font-weight:700;color:{col}">{lbl}</td>'
+                    f'<td class="td-num">{int(d.get("lines", 0))}</td>'
+                    f'<td class="td-num" style="font-weight:700">{n(pl)}</td>'
+                    f'<td class="td-num" style="color:{C_SEC}">{n(fi)}</td>'
+                    f'<td class="td-num" style="color:{C_AMB}">{n(d.get("packed", 0))}</td>'
+                    f'<td class="td-num" style="color:{C_ORG}">{n(d.get("dispatched", 0))}</td>'
+                    f'<td style="min-width:120px"><div style="background:#ECEFF1;border-radius:4px;height:14px">'
+                    f'<div style="width:{min(100, pc_):.0f}%;background:{col};height:14px;border-radius:4px"></div>'
+                    f'</div></td><td class="td-num" style="font-size:11px;color:#607D8B">{pc_:.0f}% filled</td></tr>')
+        _tot = {k: _sp['prev'].get(k, 0) + _sp['new'].get(k, 0) for k in ('planned', 'filled', 'packed', 'dispatched')}
+        _tot['lines'] = len(items)
+        split_table = (f'<div style="padding:4px 18px 12px">'
+                       f'<div style="font-weight:700;color:{C_PRI};font-size:12px;margin-bottom:5px">'
+                       f'{_prevm} LEFTOVER vs NEW {_thism} ORDERS</div>'
+                       f'<div style="font-size:11px;color:#607D8B;padding:0 0 6px">'
+                       f'Leftover = {_prevm.title()} plan balance carried into this plan. Where one product has both, '
+                       f'work counts against the leftover first (priority 1), the rest against the new order.</div>'
+                       f'<table style="width:100%;font-size:12px;border-collapse:collapse">'
+                       f'<thead><tr class="th-row"><th></th><th>LINES</th><th>PLANNED</th>'
+                       f'<th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th></th></tr></thead>'
+                       f'<tbody>{_srow(f"↩ {_prevm.title()} leftover", _sp["prev"], C_ORG)}'
+                       f'{_srow(f"🆕 New {_thism.title()} orders", _sp["new"], C_SEC)}'
+                       f'{_srow("Total", _tot, C_PRI)}</tbody></table></div>')
+    cat_table = split_table + (f'<div style="padding:4px 18px 12px">'
                  f'<div style="font-weight:700;color:{C_PRI};font-size:12px;margin-bottom:5px">'
                  f'BY CATEGORY</div>'
                  # These figures count ONLY work credited to this month's plan
@@ -3022,7 +3083,12 @@ def _attention_lines():
 # month that actually has dispatches (a brand-new month with zero rows yet would
 # read as an alarming "0"); the JS date-filter re-points every card at whichever
 # month the selected day belongs to.
-_disp_months  = sorted({d.strftime('%Y-%m') for d in cur(disp_df)['Date']})
+# Latest month with ANY filling, packing or dispatch (Director, 3 Oct 2026:
+# on 3 Oct the page still opened on September because October had filling
+# and packing but no dispatch yet). The 1st of a month with nothing logged
+# still falls back to the previous month, so it never opens on an empty one.
+_disp_months  = sorted({d.strftime('%Y-%m') for _df in (fill_df, pack_df, disp_df)
+                        for d in cur(_df)['Date']})
 _g_mkey       = _disp_months[-1] if _disp_months else f'{YEAR}-{MONTH:02d}'
 _g_y, _g_m    = int(_g_mkey[:4]), int(_g_mkey[5:7])
 _glance_start = date(_g_y, _g_m, 1)
