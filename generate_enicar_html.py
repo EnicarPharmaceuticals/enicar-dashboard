@@ -760,8 +760,15 @@ YIELD_WARNS = _yield_warns()
 #   filled but nothing packed for STUCK_FILL_DAYS+
 #   packed but nothing dispatched for STUCK_PACK_DAYS+ (dispatch waits are
 #   normal business, so this threshold is deliberately longer)
-STUCK_FILL_DAYS = 7
-STUCK_PACK_DAYS = 21
+# Director, 3 Oct 2026: flag only waits of MORE THAN 30 days at either stage.
+STUCK_FILL_DAYS = 30
+STUCK_PACK_DAYS = 30
+# Enicar's own domestic range is made for stock and dispatched as orders come
+# in, so a long packed-not-dispatched wait is normal for these (Director,
+# 3 Oct 2026). Still flagged if filled but not packed.
+DOMESTIC_BRANDS = ('energvit', 'algate', 'allerzy')
+_is_domestic = lambda name: any(b in re.sub(r'[^a-z]', '', str(name or '').lower())
+                                for b in DOMESTIC_BRANDS)
 _today = ist_today()
 
 def _stuck_info(e):
@@ -771,11 +778,12 @@ def _stuck_info(e):
     k = _bkey(e['batch'])
     if e['filled'] > 0 and e['packed'] == 0 and e['dispatched'] == 0:
         fd = FILL_DATES.get(k)
-        if fd and (_today - fd['last']).days >= STUCK_FILL_DAYS:
+        if fd and (_today - fd['last']).days > STUCK_FILL_DAYS:
             return ('Filled, waiting for packing', (_today - fd['last']).days)
-    elif e['packed'] > 0 and e['dispatched'] == 0 and not e.get('auto_cleared'):
+    elif (e['packed'] > 0 and e['dispatched'] == 0 and not e.get('auto_cleared')
+          and not _is_domestic(e.get('product'))):
         pdte = PACK_DATES.get(k)
-        if pdte and (_today - pdte['last']).days >= STUCK_PACK_DAYS:
+        if pdte and (_today - pdte['last']).days > STUCK_PACK_DAYS:
             return ('Packed, waiting for dispatch', (_today - pdte['last']).days)
     return None
 
@@ -2925,6 +2933,37 @@ IN_STOCK = sorted(
 )
 IN_STOCK_UNITS = sum(e['packed'] for e in IN_STOCK)
 
+# BSR stock split into the Director's five categories (3 Oct 2026)
+_STOCK_CATS = ['Bottle', 'Flat Sachet', 'Stick Pack Sachet', 'Ointment', 'External']
+def _stock_cat(pt):
+    t = re.sub(r'[^a-z]', '', str(pt or '').lower())
+    if 'stick' in t: return 'Stick Pack Sachet'
+    if 'sachet' in t or 'pouch' in t: return 'Flat Sachet'
+    if 'oint' in t or 'tube' in t or 'cream' in t: return 'Ointment'
+    if 'extern' in t: return 'External'
+    if 'bottle' in t: return 'Bottle'
+    return 'Other'
+def in_stock_cat_table():
+    agg = {}
+    for e in IN_STOCK:
+        c = _stock_cat(e['ptype'])
+        a = agg.setdefault(c, [0, 0.0]); a[0] += 1; a[1] += e['packed']
+    rows = ''
+    for c in _STOCK_CATS + ['Other']:
+        if c not in agg:
+            continue
+        b_, u = agg[c]; pc_ = u / IN_STOCK_UNITS * 100 if IN_STOCK_UNITS else 0
+        rows += (f'<tr><td class="td-name" style="font-weight:700;color:{C_PRI}">{c}</td>'
+                 f'<td class="td-num">{b_}</td><td class="td-num" style="font-weight:700">{n(u)}</td>'
+                 f'<td style="min-width:120px"><div style="background:#ECEFF1;border-radius:4px;height:14px">'
+                 f'<div style="width:{pc_:.0f}%;background:{C_SEC};height:14px;border-radius:4px"></div></div></td>'
+                 f'<td class="td-num" style="font-size:11px;color:#607D8B">{pc_:.0f}%</td></tr>')
+    return ('<div style="padding:4px 18px 12px"><div style="font-weight:700;color:' + C_PRI +
+            ';font-size:12px;margin-bottom:5px">BY CATEGORY</div>'
+            '<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr class="th-row">'
+            '<th>CATEGORY</th><th>BATCHES</th><th>UNITS IN STOCK</th><th>SHARE</th><th></th></tr></thead>'
+            f'<tbody>{rows}</tbody></table></div>') if rows else ''
+
 def batch_journey_rows():
     rows = ''
     for i, e in enumerate(IN_STOCK):
@@ -3069,7 +3108,7 @@ def _attention_lines():
                      f'{w["stuck_stage"].lower()} for <strong>{w["stuck_days"]} days</strong>.')
         if len(STUCK_BATCHES) > 1:
             items.append(f'{len(STUCK_BATCHES)} batches in total are waiting longer than '
-                         f'normal ({STUCK_FILL_DAYS}+ days to pack, {STUCK_PACK_DAYS}+ days to dispatch) '
+                         f'normal (more than {STUCK_PACK_DAYS} days at one stage) '
                          '— full list in "Batches needing attention" below.')
     if _bj_problems:
         items.append(f'{_bj_problems} batch record(s) look inconsistent (dispatched or packed '
@@ -3938,10 +3977,10 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 <details class="card" id="stuck-card">
   <summary>{sec(f'  ━━&nbsp;&nbsp;BATCHES &nbsp; NEEDING &nbsp; ATTENTION &nbsp; ({len(STUCK_BATCHES)} &nbsp; stuck) &nbsp;━━', C_AMB)}</summary>
   <div style="font-size:12px;color:#607D8B;padding:8px 16px 0">
-    A batch appears here when it has stopped moving: filled but nothing packed for
-    <strong>{STUCK_FILL_DAYS}+ days</strong>, or packed but nothing dispatched for
-    <strong>{STUCK_PACK_DAYS}+ days</strong> (dispatch normally waits on customer schedules,
-    so its threshold is longer). Days count from the batch's last activity at that stage.
+    A batch appears here when it has stopped moving for <strong>more than {STUCK_PACK_DAYS} days</strong>:
+    filled but nothing packed, or packed but nothing dispatched. Days count from the batch's
+    last activity at that stage. Our domestic range (Energvit, Algate, Algate-O, Allerzy) is
+    made for stock and dispatched as orders come in, so it is not listed for waiting on dispatch.
   </div>
   <div class="tbl-wrap" style="padding-top:10px">
     <table>
@@ -3962,6 +4001,7 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
     {tile('BATCHES IN STOCK', n(len(IN_STOCK)), 'packed, awaiting dispatch', C_SEC)}
     {tile('UNITS IN STOCK', n(IN_STOCK_UNITS), 'packed & not dispatched', C_AMB)}
   </div>
+  {in_stock_cat_table()}
   <div class="tbl-wrap">
     <table>
       <thead><tr class="th-row">
