@@ -72,6 +72,7 @@
   "46000|party|bc|pc": "2026-10-05",
   "46000|product|15gm|10ml": "2026-10-05",
   "50000|product|10ml|15gm": "2026-10-07",
+  "54000|party|up|uf": "2026-10-07",
   "56000|product|15gm|10ml": "2026-10-05",
   "60000|party|bc|up": "2026-10-05",
   "600|product|30gm|10ml": "2026-10-05",
@@ -233,6 +234,7 @@
   "ET-37334|product|paediatriccotrimoxazoleoralsuspensionbpkanvid|paediatriccotrimoxazoleoralsuspensionbp": "2026-10-05",
   "FA082|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-06",
   "FA083|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-06",
+  "FA084|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-07",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-06",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-06",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-06",
@@ -376,6 +378,14 @@
       "date": "2026-10-03",
       "product": "Chloramphenicol Palmitate Oral Suspension USP (Self Care)",
       "qty": 1010.0,
+      "stage": "RM dispensed"
+    },
+    "FE-1291": {
+      "batch": "FE-1291",
+      "company": "Femident Healthcare",
+      "date": "2026-10-07",
+      "product": "1 Para MF Suspension",
+      "qty": 600.0,
       "stage": "RM dispensed"
     }
   },
