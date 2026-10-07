@@ -1055,8 +1055,12 @@ def _batch_pack_actuals(window_from=None):
     return out
 
 _BP_CACHE = {}
-def _off_plan_units(plan_items):
-    """Units filled inside the plan window on batches no plan line claims."""
+def _off_plan_units(plan_items, prev_month=False):
+    """Units filled inside the plan window on batches no plan line claims.
+    Batches whose RM was dispensed BEFORE the window are last month's orders
+    being finished (Oxcoril O6008/O6009: in the plant's September schedule,
+    dispensed 28 Sep, filled from 1 Oct — Director, 7 Oct 2026). They are
+    counted separately (prev_month=True) instead of as unplanned work."""
     claimed = set()
     for _it in plan_items:
         for _b in _it.get('batches', ()):
@@ -1070,6 +1074,9 @@ def _off_plan_units(plan_items):
         if _b is None or (not isinstance(_b, str) and pd.isna(_b)):
             continue
         if _bkey(_b) in claimed:
+            continue
+        _rd = RM_INFO.get(_bkey(_b), {}).get('date')
+        if bool(_rd and _rd < PLAN_WINDOW_FROM) != prev_month:
             continue
         v = pd.to_numeric(_q, errors='coerce')
         tot += 0.0 if pd.isna(v) else float(v)
@@ -1750,6 +1757,7 @@ def _build_plan_view():
         # number the BY CATEGORY totals look broken next to the PRODUCT TYPE
         # BREAKDOWN, which counts all production (Director, 30 Sep 2026).
         'off_units': _off_plan_units(items),
+        'prev_off_units': _off_plan_units(items, prev_month=True),
         'written': sum(1 for x in items if x.get('rm_status')),
         'flags': sum(1 for x in items if x.get('flag')),
         'next': sum(1 for x in items if 'next' in (x.get('rm_status') or '').lower()
@@ -2500,6 +2508,10 @@ def _plan_block(view):
                  f'&ldquo;Dispensed by RM but not matched&rdquo; below) — that is why the '
                  f'<strong>PRODUCT TYPE BREAKDOWN</strong> section, which counts <strong>all</strong> '
                  f'production, shows higher totals.'
+                 + (f' Another <strong>{n(view["summary"]["prev_off_units"])} units</strong> were '
+                    f'filled on batches RM dispensed <strong>last month</strong> — last month&rsquo;s '
+                    f'orders being finished, not unplanned work.'
+                    if view["summary"].get("prev_off_units") else '') +
                  f'</div>'
                  f'<table style="width:100%;font-size:12px;border-collapse:collapse">'
                  f'<thead><tr class="th-row"><th>CATEGORY</th><th>LINES</th><th>PLANNED</th>'
