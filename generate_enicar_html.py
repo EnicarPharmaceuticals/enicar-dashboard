@@ -1231,6 +1231,10 @@ def _build_plan_view():
         # balance") — the split card shows leftover vs new orders (3 Oct 2026)
         if re.search(r'carry-over from \w+ plan|is the \w+ plan balance', (it.get('remark') or '').lower()):
             m['prev_units'] = m.get('prev_units', 0) + float(it.get('planned_units') or 0)
+        # Lots added after the fact that were in NEITHER month's plan (remark
+        # starts "OUTSIDE PLAN" — Para MF FE-1291, Director 9 Oct 2026)
+        if (it.get('remark') or '').strip().lower().startswith('outside plan'):
+            m['extra_units'] = m.get('extra_units', 0) + float(it.get('planned_units') or 0)
         m['lots'] += 1
         if it.get('priority'):
             m['prio_list'].append(it['priority'])
@@ -1683,8 +1687,13 @@ def _build_plan_view():
     # be off-plan — "trial" (TLB etc.) and "additional" are deliberate extras.
     def _is_regular(b):
         return (RM_INFO.get(b['key'], {}).get('plan_type') or '') == 'regular'
+    # A closed month's list stops at its own month end — the September view
+    # was listing batches dispensed in October (9 Oct 2026).
+    _wend = date(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month,
+                 calendar.monthrange(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month)[1])
     off_plan = sorted([b for b in rmw
                        if b['key'] not in used_keys and not _is_prev_month_work(b)
+                       and b['date'] <= _wend
                        and _is_regular(b)
                        and _brand_of(b['product']) not in _plan_brands
                        and not _carried_over(b['product'])],
@@ -1747,9 +1756,14 @@ def _build_plan_view():
     # Leftover vs new: on a line holding both, work counts against last
     # month's balance first (it is priority 1), the rest against the new order.
     from collections import Counter as _Ctr
-    _split = {'prev': _Ctr(), 'new': _Ctr()}
+    _split = {'prev': _Ctr(), 'new': _Ctr(), 'extra': _Ctr()}
     for x in items:
         pl = float(x['planned_units'] or 0)
+        if float(x.get('extra_units') or 0) >= pl > 0:      # a line that is wholly outside the plan
+            _split['extra']['lines'] += 1; _split['extra']['planned'] += pl
+            for f in ('filled', 'packed', 'dispatched'):
+                _split['extra'][f] += float(x.get(f) or 0)
+            continue
         pu = min(float(x.get('prev_units') or 0), pl)
         nu = pl - pu
         for side, u in (('prev', pu), ('new', nu)):
@@ -2411,7 +2425,9 @@ def _plan_block(view):
             _nu = float(it['planned_units'] or 0) - _pu
             _tag = lambda txt, bgc, fgc: (f' <span style="background:{bgc};color:{fgc};border-radius:3px;'
                                           f'padding:1px 6px;font-size:10px;font-weight:800;white-space:nowrap">{txt}</span>')
-            if _pu > 0 and _nu > 0:
+            if float(it.get('extra_units') or 0) >= float(it['planned_units'] or 0) > 0:
+                _src, _srctag = 'extra', _tag('➕ OUTSIDE PLAN', '#EDE7F6', '#4527A0')
+            elif _pu > 0 and _nu > 0:
                 _src = 'both'
                 _srctag = (_tag(f'↩ {_PREV3} CARRY-OVER {n(_pu)}', '#FFF3E0', '#E65100')
                            + _tag(f'{K} PLAN {n(_nu)}', '#E0F2F1', '#00695C'))
@@ -2468,8 +2484,11 @@ def _plan_block(view):
     if _has_split:
         _np = sum(1 for x in items if float(x.get('prev_units') or 0) > 0)
         _nn = sum(1 for x in items if float(x['planned_units'] or 0) > float(x.get('prev_units') or 0))
+        _ne = sum(1 for x in items if float(x.get('extra_units') or 0) >= float(x['planned_units'] or 0) > 0)
+        _nn -= _ne
         chips2 += ''.join(_chip(p, lbl) for p, lbl in
-                          [(-7, f'↩ {_PREV3} CARRY-OVER ({_np})'), (-6, f'{K} PLAN ({_nn})')])
+                          [(-7, f'↩ {_PREV3} CARRY-OVER ({_np})'), (-6, f'{K} PLAN ({_nn})')]
+                          + ([(-8, f'➕ OUTSIDE PLAN ({_ne})')] if _ne else []))
     _carried = 0 if _has_split else sum(1 for x in items if x.get('month') != _PLAN_MON3_V)
     if _carried:
         chips2 += ''.join(_chip(p, lbl) for p, lbl in
@@ -2520,7 +2539,8 @@ def _plan_block(view):
                     f'<td style="min-width:120px"><div style="background:#ECEFF1;border-radius:4px;height:14px">'
                     f'<div style="width:{min(100, pc_):.0f}%;background:{col};height:14px;border-radius:4px"></div>'
                     f'</div></td><td class="td-num" style="font-size:11px;color:#607D8B">{pc_:.0f}% filled</td></tr>')
-        _tot = {k: _sp['prev'].get(k, 0) + _sp['new'].get(k, 0) for k in ('planned', 'filled', 'packed', 'dispatched')}
+        _tot = {k: sum((_sp.get(g_) or {}).get(k, 0) for g_ in ('prev', 'new', 'extra'))
+                for k in ('planned', 'filled', 'packed', 'dispatched')}
         _tot['lines'] = len(items)
         split_table = (f'<div style="padding:4px 18px 12px">'
                        f'<div style="font-weight:700;color:{C_PRI};font-size:12px;margin-bottom:5px">'
@@ -2533,6 +2553,8 @@ def _plan_block(view):
                        f'<th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PROGRESS</th><th></th></tr></thead>'
                        f'<tbody>{_srow(f"↩ {_prevm.title()} leftover", _sp["prev"], C_ORG)}'
                        f'{_srow(f"🆕 New {_thism.title()} orders", _sp["new"], C_SEC)}'
+                       + (_srow("➕ Outside plan (added later)", _sp["extra"], "#4527A0")
+                          if (_sp.get("extra") or {}).get("planned") else "") +
                        f'{_srow("Total", _tot, C_PRI)}</tbody></table></div>')
     cat_table = split_table + (f'<div style="padding:4px 18px 12px">'
                  f'<div style="font-weight:700;color:{C_PRI};font-size:12px;margin-bottom:5px">'
@@ -4794,9 +4816,10 @@ function _planApply(k) {{
       show = (tr.getAttribute('data-cat') === cats[String(p)]);
     }}
     else if (p === -6) {{ const src = tr.getAttribute('data-src') || '';
-      show = src ? (src !== 'prev') : (mon === 'AUG' || mon === 'SEP'); }}
+      show = src ? (src === 'new' || src === 'both') : (mon === 'AUG' || mon === 'SEP'); }}
     else if (p === -7) {{ const src = tr.getAttribute('data-src') || '';
-      show = src ? (src !== 'new') : (mon === 'JUL' || mon === 'JUN'); }}
+      show = src ? (src === 'prev' || src === 'both') : (mon === 'JUL' || mon === 'JUN'); }}
+    else if (p === -8) show = (tr.getAttribute('data-src') === 'extra');
     const det = tr.nextElementSibling;
     if (show && st.q) {{
       show = tr.textContent.toLowerCase().includes(st.q)
