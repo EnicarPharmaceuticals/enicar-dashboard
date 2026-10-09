@@ -1421,9 +1421,14 @@ def _build_plan_view():
                        for f in ('filled', 'packed', 'dispatched')}
             used_keys.add(b['key'])
             _slice = _want if (_want is not None and sl) else None
+            # Per-pack quantities this line took from the batch, so a batch
+            # filled in two sizes can be shared size by size (9 Oct 2026).
+            _by_pack = ({p: {f: float(sl[p][f]) for f in ('filled', 'packed', 'dispatched')}
+                         for p in _wants if p in sl}
+                        if (_want is not None and sl) else None)
             _fd, _pd2, _dd2 = FILL_DATES.get(b['key']), PACK_DATES.get(b['key']), DISP_DATES.get(b['key'])
             batches.append({
-                '_slice': _slice,
+                '_slice': _slice, '_by_pack': _by_pack,
                 'batch': b['batch'], 'rm_date': b['date'], 'rm_customer': b['customer'],
                 'rm_product': b['product'], 'size': b['size'], 'rm_missing': b.get('rm_missing', False), **qty,
                 'status': j.get('status') or 'RM dispensed — no production yet',
@@ -1579,20 +1584,31 @@ def _build_plan_view():
     # ── Share a batch slice claimed by more than one plan line ───────────
     # Same product, same pack, two rows (Magascon RD + Angola): each had taken
     # the whole slice, double-counting the work. Split it by planned quantity.
+    # Shared PER PACK SIZE (9 Oct 2026): a line planned as "200/60 ml" shares
+    # its 200 ml part with a "200 ml" line and its 60 ml part with a "60 ml"
+    # line. Keying on the leading pack alone let Algate-O EL-2548's 200 ml
+    # filling be counted on two lines (27,412 credited, 19,000 filled).
     _claims = {}
     for _it in items:
         for _b in _it['batches']:
-            _claims.setdefault((_b['batch'], _b.get('_slice')), []).append((_it, _b))
+            if _b.get('_by_pack'):
+                for _p in _b['_by_pack']:
+                    _claims.setdefault((_b['batch'], _p), []).append((_it, _b))
+            else:
+                _claims.setdefault((_b['batch'], None), []).append((_it, _b))
     _shared = 0
-    for _key, _lst in _claims.items():
+    for (_bn, _p), _lst in _claims.items():
         if len(_lst) < 2:
             continue
         _tot = sum((_i['planned_units'] or 0) for _i, _b in _lst)
         for _i, _b in _lst:
             _share = ((_i['planned_units'] or 0) / _tot) if _tot > 0 else 1.0 / len(_lst)
             for _f in ('filled', 'packed', 'dispatched'):
-                _b[_f] = _b[_f] * _share
-            _b['shared_with'] = len(_lst)
+                if _p is None:
+                    _b[_f] = _b[_f] * _share
+                else:                       # give up the part of THIS pack owed to the others
+                    _b[_f] -= _b['_by_pack'][_p][_f] * (1 - _share)
+            _b['shared_with'] = max(_b.get('shared_with', 0), len(_lst))
         _shared += 1
     if _shared:
         for _it in items:
