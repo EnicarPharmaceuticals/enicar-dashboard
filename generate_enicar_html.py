@@ -2337,6 +2337,10 @@ def _plan_block(view):
               f'{n(s.get("carry_units", 0))} units still pending from earlier plans', '#F57F17')
          if s.get('carry_items') else '')
     )
+    _has_split = bool(((s or {}).get('split') or {}).get('prev', {}).get('planned'))
+    _PREV3 = ((window_from.replace(day=1) - _td_ist(days=1)).strftime('%b').upper()
+              if hasattr(window_from, 'replace') else 'PREV')
+    if _PREV3 == 'SEP': _PREV3 = 'SEPT'
     rows = ''
     for i, it in enumerate(items):
         bg = ('#FFEBEE' if it['due_bucket'] == 'overdue' else
@@ -2399,9 +2403,25 @@ def _plan_block(view):
                       f'style="background:#FFF8E1;color:#F57F17;border-radius:3px;padding:1px 5px;'
                       f'font-size:10px;font-weight:700">↩ carried from {it["carry_months"]} '
                       f'({it["carry_units"]:,})</span>')
+        # Where this line comes from (Director, 9 Oct 2026): last month's
+        # balance carried over, a new order for this month, or both.
+        _src, _srctag = '', ''
+        if _has_split:
+            _pu = min(float(it.get('prev_units') or 0), float(it['planned_units'] or 0))
+            _nu = float(it['planned_units'] or 0) - _pu
+            _tag = lambda txt, bgc, fgc: (f' <span style="background:{bgc};color:{fgc};border-radius:3px;'
+                                          f'padding:1px 6px;font-size:10px;font-weight:800;white-space:nowrap">{txt}</span>')
+            if _pu > 0 and _nu > 0:
+                _src = 'both'
+                _srctag = (_tag(f'↩ {_PREV3} CARRY-OVER {n(_pu)}', '#FFF3E0', '#E65100')
+                           + _tag(f'{K} PLAN {n(_nu)}', '#E0F2F1', '#00695C'))
+            elif _pu > 0:
+                _src, _srctag = 'prev', _tag(f'↩ {_PREV3} CARRY-OVER', '#FFF3E0', '#E65100')
+            else:
+                _src, _srctag = 'new', _tag(f'{K} PLAN', '#E0F2F1', '#00695C')
         rows += (f'<tr style="background:{bg};cursor:pointer" data-prio="{it["priority"] or 0}" '
                  f'data-srank="{it["srank"]}" data-next="{_isnext}" data-flag="{1 if it.get("flag") else 0}" '
-                 f'data-month="{_mon}" '
+                 f'data-month="{_mon}" data-src="{_src}" '
                  f'data-company="{(it.get("display_party") or "").lower()}" '
                  f'data-cat="{it.get("cat", "Bottles")}" '
                  # the line's own five-way PACK TYPE (Bottle / Flat Sachet /
@@ -2410,7 +2430,7 @@ def _plan_block(view):
                  f'data-ptype="{html_escape(str(it.get("ptype") or ""))}" '
                  f'onclick="togglePlan(\'{K}\',{i})">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
-                 f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}</td>'
+                 f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}{_srctag}</td>'
                  f'<td class="td-name" style="color:#546E7A">{it.get("display_party") or "—"}{pflag}</td>'
                  f'<td class="td-name" style="color:#37474F">{it.get("pack") or "—"}</td>'
                  f'<td class="td-num" style="font-weight:700">{n(it["planned_units"])}</td>'
@@ -2445,7 +2465,12 @@ def _plan_block(view):
     _catrows = {c: [x for x in items if x.get('cat') == c] for c in _CATS}
     chips2 = ''.join(_chip(_CATCODE[c], f'{c.upper()} ({len(_catrows[c])})')
                      for c in _CATS if _catrows[c])
-    _carried = sum(1 for x in items if x.get('month') != _PLAN_MON3_V)
+    if _has_split:
+        _np = sum(1 for x in items if float(x.get('prev_units') or 0) > 0)
+        _nn = sum(1 for x in items if float(x['planned_units'] or 0) > float(x.get('prev_units') or 0))
+        chips2 += ''.join(_chip(p, lbl) for p, lbl in
+                          [(-7, f'↩ {_PREV3} CARRY-OVER ({_np})'), (-6, f'{K} PLAN ({_nn})')])
+    _carried = 0 if _has_split else sum(1 for x in items if x.get('month') != _PLAN_MON3_V)
     if _carried:
         chips2 += ''.join(_chip(p, lbl) for p, lbl in
                           [(-6, f'THIS MONTH ({len(items) - _carried})'),
@@ -4768,8 +4793,10 @@ function _planApply(k) {{
       const cats = {{'-20': 'Bottles', '-21': 'Sachets', '-22': 'Tubes', '-23': 'External'}};
       show = (tr.getAttribute('data-cat') === cats[String(p)]);
     }}
-    else if (p === -6) show = (mon === 'AUG' || mon === 'SEP');
-    else if (p === -7) show = (mon === 'JUL' || mon === 'JUN');
+    else if (p === -6) {{ const src = tr.getAttribute('data-src') || '';
+      show = src ? (src !== 'prev') : (mon === 'AUG' || mon === 'SEP'); }}
+    else if (p === -7) {{ const src = tr.getAttribute('data-src') || '';
+      show = src ? (src !== 'new') : (mon === 'JUL' || mon === 'JUN'); }}
     const det = tr.nextElementSibling;
     if (show && st.q) {{
       show = tr.textContent.toLowerCase().includes(st.q)
