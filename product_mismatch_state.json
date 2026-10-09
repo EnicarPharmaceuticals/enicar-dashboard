@@ -393,6 +393,16 @@
   "_offplan_digest_sent": "2026-09-30",
   "_plan_snapshot": {
     "fp": {
+      "1paramfsuspension|femidenthealthcare|60ml": {
+        "batch": "",
+        "date": "",
+        "pack": "60 ml",
+        "party": "Femident Healthcare",
+        "priority": "2",
+        "product": "1 Para MF Suspension",
+        "status": "",
+        "units": 10000.0
+      },
       "250mg5ml|kamalinternational|100ml": {
         "batch": "",
         "date": "",
@@ -2765,6 +2775,6 @@
       }
     },
     "source": "sheet tab \"OCT PLAN\"",
-    "ts": "2026-10-09T05:14:18"
+    "ts": "2026-10-09T11:57:39"
   }
 }
