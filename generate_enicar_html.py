@@ -3160,8 +3160,14 @@ def stuck_batch_rows():
     for i, s in enumerate(STUCK_BATCHES):
         bg = '#FFF8F1' if i % 2 == 0 else '#FFFFFF'
         qty = s['packed'] if s['packed'] > 0 else s['filled']
+        import urllib.parse as _up
+        _wmsg = _up.quote(f"Enicar dashboard: batch {s['batch']} ({s['product'] or ''}) — "
+                          f"{s['stuck_stage'].lower()} for {s['stuck_days']} days, {n(qty)} units waiting. "
+                          f"Please update. https://enicarpharmaceuticals.github.io/enicar-dashboard/")
         rows += (f'<tr style="background:{bg}">'
-                 f'<td class="td-name" style="font-weight:600">{s["batch"]}</td>'
+                 f'<td class="td-name" style="font-weight:600">{s["batch"]} '
+                 f'<a href="https://wa.me/?text={_wmsg}" target="_blank" title="Share on WhatsApp" '
+                 f'style="text-decoration:none">📲</a></td>'
                  f'<td class="td-name">{s["product"] or "—"}</td>'
                  f'<td class="td-name" style="color:#546E7A">{s["party"] or "—"}</td>'
                  f'<td class="td-name">{s["stuck_stage"]}</td>'
@@ -3707,6 +3713,138 @@ except Exception:
 from datetime import timezone as _tz, timedelta as _tdelta
 generated_at = datetime.now(_tz(_tdelta(hours=5, minutes=30))).strftime('%d %b %Y, %I:%M %p IST')
 
+
+# ── Interactive layer (Director, 10 Oct 2026): quick navigation, live TODAY
+# strip, tap-to-copy, WhatsApp share on stuck batches, new-data alert.
+# Plain strings (not f-strings) so JS/CSS braces need no escaping.
+_XTRA_CSS = """
+  .nav-row { width:100%; display:flex; gap:6px; flex-wrap:wrap; padding-top:2px; }
+  .nav-chip { background:#E0F2F1; color:#004D40; border-radius:14px; padding:4px 11px;
+              font-size:11.5px; font-weight:800; cursor:pointer; border:1px solid transparent;
+              white-space:nowrap; user-select:none; }
+  .nav-chip:hover { border-color:#00695C; }
+  #top-toast { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; background:#263238;
+               color:#fff; padding:10px 18px; border-radius:24px; font-size:13px; font-weight:600;
+               z-index:400; box-shadow:0 4px 18px rgba(0,0,0,.3); display:none; max-width:90vw; cursor:pointer; }
+  #fab-top { position:fixed; right:18px; bottom:18px; width:42px; height:42px; border-radius:50%;
+             background:#004D40; color:#fff; border:none; font-size:18px; display:none; z-index:300;
+             box-shadow:0 3px 12px rgba(0,0,0,.35); cursor:pointer; }
+  .today-strip { display:flex; gap:14px; flex-wrap:wrap; align-items:center;
+                 background:linear-gradient(90deg,#004D40,#00695C); color:#fff; border-radius:10px;
+                 padding:10px 16px; margin:0 0 12px; font-size:13px; font-weight:600; }
+  .today-strip b { font-size:16px; font-weight:800; }
+  .today-dot { width:8px; height:8px; border-radius:50%; background:#69F0AE; animation:tdp 1.6s infinite; }
+  @keyframes tdp { 0%,100%{opacity:1} 50%{opacity:.25} }
+  td.flash-copy { background:#C8E6C9 !important; transition:background .2s; }
+  /* phones: keep the sticky bar to ~2 compact swipeable rows */
+  @media (max-width: 640px) {
+    .filter-bar { padding:6px 10px; gap:6px; }
+    .filter-bar .chip { font-size:11px; padding:4px 9px; }
+    #filter-tag, #day-nav-box { display:none !important; }
+    #scope-chips, .nav-row { display:flex; flex-wrap:nowrap; overflow-x:auto; width:100%;
+                             gap:6px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    #scope-chips::-webkit-scrollbar, .nav-row::-webkit-scrollbar { display:none; }
+    #scope-chips .chip, .nav-row .nav-chip { flex:0 0 auto; }
+  }
+"""
+
+_XTRA_BODY = """
+<div id="top-toast"></div>
+<button id="fab-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+"""
+
+_XTRA_JS = r"""
+// ── Interactive layer (10 Oct 2026) ──────────────────────────
+function navJump(id, focusId) {
+  var el = document.getElementById(id); if (!el) return;
+  if (el.tagName === 'DETAILS') el.open = true;
+  var y = el.getBoundingClientRect().top + window.pageYOffset - 104;
+  window.scrollTo({top: y, behavior: 'smooth'});
+  if (focusId) { var f = document.getElementById(focusId); if (f) setTimeout(function(){ f.focus(); }, 450); }
+}
+function navSummary() { openSummary(); setTimeout(function(){ navJump('monthly-summary-card'); }, 80); }
+var _toastT = null;
+function showToast(msg, sticky, onclick) {
+  var t = document.getElementById('top-toast'); if (!t) return;
+  t.innerHTML = msg; t.style.display = 'block';
+  t.onclick = onclick || function(){ t.style.display = 'none'; };
+  if (_toastT) clearTimeout(_toastT);
+  if (!sticky) _toastT = setTimeout(function(){ t.style.display = 'none'; }, 2600);
+}
+// double-tap / double-click any table cell to copy it (batch numbers etc.)
+document.addEventListener('dblclick', function(e) {
+  var td = e.target && e.target.closest ? e.target.closest('td') : null; if (!td) return;
+  var txt = (td.innerText || '').trim().split('\n')[0].trim();
+  if (!txt || txt.length > 40 || txt === '—') return;
+  try { navigator.clipboard.writeText(txt).then(function() {
+    td.classList.add('flash-copy'); setTimeout(function(){ td.classList.remove('flash-copy'); }, 600);
+    showToast('📋 Copied: ' + txt); }); } catch (err) {}
+});
+// press / anywhere to jump to the batch search
+document.addEventListener('keydown', function(e) {
+  if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) {
+    e.preventDefault(); navJump('find-card', 'batch-search');
+  }
+});
+window.addEventListener('scroll', function() {
+  var b = document.getElementById('fab-top');
+  if (b) b.style.display = (window.pageYOffset > 700) ? 'block' : 'none';
+}, {passive: true});
+// TODAY strip — live from the embedded logs, IST calendar day
+(function() {
+  try {
+    var now = new Date(Date.now() + (330 + new Date().getTimezoneOffset()) * 60000);
+    function key(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    function sums(kk) {
+      var f = 0, p = 0, dd = 0;
+      (ENICAR.fill || []).forEach(function(r){ if (r.date === kk) f += (r.qty || 0); });
+      (ENICAR.pack || []).forEach(function(r){ if (r.date === kk) p += (r.totalPacked || 0); });
+      (ENICAR.disp || []).forEach(function(r){ if (r.date === kk) dd += (r.qty || 0); });
+      return [f, p, dd];
+    }
+    var k = key(now), lbl = 'TODAY', s = sums(k);
+    if (s[0] + s[1] + s[2] === 0) { var y = new Date(now.getTime() - 86400000); k = key(y); lbl = 'YESTERDAY'; s = sums(k); }
+    var el = document.getElementById('today-strip'); if (!el || s[0]+s[1]+s[2] === 0) return;
+    var MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var ds = parseInt(k.slice(8,10), 10) + ' ' + MN[parseInt(k.slice(5,7),10) - 1];
+    var F = function(v){ return Math.round(v).toLocaleString('en-IN'); };
+    el.innerHTML = '<span class="today-dot"></span><span>⏱ ' + lbl + ' · ' + ds + '</span>'
+      + '<span>Filled <b>' + F(s[0]) + '</b></span><span>Packed <b>' + F(s[1]) + '</b></span>'
+      + '<span>Dispatched <b>' + F(s[2]) + '</b></span>'
+      + (lbl === 'YESTERDAY' ? '<span style="opacity:.8;font-weight:500">no entries yet today</span>' : '');
+    el.style.display = 'flex';
+  } catch (e) {}
+})();
+// tell the viewer when a newer build was published (page republishes ~every 15 min)
+(function() {
+  var tag = null;
+  function check() {
+    if (document.hidden) return;
+    try {
+      fetch(window.location.href, {method: 'HEAD', cache: 'no-store'}).then(function(r) {
+        var t = r.headers.get('etag') || r.headers.get('last-modified'); if (!t) return;
+        if (tag === null) { tag = t; return; }
+        if (t !== tag) { tag = t; showToast('🔄 New data is on the dashboard — tap to refresh', true, function(){ location.reload(); }); }
+      }).catch(function(){});
+    } catch (e) {}
+  }
+  check(); setInterval(check, 5 * 60 * 1000);
+})();
+"""
+
+_stuckn = len(STUCK_BATCHES)
+QUICK_NAV = (
+    '<div class="nav-row">'
+    '<span class="nav-chip" onclick="navJump(\'glance-card\')">🏠 TOP</span>'
+    '<span class="nav-chip" onclick="navJump(\'plan-card\')">🗓 PLAN</span>'
+    '<span class="nav-chip" onclick="navJump(\'find-card\',\'batch-search\')">🔍 FIND BATCH</span>'
+    '<span class="nav-chip" onclick="navSummary()">📊 MONTHLY</span>'
+    '<span class="nav-chip" onclick="navJump(\'dispense-card\')">📋 RM SCHEDULE</span>'
+    '<span class="nav-chip" onclick="navJump(\'stock-card\')">📦 BSR STOCK</span>'
+    + (f'<span class="nav-chip" style="background:#FFF3E0;color:#BF360C" '
+       f'onclick="navJump(\'stuck-card\')">⚠ STUCK ({_stuckn})</span>' if _stuckn else '')
+    + '</div>')
+
 html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3860,6 +3998,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {{
                         font-size:13px; color:#263238; background:#F9FAFB; cursor:pointer;
                         outline:none; }}
   .filter-bar select:focus {{ border-color:{C_PRI}; }}
+{_XTRA_CSS}
   .filter-tag {{ background:{C_LBG}; color:{C_PRI}; border-radius:4px; padding:4px 10px;
                  font-size:11px; font-weight:700; letter-spacing:0.5px; }}
 </style>
@@ -3888,6 +4027,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {{
     <button class="day-nav" onclick="stepDay(1)" title="Next day">▶</button>
   </span>
   <div id="cal-panel" class="cal-panel" style="display:none"></div>
+{QUICK_NAV}
 </div>
 
 <div class="container">
@@ -3898,7 +4038,10 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 <!-- ════════════════════════════════════════════════════════════
      SECTION A — AT A GLANCE (director summary layer)
 ════════════════════════════════════════════════════════════ -->
+<div id="glance-card">
+<div id="today-strip" class="today-strip" style="display:none"></div>
 {director_summary_html()}
+</div>
 
 
 <div class="expand-bar"><button id="expand-all-btn" onclick="toggleAllDetails()">▸ Expand all detail sections</button></div>
@@ -3921,7 +4064,7 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 <!-- ════════════════════════════════════════════════════════════
      SECTION 0 — BATCH / PRODUCT LOOKUP
 ════════════════════════════════════════════════════════════ -->
-<div class="card">
+<div class="card" id="find-card">
   {sec('  ━━&nbsp;&nbsp;FIND &nbsp; A &nbsp; BATCH &nbsp; OR &nbsp; PRODUCT &nbsp;━━', C_SEC)}
   <div style="padding:6px 4px 10px">
     <input id="batch-search" type="text"
@@ -4070,7 +4213,7 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 <!-- ════════════════════════════════════════════════════════════
      SECTION 8 — PACKED & IN STOCK (not yet dispatched)
 ════════════════════════════════════════════════════════════ -->
-<details class="card">
+<details class="card" id="stock-card">
   <summary>{sec('  ━━&nbsp;&nbsp;PACKED &nbsp;&amp;&nbsp; IN &nbsp; BSR &nbsp; STOCK &nbsp; (Not &nbsp; Yet &nbsp; Dispatched) &nbsp;━━', C_SEC)}</summary>
   <div class="tile-row">
     {tile('BATCHES IN STOCK', n(len(IN_STOCK)), 'packed, awaiting dispatch', C_SEC)}
@@ -4863,8 +5006,10 @@ document.querySelectorAll('tr[data-prio]').forEach(t =>
 lookupBatch();
 applyFilter();
 renderFilterUI();
+{_XTRA_JS}
 </script>
 
+{_XTRA_BODY}
 </body>
 </html>"""
 
