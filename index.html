@@ -1222,8 +1222,7 @@ if (!sticky) _toastT = setTimeout(function(){ t.style.display = 'none'; }, 2600)
 // double-tap / double-click any table cell to copy it (batch numbers etc.)
 document.addEventListener('dblclick', function(e) {
 var td = e.target && e.target.closest ? e.target.closest('td') : null; if (!td) return;
-var txt = (td.innerText || '').trim().split('
-')[0].trim();
+var txt = (td.innerText || '').trim().split('\n')[0].trim();
 if (!txt || txt.length > 40 || txt === '—') return;
 try { navigator.clipboard.writeText(txt).then(function() {
 td.classList.add('flash-copy'); setTimeout(function(){ td.classList.remove('flash-copy'); }, 600);
