@@ -2336,6 +2336,37 @@ def _plan_block(view):
     window_from = view['window_from']
     if not items:
         return ''
+    # Excel-style column filters under the table headings (Director, 12 Oct 2026)
+    _custs = sorted({(it.get('display_party') or '').strip() for it in items
+                     if (it.get('display_party') or '').strip()}, key=str.lower)
+    _packsf = sorted({str(it.get('pack') or '').strip() for it in items
+                      if str(it.get('pack') or '').strip()}, key=str.lower)
+    _priosf = sorted({int(it['priority']) for it in items if it.get('priority')})
+    _copts = ''.join(f'<option value="{html_escape(c.lower())}">{html_escape(c[:40])}</option>' for c in _custs)
+    _kopts = ''.join(f'<option value="{html_escape(pk.lower())}">{html_escape(pk)}</option>' for pk in _packsf)
+    _popts = ''.join(f'<option value="{pr}">P{pr}</option>' for pr in _priosf)
+    _sopts = ('<option value="0">⚪ Not started</option><option value="1">🟤 RM dispensed</option>'
+              '<option value="2">🧪 Production</option><option value="3">🔵 Filling</option>'
+              '<option value="4">🟡 Packed</option><option value="5">🟠 Dispatching</option>'
+              '<option value="6">✅ Completed</option>')
+    _zopts = '<option value="">All</option><option value="&gt;0">Started &gt; 0</option><option value="0">Nil (0)</option>'
+    def _pf(col, inner):
+        return f'<th>{inner.replace("@ID@", f"pf-{K}-{col}")}</th>'
+    fltr_row = ('<tr class="plan-fltr" onclick="event.stopPropagation()">'
+        + _pf('p', f'<select id="@ID@" onchange="planColFilter(\'{K}\')"><option value="">All</option>{_popts}</select>')
+        + _pf('prod', f'<input id="@ID@" type="search" placeholder="type…" oninput="planColFilter(\'{K}\')">')
+        + _pf('cust', f'<select id="@ID@" onchange="planColFilter(\'{K}\')"><option value="">All customers</option>{_copts}</select>')
+        + _pf('pack', f'<select id="@ID@" onchange="planColFilter(\'{K}\')"><option value="">All</option>{_kopts}</select>')
+        + '<th style="text-align:center;color:#90A4AE;font-size:10px">sort ↑↓</th>'
+        + _pf('f', f'<select id="@ID@" onchange="planColFilter(\'{K}\')">{_zopts}</select>')
+        + _pf('pk', f'<select id="@ID@" onchange="planColFilter(\'{K}\')">{_zopts}</select>')
+        + _pf('d', f'<select id="@ID@" onchange="planColFilter(\'{K}\')">{_zopts}</select>')
+        + f'<th style="text-align:center"><span class="nav-chip" onclick="planColClear(\'{K}\')" '
+          f'style="background:#ECEFF1;color:#546E7A">✕ CLEAR</span></th>'
+        + _pf('st', f'<select id="@ID@" onchange="planColFilter(\'{K}\')"><option value="">All</option>{_sopts}</select>')
+        + _pf('rm', f'<select id="@ID@" onchange="planColFilter(\'{K}\')"><option value="">All</option>'
+                    f'<option value="w">Written</option><option value="b">Blank</option></select>')
+        + '</tr>')
     pct_started = (s['started'] / s['items'] * 100) if s['items'] else 0
     tiles = (
         tile('PLAN ITEMS', n(s['items']), f'{n(s["units"])} units planned in total', C_PRI)
@@ -2632,10 +2663,10 @@ def _plan_block(view):
   <div class="tbl-wrap">
     <table style="min-width:880px">
       <thead><tr class="th-row">
-        <th>P</th><th>PRODUCT</th><th>CUSTOMER</th><th>PACK</th><th>PLANNED</th>
-        <th>FILLED</th><th>PACKED</th><th>DISPATCHED</th><th>PIPELINE (RM→F→P→D)</th><th>TRACKED STATUS</th>
+        <th class="sortable" onclick="planSort('{K}',0)" title="Click to sort">P</th><th>PRODUCT</th><th>CUSTOMER</th><th>PACK</th><th class="sortable" onclick="planSort('{K}',4)" title="Click to sort">PLANNED</th>
+        <th class="sortable" onclick="planSort('{K}',5)" title="Click to sort">FILLED</th><th class="sortable" onclick="planSort('{K}',6)" title="Click to sort">PACKED</th><th class="sortable" onclick="planSort('{K}',7)" title="Click to sort">DISPATCHED</th><th>PIPELINE (RM→F→P→D)</th><th>TRACKED STATUS</th>
         <th>RM / PLANT HEAD ENTRY</th>
-      </tr></thead>
+      </tr>{fltr_row}</thead>
       <tbody id="plan-rows-{K}">{rows}</tbody>
     </table>
   </div>
@@ -3736,6 +3767,11 @@ _XTRA_CSS = """
   .today-dot { width:8px; height:8px; border-radius:50%; background:#69F0AE; animation:tdp 1.6s infinite; }
   @keyframes tdp { 0%,100%{opacity:1} 50%{opacity:.25} }
   td.flash-copy { background:#C8E6C9 !important; transition:background .2s; }
+  .plan-fltr th { background:#F1F8F6; padding:4px 5px; border-bottom:2px solid #CFD8DC; }
+  .plan-fltr input, .plan-fltr select { width:100%; min-width:64px; max-width:170px; box-sizing:border-box;
+      font-size:11px; padding:4px 5px; border:1px solid #B0BEC5; border-radius:5px; background:#fff; color:#37474F; }
+  th.sortable { cursor:pointer; user-select:none; white-space:nowrap; }
+  th.sortable:hover { text-decoration:underline; }
   /* phones: keep the sticky bar to ~2 compact swipeable rows */
   @media (max-width: 640px) {
     .filter-bar { padding:6px 10px; gap:6px; }
@@ -3815,6 +3851,60 @@ window.addEventListener('scroll', function() {
     el.style.display = 'flex';
   } catch (e) {}
 })();
+// ── Plan table: column filters + sorting (12 Oct 2026) ──────
+var _planSortState = {}, _planCol = {};
+function planSort(k, ci) {
+  var tb = document.getElementById('plan-rows-' + k); if (!tb) return;
+  var st = _planSortState[k] || {};
+  var dir = (st.ci === ci && st.dir === 'desc') ? 'asc' : 'desc';
+  _planSortState[k] = {ci: ci, dir: dir};
+  var rows = Array.prototype.slice.call(tb.children), pairs = [];
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (r.nodeType !== 1 || !r.hasAttribute('data-prio')) continue;
+    var d = rows[i + 1];
+    pairs.push([r, (d && d.id && d.id.indexOf('plan-d-') === 0) ? d : null]);
+  }
+  function v(r) { var t = (r.cells[ci] ? r.cells[ci].innerText : '').replace(/[,\s—]/g, '');
+                  var x = parseFloat(t); return isNaN(x) ? -1 : x; }
+  pairs.sort(function(a, b) { return dir === 'desc' ? v(b[0]) - v(a[0]) : v(a[0]) - v(b[0]); });
+  pairs.forEach(function(p) { tb.appendChild(p[0]); if (p[1]) tb.appendChild(p[1]); });
+  var tbl = tb.closest('table');
+  tbl.querySelectorAll('th.sortable').forEach(function(h) { h.textContent = h.textContent.replace(/ ?[▲▼]$/, ''); });
+  var th = tbl.querySelectorAll('thead tr')[0].cells[ci];
+  if (th) th.textContent += (dir === 'desc' ? ' ▼' : ' ▲');
+}
+function planColFilter(k) {
+  var g = function(id) { var e = document.getElementById('pf-' + k + '-' + id);
+                         return e ? (e.value || '').trim().toLowerCase() : ''; };
+  _planCol[k] = {p: g('p'), prod: g('prod'), cust: g('cust'), pack: g('pack'),
+                 f: g('f'), pk: g('pk'), d: g('d'), st: g('st'), rm: g('rm')};
+  _planApply(k);
+}
+function _planColActive(k) { var F = _planCol[k] || {};
+  return !!(F.p || F.prod || F.cust || F.pack || F.f || F.pk || F.d || F.st || F.rm); }
+function _planColPass(k, tr) {
+  var F = _planCol[k] || {}; if (!_planColActive(k)) return true;
+  var tds = tr.cells;
+  function tx(i) { return ((tds[i] && tds[i].innerText) || '').toLowerCase(); }
+  function nv(i) { var x = parseFloat(tx(i).replace(/[,\s—]/g, '')); return isNaN(x) ? 0 : x; }
+  if (F.p && (tr.getAttribute('data-prio') || '') !== F.p) return false;
+  if (F.prod && tx(1).indexOf(F.prod) === -1) return false;
+  if (F.cust && ((tr.getAttribute('data-company') || '') + ' ' + tx(2)).indexOf(F.cust) === -1) return false;
+  if (F.pack && tx(3).trim() !== F.pack) return false;
+  if (F.f && (F.f === '>0' ? nv(5) <= 0 : nv(5) > 0)) return false;
+  if (F.pk && (F.pk === '>0' ? nv(6) <= 0 : nv(6) > 0)) return false;
+  if (F.d && (F.d === '>0' ? nv(7) <= 0 : nv(7) > 0)) return false;
+  if (F.st && (tr.getAttribute('data-srank') || '') !== F.st) return false;
+  if (F.rm) { var w = tx(10).trim(); var has = (w && w !== '—');
+              if (F.rm === 'w' ? !has : has) return false; }
+  return true;
+}
+function planColClear(k) {
+  ['p','prod','cust','pack','f','pk','d','st','rm'].forEach(function(id) {
+    var e = document.getElementById('pf-' + k + '-' + id); if (e) e.value = ''; });
+  _planCol[k] = {}; _planApply(k);
+}
 // tell the viewer when a newer build was published (page republishes ~every 15 min)
 (function() {
   var tag = null;
@@ -4963,6 +5053,7 @@ function _planApply(k) {{
     else if (p === -7) {{ const src = tr.getAttribute('data-src') || '';
       show = src ? (src === 'prev' || src === 'both') : (mon === 'JUL' || mon === 'JUN'); }}
     else if (p === -8) show = (tr.getAttribute('data-src') === 'extra');
+    if (show && typeof _planColPass === 'function') show = _planColPass(k, tr);
     const det = tr.nextElementSibling;
     if (show && st.q) {{
       show = tr.textContent.toLowerCase().includes(st.q)
@@ -4974,7 +5065,7 @@ function _planApply(k) {{
     if (det && det.id && det.id.indexOf('plan-d-') === 0) det.style.display = 'none';
   }});
   const c = document.getElementById('plan-search-count-' + k);
-  if (c) c.textContent = (st.q || st.p !== -1) ? `${{shown}} of ${{total}} plan lines` : '';
+  if (c) c.textContent = (st.q || st.p !== -1 || (typeof _planColActive==='function' && _planColActive(k))) ? `${{shown}} of ${{total}} plan lines` : '';
 }}
 
 function planFilter(chipEl, k, p) {{
