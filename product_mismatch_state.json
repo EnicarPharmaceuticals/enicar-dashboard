@@ -266,6 +266,7 @@
   "RE-011329|product|ronfitcolddfevercoldcoughsyrupsachetronaklic|ronfitcolddfevercoldcoughsyrup": "2026-10-11",
   "RE-021330|product|ronfitcolddfevercoldcoughsyrupsachetronaklic|ronfitcolddfevercoldcoughsyrup": "2026-10-11",
   "RE-031331|product|ronfitcolddfevercoldcoughsyrupsachetronaklic|ronfitcolddfevercoldcoughsyrup": "2026-10-11",
+  "RE-071342|product|cotrironakenicarlicense|cotrironak": "2026-10-12",
   "RE-941314|product|roxacidmintflavourenicarlicense|roxacidmintflavour": "2026-10-11",
   "REO-334|product|naomitripleactioncream|naomitripleaction": "2026-10-11",
   "REO-336|product|naomitripleactioncream|naomitripleaction": "2026-10-11",
@@ -2355,13 +2356,13 @@
         "status": "",
         "units": 9000.0
       },
-      "ronametrotp42|ronakeximpvtltd|100ml": {
+      "ronametrosuspensiontp42|ronakeximpvtltd|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "Ronak Exim pvt Ltd.",
         "priority": "1",
-        "product": "Ronametro TP42",
+        "product": "Ronametro Suspension (TP42)",
         "status": "",
         "units": 80000.0
       },
@@ -2615,23 +2616,23 @@
         "status": "",
         "units": 16400.0
       },
-      "tuspelsyp2lots|indocoremediesltd|100ml": {
+      "tuspelcoughsyrup2lots|indocoremediesltd|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "INDOCO REMEDIES LTD.",
         "priority": "1",
-        "product": "Tuspel Syp (2 lots)",
+        "product": "Tuspel Cough Syrup (2 lots)",
         "status": "",
         "units": 15750.0
       },
-      "tuspelsyp4lots|indocoremediesltd|60ml": {
+      "tuspelcoughsyrup4lots|indocoremediesltd|60ml": {
         "batch": "",
         "date": "",
         "pack": "60 ml",
         "party": "INDOCO REMEDIES LTD.",
         "priority": "1",
-        "product": "Tuspel Syp (4 lots)",
+        "product": "Tuspel Cough Syrup (4 lots)",
         "status": "",
         "units": 23315.0
       },
@@ -2777,6 +2778,6 @@
       }
     },
     "source": "sheet tab \"OCT PLAN\"",
-    "ts": "2026-10-09T11:57:39"
+    "ts": "2026-10-12T18:44:52"
   }
 }
