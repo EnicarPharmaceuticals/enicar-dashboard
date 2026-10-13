@@ -1331,6 +1331,43 @@ def _build_plan_view():
                     if _pcanon(b['product']) == _me
                     or _pcanon(b['product']) not in _exact_plan_names]
             it['linked_by'] = 'product name + pack size'
+            if not hits:
+                # The plant head often writes a SHORT name ("Ronametro TP42",
+                # "Tuspel Syp"). When the full-name match finds nothing, match
+                # on COMPANY + the product's first word (>=5 chars), but only
+                # when that points at ONE distinct RM product. If several plan
+                # lines of the company compete for it (Ronak's Multivitamin vs
+                # Ronak's B Complex both start "Ronaks"), the line sharing the
+                # most words with the RM name wins; the rest stay unmatched
+                # (Director, 13 Oct 2026).
+                _tok = _pcanon((re.split(r'[\s(/]+', str(it['product']).strip()) or [''])[0])
+                if len(_tok) >= 5:
+                    _cand = [b for b in rmw
+                             if _same_party(it.get('party_canon') or '', b.get('customer') or '')
+                             and _pcanon(b['product']).startswith(_tok)
+                             and (_pcanon(b['product']) == _me
+                                  or _pcanon(b['product']) not in _exact_plan_names)]
+                    if _cand and len({_pcanon(b['product']) for b in _cand}) == 1:
+                        _REF = re.compile(r'^(po\d*|tp\d*|ll\d*|cont\d*|lot\d*|\d+)$')
+                        def _words(nm):
+                            return {_pcanon(w) for w in re.split(r'[^A-Za-z0-9%]+', str(nm))
+                                    if _pcanon(w) and not _REF.match(_pcanon(w))}
+                        _rmw_ = _words(_cand[0]['product'])
+                        def _score(o):
+                            return len(_words(o['product']) & _rmw_)
+                        _rivals = [o for o in items if o is not it
+                                   and _same_party(o.get('party_canon') or '', _cand[0].get('customer') or '')
+                                   and _pcanon(o['product']).startswith(_tok)
+                                   and not any(prod_match(o['product'], rb['product'])
+                                               for rb in rmw) ]
+                        _owned = any(o is not it and prod_match(o['product'], _cand[0]['product'])
+                                     for o in items)
+                        if not _owned and all(_score(o) <= _score(it) for o in _rivals):
+                            hits = _cand
+                            it['linked_by'] = 'company + short name'
+                            print(f"    short-name link: plan '{it['product']}' -> "
+                                  f"RM '{_cand[0]['product']}' ({len(_cand)} batch(es), "
+                                  f"{it.get('party_canon') or ''})")
         # ── Credit each batch to this line PER PACK SIZE ──
         # Same product planned in two packs must not share the same units
         # (Alaize 15 ml vs 200 ml double-counted), but one bulk batch may
@@ -3786,7 +3823,7 @@ _XTRA_CSS = """
 
 _XTRA_BODY = """
 <div id="top-toast"></div>
-<button id="fab-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+<button id="fab-top" onclick="window.scrollTo(0,0)" title="Back to top">↑</button>
 """
 
 _XTRA_JS = r"""
@@ -3794,9 +3831,11 @@ _XTRA_JS = r"""
 function navJump(id, focusId) {
   var el = document.getElementById(id); if (!el) return;
   if (el.tagName === 'DETAILS') el.open = true;
-  var y = el.getBoundingClientRect().top + window.pageYOffset - 104;
-  window.scrollTo({top: y, behavior: 'smooth'});
-  if (focusId) { var f = document.getElementById(focusId); if (f) setTimeout(function(){ f.focus(); }, 450); }
+  requestAnimationFrame(function() {
+    var y = el.getBoundingClientRect().top + window.pageYOffset - 104;
+    window.scrollTo(0, Math.max(0, y));   // instant: smooth scroll silently no-ops in some viewers
+    if (focusId) { var f = document.getElementById(focusId); if (f) f.focus(); }
+  });
 }
 function navSummary() { openSummary(); setTimeout(function(){ navJump('monthly-summary-card'); }, 80); }
 var _toastT = null;
@@ -3929,7 +3968,9 @@ QUICK_NAV = (
     '<span class="nav-chip" onclick="navJump(\'plan-card\')">🗓 PLAN</span>'
     '<span class="nav-chip" onclick="navJump(\'find-card\',\'batch-search\')">🔍 FIND BATCH</span>'
     '<span class="nav-chip" onclick="navSummary()">📊 MONTHLY</span>'
-    '<span class="nav-chip" onclick="navJump(\'dispense-card\')">📋 RM SCHEDULE</span>'
+    + ('<span class="nav-chip" onclick="navJump(\'dispense-card\')">📋 RM SCHEDULE</span>'
+       if any(x['due_bucket'] for x in PLAN_ITEMS) else '')
+    + '' 
     '<span class="nav-chip" onclick="navJump(\'stock-card\')">📦 BSR STOCK</span>'
     + (f'<span class="nav-chip" style="background:#FFF3E0;color:#BF360C" '
        f'onclick="navJump(\'stuck-card\')">⚠ STUCK ({_stuckn})</span>' if _stuckn else '')
