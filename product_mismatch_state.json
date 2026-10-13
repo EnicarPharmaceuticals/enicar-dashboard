@@ -392,6 +392,14 @@
       "product": "1 Para MF Suspension",
       "qty": 600.0,
       "stage": "RM dispensed"
+    },
+    "FE-2189": {
+      "batch": "FE-2189",
+      "company": "Femident Healthcare",
+      "date": "2026-10-13",
+      "product": "FEMIROSE TONIC",
+      "qty": 1500.0,
+      "stage": "RM dispensed"
     }
   },
   "_offplan_digest_sent": "2026-09-30",
