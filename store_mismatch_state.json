@@ -1,5 +1,4 @@
 {
-  "BATCH|AA0011|AA0001": "2026-10-13",
   "BATCH|AA0012|AA0002": "2026-10-13",
   "BATCH|AA0013|AA0003": "2026-10-12",
   "BATCH|AA0014|AA0004": "2026-10-12",
@@ -7,6 +6,7 @@
   "BATCH|FA086|FA080": "2026-10-13",
   "BATCH|L0947|L-0947": "2026-10-12",
   "BATCH|U151|U-150": "2026-10-12",
+  "BATCH|U171|U-170": "2026-10-13",
   "PARTY|-|bluemappharmachemp2p|up": "2026-10-11",
   "PARTY|-|enicarpharmaceuticalpvtltd|up": "2026-10-11",
   "PARTY|-|indocoremediesltd|up": "2026-10-11",
@@ -136,6 +136,7 @@
   "PARTY|SL05414|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-10-12",
   "PARTY|SL05419|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-10-13",
   "PARTY|SL05422|socomedpharmapvtltd|socomedpharmapvtltdpvtltd": "2026-10-13",
+  "PARTY|T16003|umedicalaboratoriespvtltdp2p|umedicalaboratoriespvtltdll": "2026-10-13",
   "PARTY|U-136|unichemghanalimited|uniquepharma": "2026-10-12",
   "PARTY|U-139|unichemghanalimited|uniquepharma": "2026-10-12",
   "PARTY|U-140|unichemghanalimited|uniquepharma": "2026-10-12",
