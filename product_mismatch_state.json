@@ -44,6 +44,7 @@
   "-|product|polygelsuspensionsachet|gocoffcoughsyrup": "2026-10-15",
   "-|product|polygelsuspensionsachet|lasominzdrops": "2026-10-15",
   "-|product|polygelsuspensionsachet|paediatriccotrimoxazoleoralsuspensionbpselfcare": "2026-10-14",
+  "-|product|polygelsuspensionsachet|powerfil50orange": "2026-10-15",
   "-|product|polygelsuspensionsachet|princesheptinplussachets": "2026-10-14",
   "-|product|polygelsuspensionsachet|qenzy": "2026-10-13",
   "-|product|polygelsuspensionsachet|redsunjelly": "2026-10-14",
@@ -73,6 +74,7 @@
   "50000|product|10ml|15gm": "2026-10-13",
   "54000|party|up|uf": "2026-10-13",
   "56000|product|15gm|10ml": "2026-10-14",
+  "58000|party|bc|up": "2026-10-15",
   "60000|party|up|bc": "2026-10-14",
   "600|product|30gm|10ml": "2026-10-14",
   "6126C85001|party|proctergamblehealthlimitedllu|proctergamble": "2026-10-13",
@@ -238,6 +240,7 @@
   "FA084|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-13",
   "FA085|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-15",
   "FA086|party|ronakeximpvtltd|blissgvspharmaltdp2p": "2026-10-15",
+  "FA088|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-15",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
@@ -393,6 +396,14 @@
       "date": "2026-10-07",
       "product": "1 Para MF Suspension",
       "qty": 600.0,
+      "stage": "RM dispensed"
+    },
+    "FE-1383": {
+      "batch": "FE-1383",
+      "company": "Femident Healthcare",
+      "date": "2026-10-15",
+      "product": "PANTO PPI-MPS GEL",
+      "qty": 1500.0,
       "stage": "RM dispensed"
     },
     "FE-2189": {
