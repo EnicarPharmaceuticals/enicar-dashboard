@@ -241,6 +241,7 @@
   "FA085|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-15",
   "FA086|party|ronakeximpvtltd|blissgvspharmaltdp2p": "2026-10-15",
   "FA088|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-15",
+  "FA089|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-16",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
@@ -388,6 +389,14 @@
       "date": "2026-10-03",
       "product": "Chloramphenicol Palmitate Oral Suspension USP (Self Care)",
       "qty": 1010.0,
+      "stage": "RM dispensed"
+    },
+    "FE-0890": {
+      "batch": "FE-0890",
+      "company": "Femident Healthcare",
+      "date": "2026-10-16",
+      "product": "SNOWIN D",
+      "qty": 600.0,
       "stage": "RM dispensed"
     },
     "FE-1291": {
