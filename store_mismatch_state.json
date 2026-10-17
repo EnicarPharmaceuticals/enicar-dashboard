@@ -1,9 +1,7 @@
 {
-  "BATCH|AA0017|AA0007": "2026-10-16",
   "BATCH|AA0018|AA0008": "2026-10-16",
   "BATCH|EL2422|EL-2462": "2026-10-17",
   "BATCH|EL2523|EL-2522": "2026-10-16",
-  "BATCH|FA089|FA079": "2026-10-17",
   "BATCH|FA090|FA080": "2026-10-16",
   "BATCH|FA091|FA081": "2026-10-16",
   "BATCH|L0947|L-0947": "2026-10-15",
@@ -98,6 +96,7 @@
   "PARTY|FA085|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-15",
   "PARTY|FA086|ronakeximpvtltd|blissgvspharmaltdp2p": "2026-10-15",
   "PARTY|FA088|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-15",
+  "PARTY|FA089|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-17",
   "PARTY|GE03049|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
   "PARTY|GE04045|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
   "PARTY|GE04294|galaxypharmaceuticalsltd|galaxypharma": "2026-10-15",
