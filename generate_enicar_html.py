@@ -51,6 +51,8 @@ def _self_check(msg):
     """Record a data-integrity failure. It prints to the build log AND renders
     as a red banner at the top of the dashboard, so a silent regression is
     impossible — someone WILL see it (Director: 'keep auto check', 28 Aug)."""
+    if msg in SELF_CHECK_WARNS:          # same warning once, not per view
+        return
     print(f'⚠️  SELF-CHECK: {msg}')
     SELF_CHECK_WARNS.append(msg)
 
