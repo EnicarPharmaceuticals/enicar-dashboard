@@ -1453,13 +1453,13 @@
         "status": "",
         "units": 49000.0
       },
-      "loratidineoralsolution|medicoremediesltdp2p|100ml": {
+      "loratadineoralsolutionusp|medicoremediesltdp2p|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "MEDICO REMEDIES LTD (P2P)",
         "priority": "2",
-        "product": "Loratidine Oral solution",
+        "product": "Loratadine Oral Solution USP",
         "status": "",
         "units": 836000.0
       },
@@ -2835,6 +2835,6 @@
       }
     },
     "source": "sheet tab \"OCT PLAN\"",
-    "ts": "2026-10-12T18:44:52"
+    "ts": "2026-10-26T10:10:01"
   }
 }
