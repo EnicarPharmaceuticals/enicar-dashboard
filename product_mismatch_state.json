@@ -66,6 +66,7 @@
   "24000|party|up|bc": "2026-10-26",
   "24000|product|15gm|5gm": "2026-10-25",
   "25000|product|100ml|10ml": "2026-10-24",
+  "26CH0084|party|indocoremediesltd|ronakeximpvtltd": "2026-10-26",
   "28240|party|bc|up": "2026-10-24",
   "30000|party|up|bc": "2026-10-26",
   "3000|product|15gm|100ml": "2026-10-24",
@@ -258,6 +259,7 @@
   "FA090|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-25",
   "FA092|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-25",
   "FA093|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-26",
+  "FA094|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-26",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-24",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-24",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-10-24",
@@ -401,6 +403,14 @@
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-10-26",
   "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-10-26",
   "_offplan_alerted": {
+    "E-26004": {
+      "batch": "E-26004",
+      "company": "RAPTAKOS BRETT & CO LTD P2P",
+      "date": "2026-10-26",
+      "product": "Catoxymag-N Suspension - Enicar",
+      "qty": 3000.0,
+      "stage": "RM dispensed"
+    },
     "EL-2484": {
       "batch": "EL-2484",
       "company": "KAMAL INTERNATIONAL",
@@ -415,6 +425,22 @@
       "date": "2026-10-21",
       "product": "Prodine Syrup",
       "qty": 6060.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2564": {
+      "batch": "EL-2564",
+      "company": "OM EXPORTS",
+      "date": "2026-10-26",
+      "product": "SUPADAY SYRUP",
+      "qty": 3000.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2565": {
+      "batch": "EL-2565",
+      "company": "OM EXPORTS",
+      "date": "2026-10-26",
+      "product": "SUPADAY SYRUP",
+      "qty": 3000.0,
       "stage": "RM dispensed"
     },
     "FE-0890": {
@@ -447,6 +473,30 @@
       "date": "2026-10-13",
       "product": "FEMIROSE TONIC",
       "qty": 1500.0,
+      "stage": "RM dispensed"
+    },
+    "RE-191437": {
+      "batch": "RE-191437",
+      "company": "RONAK EXIM PVT LTD",
+      "date": "2026-10-26",
+      "product": "HB-RON",
+      "qty": 4040.0,
+      "stage": "RM dispensed"
+    },
+    "RE-321226": {
+      "batch": "RE-321226",
+      "company": "RONAK EXIM PVT LTD",
+      "date": "2026-10-26",
+      "product": "RONANUTRA FORTE",
+      "qty": 3150.0,
+      "stage": "RM dispensed"
+    },
+    "U-159": {
+      "batch": "U-159",
+      "company": "UNIQUE PHARMA.",
+      "date": "2026-10-26",
+      "product": "Nocigel",
+      "qty": 910.0,
       "stage": "RM dispensed"
     }
   },
