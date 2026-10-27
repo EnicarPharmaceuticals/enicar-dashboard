@@ -3109,20 +3109,87 @@ def in_stock_cat_table():
             '<th>CATEGORY</th><th>BATCHES</th><th>UNITS IN STOCK</th><th>SHARE</th><th></th></tr></thead>'
             f'<tbody>{rows}</tbody></table></div>') if rows else ''
 
+# BSR stock ageing — days since the batch's LAST packing (Director, 27 Oct 2026).
+# The domestic range (Energvit / Algate / Allerzy) is made for stock and
+# dispatched as orders come in, so its long waits are normal and marked 🏠.
+def _stock_age_days(e):
+    pdte = PACK_DATES.get(_bkey(e['batch']))
+    if not pdte or not pdte.get('last'):
+        return None
+    return (ist_today() - pdte['last']).days
+
+_AGE_BUCKETS = ('0–7 days', '8–30 days', '30+ days')
+def _stock_age_bucket(a):
+    return '0–7 days' if a <= 7 else '8–30 days' if a <= 30 else '30+ days'
+
+def in_stock_age_table():
+    agg = {b: [0, 0.0] for b in _AGE_BUCKETS}
+    dom, unknown = [0, 0.0], [0, 0.0]
+    for e in IN_STOCK:
+        a = _stock_age_days(e)
+        if a is None:
+            unknown[0] += 1; unknown[1] += e['packed']; continue
+        b = _stock_age_bucket(a)
+        agg[b][0] += 1; agg[b][1] += e['packed']
+        if b == '30+ days' and _is_domestic(e.get('product')):
+            dom[0] += 1; dom[1] += e['packed']
+    if not IN_STOCK:
+        return ''
+    cols = {'0–7 days': '#2E7D32', '8–30 days': '#E65100', '30+ days': '#B71C1C'}
+    old_c, old_u = agg['30+ days']
+    if old_c and dom[0] == old_c:       # every old batch is domestic → calm grey
+        cols['30+ days'] = '#607D8B'
+    rows = ''
+    for b in _AGE_BUCKETS:
+        c_, u = agg[b]
+        pc_ = u / IN_STOCK_UNITS * 100 if IN_STOCK_UNITS else 0
+        extra = ''
+        if b == '30+ days' and dom[0]:
+            extra = (f'<div style="font-size:11px;color:#607D8B;font-weight:400">of which '
+                     f'🏠 domestic range: {dom[0]} batch(es), {n(dom[1])} u — made for stock, '
+                     f'dispatched on order (normal)</div>')
+        rows += (f'<tr><td class="td-name" style="font-weight:700;color:{cols[b]}">{b}</td>'
+                 f'<td class="td-num">{c_}</td>'
+                 f'<td class="td-num" style="font-weight:700">{n(u)}</td>'
+                 f'<td style="min-width:120px"><div style="background:#ECEFF1;border-radius:4px;height:14px">'
+                 f'<div style="width:{pc_:.0f}%;background:{cols[b]};height:14px;border-radius:4px"></div></div>'
+                 f'{extra}</td>'
+                 f'<td class="td-num" style="font-size:11px;color:#607D8B">{pc_:.0f}%</td></tr>')
+    if unknown[0]:
+        rows += (f'<tr><td class="td-name" style="color:#90A4AE">no packing date</td>'
+                 f'<td class="td-num">{unknown[0]}</td>'
+                 f'<td class="td-num">{n(unknown[1])}</td><td></td><td></td></tr>')
+    return ('<div style="padding:4px 18px 12px"><div style="font-weight:700;color:' + C_PRI +
+            ';font-size:12px;margin-bottom:5px">AGEING — DAYS SINCE LAST PACKING</div>'
+            '<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr class="th-row">'
+            '<th>IN STOCK FOR</th><th>BATCHES</th><th>UNITS</th><th>SHARE</th><th></th></tr></thead>'
+            f'<tbody>{rows}</tbody></table></div>')
+
 def batch_journey_rows():
     rows = ''
     for i, e in enumerate(IN_STOCK):
         bg = '#F1F8F6' if i % 2 == 0 else '#FFFFFF'
+        a = _stock_age_days(e)
+        dom = _is_domestic(e.get('product'))
+        if a is None:
+            age_c, age_t = '#90A4AE', '—'
+        elif a <= 7:
+            age_c, age_t = '#2E7D32', f'{a} d'
+        elif a <= 30:
+            age_c, age_t = '#E65100', f'{a} d'
+        else:
+            age_c, age_t = ('#607D8B' if dom else '#B71C1C'), f'{a} d'
         rows += (
             f'<tr style="background:{bg}">'
             f'<td class="td-name" style="font-weight:600">{e["party"] or "—"}</td>'
-            f'<td class="td-name">{e["product"] or "—"}</td>'
+            f'<td class="td-name">{(e["product"] or "—") + (" 🏠" if dom else "")}</td>'
             f'<td class="td-name" style="color:#607D8B">{e["ptype"] or "—"}</td>'
             f'<td class="td-name">{e["batch"]}</td>'
             f'<td class="td-num" style="color:{C_AMB};font-weight:700">{n(e["packed"])}</td>'
+            f'<td class="td-num" style="color:{age_c};font-weight:700">{age_t}</td>'
             f'</tr>'
         )
-    return rows or '<tr><td colspan="5" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
+    return rows or '<tr><td colspan="6" style="text-align:center;color:#90A4AE;padding:12px">Nothing packed and waiting — all packed stock has been dispatched.</td></tr>'
 
 def party_table_rows():
     rows = ''
@@ -3963,6 +4030,208 @@ function planColClear(k) {
 })();
 """
 
+# ══════════════════════════════════════════════════════════════════════════════
+# DEPARTMENT SCOREBOARD (Director, 27 Oct 2026) — every open data-entry item,
+# owned by the team whose log it sits in, with how long it has been open.
+# dept_reminders.py reads the JSON this writes, keeps first-seen dates in
+# dept_items_state.json and mails each team on Mondays; the card below shows
+# the same items so a team can self-check between reminders.
+# Approved practices are NOT items: full batch size on every lot row (tank
+# availability) and domestic dispatch waits are normal business.
+_DEPT_EXCLUDE_KEYS = {'tlb261004'}   # Sucralog placebo trial (Director, 27 Oct 2026)
+
+def _dept_open_items():
+    items, seen = [], set()
+    today = ist_today()
+    def add(team, iid, desc):
+        if iid in seen:
+            return
+        seen.add(iid)
+        items.append({'id': iid, 'team': team, 'desc': desc})
+
+    # 1. Batch Journey inconsistencies (activity in the last 90 days)
+    for e in BATCH_JOURNEY:
+        k = _bkey(e['batch'])
+        if k in _DEPT_EXCLUDE_KEYS or e['rank'] == 4 or e.get('auto_cleared'):
+            continue
+        if e['last'] and (today - e['last']).days > 90:
+            continue
+        f, p, d = e['filled'], e['packed'], e['dispatched']
+        prod = (e['product'] or e['batch'])[:32]
+        if e['rank'] == 0:
+            if f == 0 and p == 0 and d > 0:
+                add('Exports', f'disp-only:{k}',
+                    f"{prod} {e['batch']} — dispatched {int(d):,} but no filling/packing/RM record: "
+                    f"confirm the batch number printed on the goods")
+            elif f == 0:
+                add('Packing', f'never-filled:{k}',
+                    f"{prod} {e['batch']} — packed/dispatched but no filling entry")
+            else:
+                add('Packing', f'disp-gt-fill:{k}',
+                    f"{prod} {e['batch']} — dispatched {int(d):,} vs filled {int(f):,}: filling entries missing")
+        elif f > 0 and p > f + 500:
+            add('Packing', f'pack-gt-fill:{k}',
+                f"{prod} {e['batch']} — packed {int(p):,} vs filled {int(f):,}: "
+                f"filling short, or part of the packing belongs to another batch")
+
+    # 2. Impossible physical yields (filled/packed volume exceeds the RM bulk)
+    for w in YIELD_WARNS:
+        add('Packing', f"yield:{w['batch']}",
+            f"{w['product']} — filled/packed volume is {w['ratio']:.1f}× the RM bulk: "
+            f"check the batch numbers on the filling/packing rows")
+
+    # 3. Raw-row scans on the entry sheet (row numbers are live sheet rows)
+    def _raw(tab):
+        return pd.read_excel(TEMPLATE, sheet_name=tab, header=None, skiprows=3)
+    def _s(v):
+        return '' if pd.isna(v) else str(v).strip()
+    def _recent(v, days=120):
+        dt = pd.to_datetime(v, dayfirst=True, errors='coerce')
+        return pd.notna(dt) and (today - dt.date() if hasattr(dt, 'date') else today - dt).days <= days
+
+    try:   # RM Dispensing: product without a batch number → Stores (no date gate:
+           # the June blanks must stay visible until they are filled)
+        r = _raw('➕ RM Dispensing Log')
+        for i in range(1, len(r)):
+            prod, bat = _s(r.iat[i, 5]), _s(r.iat[i, 6])
+            if prod and not bat:
+                add('Stores', f'rm-blank-batch:r{i+4}',
+                    f"RM Dispensing row {i+4} — {prod[:32]}: batch number is blank")
+    except Exception as _e:
+        print(f'  (scoreboard RM scan skipped: {_e})')
+    try:   # Production: blank batch, or ⚠ CHECK (batch has no RM row)
+        r = _raw('➕ Production Log')
+        for i in range(1, len(r)):
+            if not _recent(r.iat[i, 1]):
+                continue
+            prod, bat, qty = _s(r.iat[i, 3]), _s(r.iat[i, 4]), _s(r.iat[i, 5])
+            chk = _s(r.iat[i, 14]) if r.shape[1] > 14 else ''
+            if prod and qty and not bat:
+                add('Production', f'prod-blank-batch:r{i+4}',
+                    f"Production Log row {i+4} — {prod[:32]} ({qty}): batch number is blank")
+            elif bat and chk.startswith('⚠'):
+                add('Production', f'prod-no-rm:r{i+4}',
+                    f"Production Log row {i+4} — {prod[:32]} batch {bat}: no matching RM row — "
+                    f"check the batch number against the BMR")
+    except Exception as _e:
+        print(f'  (scoreboard Production scan skipped: {_e})')
+    try:   # Packing half rows: product entered, batch or every qty column blank
+        r = _raw('➕ Packing Log')
+        for i in range(1, len(r)):
+            if not _recent(r.iat[i, 0]):
+                continue
+            prod, bat = _s(r.iat[i, 2]), _s(r.iat[i, 5])
+            has_qty = any(_s(r.iat[i, c]) not in ('', '0', '0.0') for c in (6, 7, 8, 9))
+            if prod and (not bat or not has_qty):
+                what = ('batch and quantity are blank' if not bat and not has_qty
+                        else 'batch number is blank' if not bat else 'no quantity entered')
+                add('Packing', f'pack-half-row:r{i+4}',
+                    f"Packing Log row {i+4} — {prod[:32]}: {what} — complete the row or delete it")
+    except Exception as _e:
+        print(f'  (scoreboard Packing scan skipped: {_e})')
+    try:   # Filling half rows
+        r = _raw('➕ Filling Log')
+        for i in range(1, len(r)):
+            if not _recent(r.iat[i, 1]):
+                continue
+            prod, qty, bat = _s(r.iat[i, 3]), _s(r.iat[i, 6]), _s(r.iat[i, 7])
+            if prod and (not bat or not qty):
+                what = ('batch and quantity are blank' if not bat and not qty
+                        else 'batch number is blank' if not bat else 'no quantity entered')
+                add('Packing', f'fill-half-row:r{i+4}',
+                    f"Filling Log row {i+4} — {prod[:32]}: {what} — complete the row or delete it")
+    except Exception as _e:
+        print(f'  (scoreboard Filling scan skipped: {_e})')
+    try:   # Dispatch rows this month without a PO number → one aggregate item
+        r = _raw('➕ Dispatch Log')
+        miss = tot = 0
+        for i in range(1, len(r)):
+            dt = pd.to_datetime(r.iat[i, 1], dayfirst=True, errors='coerce')
+            if pd.isna(dt) or dt.year != today.year or dt.month != today.month:
+                continue
+            if not _s(r.iat[i, 2]):
+                continue
+            tot += 1
+            if not _s(r.iat[i, 8]):
+                miss += 1
+        if miss:
+            add('Exports', f'po-missing:{today:%Y-%m}',
+                f"{miss} of {tot} dispatch rows this month have no PO number — "
+                f"enter the PO with each dispatch entry")
+    except Exception as _e:
+        print(f'  (scoreboard Dispatch scan skipped: {_e})')
+    return items
+
+DEPT_OPEN_ITEMS = _dept_open_items()
+
+# Hand the list to dept_reminders.py (weekly Monday emails + first-seen ages).
+try:
+    with open(os.path.join(HERE, 'dept_open_items.json'), 'w') as _f:
+        json.dump({'generated': str(ist_today()), 'items': DEPT_OPEN_ITEMS}, _f,
+                  ensure_ascii=False, indent=1)
+except Exception as _e:
+    print(f'  (dept_open_items.json not written: {_e})')
+
+# Ages come from dept_reminders.py's state file; absent (e.g. a cloud build
+# before the state was pushed) the card still renders, just without ages.
+_DEPT_AGES = {}
+try:
+    with open(os.path.join(HERE, 'dept_items_state.json')) as _f:
+        for _iid, _st in (json.load(_f).get('items') or {}).items():
+            _fs = pd.to_datetime(_st.get('first_seen'), errors='coerce')
+            if pd.notna(_fs):
+                _DEPT_AGES[_iid] = max(0, (ist_today() - _fs.date()).days)
+except Exception:
+    pass
+
+_DEPT_TEAMS = [('Stores', 'STORES'), ('Production', 'PRODUCTION'),
+               ('Packing', 'FILLING & PACKING'), ('Exports', 'EXPORTS / DISPATCH')]
+
+def dept_scoreboard_html():
+    by_team = {t: [] for t, _ in _DEPT_TEAMS}
+    for it in DEPT_OPEN_ITEMS:
+        by_team.setdefault(it['team'], []).append(it)
+    tiles = lists = ''
+    for team, label in _DEPT_TEAMS:
+        its = by_team.get(team, [])
+        ages = [_DEPT_AGES.get(it['id']) for it in its]
+        ages = [a for a in ages if a is not None]
+        oldest = max(ages) if ages else None
+        if not its:
+            col, sub = C_GRN, 'all clear ✓'
+        else:
+            col = '#E65100' if (oldest or 0) <= 7 else '#B71C1C'
+            sub = (f'oldest open {oldest} day(s)' if oldest is not None
+                   else 'open item(s)')
+        tiles += tile(label, ('0' if not its else str(len(its))), sub, col)
+        if its:
+            lis = ''
+            for it in sorted(its, key=lambda x: -(_DEPT_AGES.get(x['id'], 0))):
+                a = _DEPT_AGES.get(it['id'])
+                chip = ('' if a is None else
+                        f'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:9px;'
+                        f'background:{"#E8F5E9" if a <= 3 else "#FFF3E0" if a <= 7 else "#FFEBEE"};'
+                        f'color:{"#1B5E20" if a <= 3 else "#E65100" if a <= 7 else "#B71C1C"}">'
+                        f'{"new today" if a == 0 else f"{a} d open"}</span> ')
+                lis += f'<li style="margin:3px 0">{chip}{it["desc"]}</li>'
+            lists += (f'<div style="padding:2px 18px 8px"><div style="font-weight:700;font-size:12px;'
+                      f'color:{C_PRI}">{label} — {len(its)} item(s)</div>'
+                      f'<ul style="margin:4px 0 0;padding-left:18px;font-size:12px;color:#37474F">{lis}</ul></div>')
+    total = len(DEPT_OPEN_ITEMS)
+    note = ('<div style="font-size:11px;color:#607D8B;padding:0 18px 12px">An item clears from this board '
+            'automatically within 15 minutes of the correction in the entry sheet. Each team also gets a '
+            'Monday morning reminder email while it has open items.</div>')
+    body = (f'<div class="tile-row">{tiles}</div>'
+            + (f'<details style="padding:0 0 6px"><summary style="cursor:pointer;font-size:12px;font-weight:700;'
+               f'color:{C_PRI};padding:4px 18px">Show the {total} open item(s)</summary>{lists}</details>'
+               if total else
+               f'<div style="font-size:12px;color:{C_GRN};font-weight:600;padding:0 18px 10px">'
+               f'Every log is clean — no open data-entry items. 🎉</div>'))
+    return (f'<div class="card" id="team-card">'
+            + sec('  ━━&nbsp;&nbsp;DEPARTMENT &nbsp; SCOREBOARD &nbsp;—&nbsp; OPEN &nbsp; DATA &nbsp; ITEMS &nbsp;━━',
+                  C_PRI)
+            + body + note + '</div>')
+
 _stuckn = len(STUCK_BATCHES)
 QUICK_NAV = (
     '<div class="nav-row">'
@@ -3974,6 +4243,9 @@ QUICK_NAV = (
        if any(x['due_bucket'] for x in PLAN_ITEMS) else '')
     + '' 
     '<span class="nav-chip" onclick="navJump(\'stock-card\')">📦 BSR STOCK</span>'
+    + (f'<span class="nav-chip" style="background:#E3F2FD;color:#0D47A1" '
+       f'onclick="navJump(\'team-card\')">🏷 TEAMS ({len(DEPT_OPEN_ITEMS)})</span>'
+       if DEPT_OPEN_ITEMS else '')
     + (f'<span class="nav-chip" style="background:#FFF3E0;color:#BF360C" '
        f'onclick="navJump(\'stuck-card\')">⚠ STUCK ({_stuckn})</span>' if _stuckn else '')
     + '</div>')
@@ -4219,6 +4491,8 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
 
 {yield_check_html()}
 
+{dept_scoreboard_html()}
+
 <!-- ════════════════════════════════════════════════════════════
      SECTION 1 — PRODUCT TYPE BREAKDOWN
 ════════════════════════════════════════════════════════════ -->
@@ -4353,10 +4627,15 @@ in this viewer) — the numbers below show {_glance_month_label}.</div></noscrip
     {tile('UNITS IN STOCK', n(IN_STOCK_UNITS), 'packed & not dispatched', C_AMB)}
   </div>
   {in_stock_cat_table()}
+  {in_stock_age_table()}
+  <div style="font-size:11px;color:#607D8B;padding:0 18px 6px">
+    DAYS IN STOCK = days since the batch's last packing entry. 🏠 = Enicar's domestic range
+    (Energvit / Algate / Allerzy) — made for stock and dispatched as orders come in, so long waits are normal.
+  </div>
   <div class="tbl-wrap">
     <table>
       <thead><tr class="th-row">
-        <th>PARTY</th><th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th>
+        <th>PARTY</th><th>PRODUCT</th><th>PRODUCT TYPE</th><th>BATCH</th><th>QTY PACKED (IN STOCK)</th><th>DAYS IN STOCK</th>
       </tr></thead>
       <tbody>{batch_journey_rows()}</tbody>
     </table>
