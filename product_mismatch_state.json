@@ -2,6 +2,7 @@
   "-|party|shalinahealthcarepvtltd|": "2026-10-26",
   "-|party|shalinahealthcarepvtltd|bc": "2026-10-26",
   "-|party|shalinahealthcarepvtltd|bluemappharmachemp2p": "2026-10-27",
+  "-|party|shalinahealthcarepvtltd|delightpharmacyltd": "2026-10-27",
   "-|party|shalinahealthcarepvtltd|enicarpharmaceuticalpvtltd": "2026-10-27",
   "-|party|shalinahealthcarepvtltd|indocoremediesltd": "2026-10-26",
   "-|party|shalinahealthcarepvtltd|kamalinternational": "2026-10-26",
@@ -46,6 +47,7 @@
   "-|product|polygelsuspensionsachet|paediatriccotrimoxazoleoralsuspensionbpselfcare": "2026-10-26",
   "-|product|polygelsuspensionsachet|powerfil50orange": "2026-10-27",
   "-|product|polygelsuspensionsachet|princesheptinplussachets": "2026-10-26",
+  "-|product|polygelsuspensionsachet|prodinesyrup": "2026-10-27",
   "-|product|polygelsuspensionsachet|qenzy": "2026-10-25",
   "-|product|polygelsuspensionsachet|redsunjelly": "2026-10-26",
   "-|product|polygelsuspensionsachet|redsunjellybananaflavour": "2026-10-26",
@@ -74,6 +76,7 @@
   "34000|product|10ml|15gm": "2026-10-26",
   "36000|party|bc|up": "2026-10-26",
   "36000|product|15gm|10ml": "2026-10-26",
+  "39400|product|10ml|15gm": "2026-10-27",
   "40000|party|up|bc": "2026-10-26",
   "40000|product|10ml|15gm": "2026-10-26",
   "4000|party|bc|up": "2026-10-26",
@@ -83,6 +86,7 @@
   "54000|party|up|uf": "2026-10-25",
   "56000|product|15gm|10ml": "2026-10-26",
   "60000|party|up|bc": "2026-10-26",
+  "6000|product|15gm|10ml": "2026-10-27",
   "600|product|30gm|10ml": "2026-10-26",
   "6126C85001|party|proctergamblehealthlimitedllu|proctergamble": "2026-10-25",
   "6126C85001|product|polybionlc150|polybionlc": "2026-10-26",
@@ -228,7 +232,6 @@
   "EL-2482|product|malegraoraljelly|malegra": "2026-10-26",
   "EL-2505|party|unichemghanalimited|carethcorporation": "2026-10-27",
   "EL-2506|party|unichemghanalimited|carethcorporation": "2026-10-27",
-  "EL-2526|product|prodinesyrup|prodinforte": "2026-10-27",
   "EL-2530|party|unichemghanalimited|carethcorporation": "2026-10-27",
   "EL-2535|party|workcellsolutionsprivatelimited|workcellsolution": "2026-10-26",
   "EL-2536|product|smicalsuspension|smicalsusp": "2026-10-27",
@@ -409,6 +412,14 @@
       "qty": 3000.0,
       "stage": "RM dispensed"
     },
+    "E-26005": {
+      "batch": "E-26005",
+      "company": "RAPTAKOS BRETT & CO LTD P2P",
+      "date": "2026-10-27",
+      "product": "Catoxymag-N Suspension - Enicar",
+      "qty": 3000.0,
+      "stage": "RM dispensed"
+    },
     "EL-2484": {
       "batch": "EL-2484",
       "company": "KAMAL INTERNATIONAL",
@@ -471,6 +482,14 @@
       "date": "2026-10-13",
       "product": "FEMIROSE TONIC",
       "qty": 1500.0,
+      "stage": "RM dispensed"
+    },
+    "GE07050": {
+      "batch": "GE07050",
+      "company": "Galaxy Pharmaceuticals Ltd.",
+      "date": "2026-10-27",
+      "product": "C-ZOLE BG",
+      "qty": 230.0,
       "stage": "RM dispensed"
     },
     "RE-191437": {
