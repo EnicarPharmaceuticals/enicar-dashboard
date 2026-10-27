@@ -4080,9 +4080,27 @@ def _dept_open_items():
             f"{w['product']} — filled/packed volume is {w['ratio']:.1f}× the RM bulk: "
             f"check the batch numbers on the filling/packing rows")
 
-    # 3. Raw-row scans on the entry sheet (row numbers are live sheet rows)
+    # 3. Raw-row scans on the entry sheet (row numbers are live sheet rows).
+    # Columns are resolved from the HEADER ROW by canonical name, never by
+    # position — the team deleted Production's empty column A on 27 Oct 2026
+    # and every fixed index shifted.
     def _raw(tab):
         return pd.read_excel(TEMPLATE, sheet_name=tab, header=None, skiprows=3)
+    def _canon(x):
+        return re.sub(r'[^a-z0-9]', '', str(x).lower())
+    def _col(raw, want):
+        w = _canon(want)
+        for i, h in enumerate(raw.iloc[0]):
+            if _canon(h).startswith(w):
+                return i
+        return None
+    def _cols_all(raw, *wants):
+        out = []
+        for i, h in enumerate(raw.iloc[0]):
+            c = _canon(h)
+            if any(c.startswith(_canon(w)) for w in wants):
+                out.append(i)
+        return out
     def _s(v):
         return '' if pd.isna(v) else str(v).strip()
     def _recent(v, days=120):
@@ -4092,8 +4110,9 @@ def _dept_open_items():
     try:   # RM Dispensing: product without a batch number → Stores (no date gate:
            # the June blanks must stay visible until they are filled)
         r = _raw('➕ RM Dispensing Log')
+        cp, cb = _col(r, 'NAME OF THE PRODUCT'), _col(r, 'BATCH NUMBER')
         for i in range(1, len(r)):
-            prod, bat = _s(r.iat[i, 5]), _s(r.iat[i, 6])
+            prod, bat = _s(r.iat[i, cp]), _s(r.iat[i, cb])
             if prod and not bat:
                 add('Stores', f'rm-blank-batch:r{i+4}',
                     f"RM Dispensing row {i+4} — {prod[:32]}: batch number is blank")
@@ -4101,11 +4120,13 @@ def _dept_open_items():
         print(f'  (scoreboard RM scan skipped: {_e})')
     try:   # Production: blank batch, or ⚠ CHECK (batch has no RM row)
         r = _raw('➕ Production Log')
+        cd, cp = _col(r, 'Date'), _col(r, 'Product Name')
+        cb, cq, cc = _col(r, 'Batch No'), _col(r, 'Batch Size'), _col(r, 'CHECK')
         for i in range(1, len(r)):
-            if not _recent(r.iat[i, 1]):
+            if not _recent(r.iat[i, cd]):
                 continue
-            prod, bat, qty = _s(r.iat[i, 3]), _s(r.iat[i, 4]), _s(r.iat[i, 5])
-            chk = _s(r.iat[i, 14]) if r.shape[1] > 14 else ''
+            prod, bat, qty = _s(r.iat[i, cp]), _s(r.iat[i, cb]), _s(r.iat[i, cq])
+            chk = _s(r.iat[i, cc]) if cc is not None else ''
             if prod and qty and not bat:
                 add('Production', f'prod-blank-batch:r{i+4}',
                     f"Production Log row {i+4} — {prod[:32]} ({qty}): batch number is blank")
@@ -4117,11 +4138,13 @@ def _dept_open_items():
         print(f'  (scoreboard Production scan skipped: {_e})')
     try:   # Packing half rows: product entered, batch or every qty column blank
         r = _raw('➕ Packing Log')
+        cd, cp, cb = _col(r, 'Date'), _col(r, 'Product Name'), _col(r, 'Batch No')
+        cqs = _cols_all(r, 'Carton', 'Sleeve', 'Naked')
         for i in range(1, len(r)):
-            if not _recent(r.iat[i, 0]):
+            if not _recent(r.iat[i, cd]):
                 continue
-            prod, bat = _s(r.iat[i, 2]), _s(r.iat[i, 5])
-            has_qty = any(_s(r.iat[i, c]) not in ('', '0', '0.0') for c in (6, 7, 8, 9))
+            prod, bat = _s(r.iat[i, cp]), _s(r.iat[i, cb])
+            has_qty = any(_s(r.iat[i, c]) not in ('', '0', '0.0') for c in cqs)
             if prod and (not bat or not has_qty):
                 what = ('batch and quantity are blank' if not bat and not has_qty
                         else 'batch number is blank' if not bat else 'no quantity entered')
@@ -4131,10 +4154,12 @@ def _dept_open_items():
         print(f'  (scoreboard Packing scan skipped: {_e})')
     try:   # Filling half rows
         r = _raw('➕ Filling Log')
+        cd, cp = _col(r, 'Date'), _col(r, 'Product Name')
+        cq, cb = _col(r, 'Qty Filled'), _col(r, 'Batch No')
         for i in range(1, len(r)):
-            if not _recent(r.iat[i, 1]):
+            if not _recent(r.iat[i, cd]):
                 continue
-            prod, qty, bat = _s(r.iat[i, 3]), _s(r.iat[i, 6]), _s(r.iat[i, 7])
+            prod, qty, bat = _s(r.iat[i, cp]), _s(r.iat[i, cq]), _s(r.iat[i, cb])
             if prod and (not bat or not qty):
                 what = ('batch and quantity are blank' if not bat and not qty
                         else 'batch number is blank' if not bat else 'no quantity entered')
@@ -4144,15 +4169,16 @@ def _dept_open_items():
         print(f'  (scoreboard Filling scan skipped: {_e})')
     try:   # Dispatch rows this month without a PO number → one aggregate item
         r = _raw('➕ Dispatch Log')
+        cd, cp, cpo = _col(r, 'Date'), _col(r, 'Product Name'), _col(r, 'PO number')
         miss = tot = 0
         for i in range(1, len(r)):
-            dt = pd.to_datetime(r.iat[i, 1], dayfirst=True, errors='coerce')
+            dt = pd.to_datetime(r.iat[i, cd], dayfirst=True, errors='coerce')
             if pd.isna(dt) or dt.year != today.year or dt.month != today.month:
                 continue
-            if not _s(r.iat[i, 2]):
+            if not _s(r.iat[i, cp]):
                 continue
             tot += 1
-            if not _s(r.iat[i, 8]):
+            if not _s(r.iat[i, cpo]):
                 miss += 1
         if miss:
             add('Exports', f'po-missing:{today:%Y-%m}',
