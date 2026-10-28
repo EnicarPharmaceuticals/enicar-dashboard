@@ -1266,7 +1266,23 @@ def _build_plan_view():
     # Brands packed as a MIXED carton — one sachet of each flavour per carton.
     _MIXED_CARTON = {'kifarujelly'}
     _PRODUCT_ALIASES = [frozenset(('minminps', 'minmintonic')),
-                        frozenset(('unidaktgeloral', 'unidaktcream'))]
+                        frozenset(('unidaktgeloral', 'unidaktcream')),
+                        # 28 Oct 2026: the plan's PO wording never substring-
+                        # matches the RM licence name, so these filled batches
+                        # sat uncredited (RE-101432 60 ml 40,000 = PO-002's
+                        # exact qty; RE-071278 100 ml 20,000 = the plan qty).
+                        frozenset(('picronbabycoldsyruppo002',
+                                   'picronbabycoldcoughfeversyrupenicarlic')),
+                        frozenset(('picronbabycoldsyruppo006old2024',
+                                   'picronbabycoldcoughfeversyrupenicarlic')),
+                        # RM writes the same product with and without the
+                        # licence suffix (RE-081263 row: pack cell "60/100")
+                        frozenset(('picronbabycoldsyruppo002',
+                                   'picronbabycoldcoughfeversyrup')),
+                        frozenset(('picronbabycoldsyruppo006old2024',
+                                   'picronbabycoldcoughfeversyrup')),
+                        frozenset(('ronaksmultivitaminsyruppo002',
+                                   'ronakmultivitaminenicarlic'))]
 
     def _brandkey(s):
         """Product name with a parenthetical flavour and a trailing strength
@@ -1664,6 +1680,60 @@ def _build_plan_view():
                 _it.setdefault('pack_notes', []).append(
                     'batches shared with another line of the same product and pack '
                     '— quantities split by planned share')
+
+    # ── Brand umbrella lines ("Redsun Jelly in 42 Flavour", 28 Oct 2026) ──
+    # One plan line can cover every flavour of a brand; its name can never
+    # substring-match "Redsun Jelly (Avocado Flavour)" etc., so 5.6 L filled
+    # units showed on no plan line (and, because the brand IS on the plan,
+    # raised no off-plan alarm either). Any window batch of the same brand
+    # and pack that no specific flavour line claimed is credited here.
+    _umb_end = date(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month,
+                    calendar.monthrange(PLAN_WINDOW_FROM.year, PLAN_WINDOW_FROM.month)[1])
+    _jmap_umb = {_bkey(e['batch']): e for e in BATCH_JOURNEY}
+    for it in items:
+        _mu = re.search(r'(?i)^(.*?)\bin\s*\d+\s*flavours?\b', str(it['product']))
+        if not _mu:
+            continue
+        _ubk = _brandkey(_mu.group(1))
+        if len(_ubk) < 5:
+            continue
+        _uwant = _packnums(it.get('pack'))
+        _added = 0
+        for b in rmw:
+            if b['key'] in used_keys or _brandkey(b['product']) != _ubk:
+                continue
+            if b['date'] < PLAN_WINDOW_FROM or b['date'] > _umb_end:
+                continue
+            _ufd = FILL_DATES.get(b['key'])
+            if _ufd and _ufd['first'] < PLAN_WINDOW_FROM:
+                continue                      # last month's order being finished
+            _urps = _packnums(b.get('pack'))
+            if _uwant and _urps and not (_uwant & _urps):
+                continue
+            qty = _batch_totals_window(b['key'], PLAN_WINDOW_FROM)
+            used_keys.add(b['key'])
+            _upd, _udd = PACK_DATES.get(b['key']), DISP_DATES.get(b['key'])
+            it['batches'].append({
+                '_slice': None, '_by_pack': None,
+                'batch': b['batch'], 'rm_date': b['date'], 'rm_customer': b['customer'],
+                'rm_product': b['product'], 'size': b['size'],
+                'rm_missing': b.get('rm_missing', False), **qty,
+                'status': (_jmap_umb.get(b['key']) or {}).get('status')
+                          or 'RM dispensed — no production yet',
+                'f_first': _ufd and _ufd['first'], 'f_last': _ufd and _ufd['last'],
+                'p_first': _upd and _upd['first'], 'p_last': _upd and _upd['last'],
+                'd_first': _udd and _udd['first'], 'd_last': _udd and _udd['last'],
+            })
+            _added += 1
+        if _added:
+            it['batches'].sort(key=lambda x: x['rm_date'])
+            it['filled']     = sum(b['filled'] for b in it['batches'])
+            it['packed']     = sum(b['packed'] for b in it['batches'])
+            it['dispatched'] = sum(b['dispatched'] for b in it['batches'])
+            _upq = it['planned_units'] or 0
+            it['pct'] = min(100.0, (it['filled'] / _upq * 100) if _upq else 0)
+            it.setdefault('pack_notes', []).append(
+                f'{_added} flavour batch(es) not named by any specific line are counted here')
 
     # ── Dispensing schedule ──────────────────────────────────────────────
     # Anything the Plant Head / store gave a target date to is an instruction:
