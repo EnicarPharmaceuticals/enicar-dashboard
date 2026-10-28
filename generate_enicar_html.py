@@ -816,6 +816,23 @@ _PLAN_JSON       = os.path.join(HERE, 'plan_aug_2026.json')
 def _pcanon(s):
     return re.sub(r'[^a-z0-9]', '', str(s or '').lower())
 
+def _edit_le2(a, b):
+    """True when a and b differ by at most 2 single-character edits
+    (Director, 28 Oct 2026: a plan spelling with one or two wrong letters and
+    the same party is the same product)."""
+    la, lb = len(a), len(b)
+    if abs(la - lb) > 2:
+        return False
+    prev = list(range(lb + 1))
+    for i in range(1, la + 1):
+        cur = [i] + [0] * lb
+        for j in range(1, lb + 1):
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] != b[j - 1]))
+        if min(cur) > 2:
+            return False
+        prev = cur
+    return prev[lb] <= 2
+
 # ── Party aliases (Director, 22 Aug 2026) ─────────────────────────────────────
 # Legally-different names that are the SAME customer for planning purposes.
 # The ⇄ "company differs" chip must NOT fire for these. Match: a party belongs
@@ -1386,6 +1403,26 @@ def _build_plan_view():
                             print(f"    short-name link: plan '{it['product']}' -> "
                                   f"RM '{_cand[0]['product']}' ({len(_cand)} batch(es), "
                                   f"{it.get('party_canon') or ''})")
+            if not hits and (it.get('party_canon') or '').strip() and len(_me) >= 6:
+                # One or two letters wrong in the plan's spelling, same party
+                # → same product (Director, 28 Oct 2026). A name that merely
+                # EXTENDS the other (Zerosick / Zerosick PS) is a real
+                # variant, never a typo, so prefix relations are excluded.
+                _tcand = [b for b in rmw
+                          if _same_party(it.get('party_canon') or '', b.get('customer') or '')
+                          and len(_pcanon(b['product'])) >= 6
+                          and _pcanon(b['product']) != _me
+                          and not _pcanon(b['product']).startswith(_me)
+                          and not _me.startswith(_pcanon(b['product']))
+                          and _edit_le2(_me, _pcanon(b['product']))
+                          and _pcanon(b['product']) not in _exact_plan_names]
+                if _tcand and len({_pcanon(b['product']) for b in _tcand}) == 1:
+                    if not any(o is not it and prod_match(o['product'], _tcand[0]['product'])
+                               for o in items):
+                        hits = _tcand
+                        it['linked_by'] = 'company + near-identical name (1–2 letters differ)'
+                        print(f"    typo link: plan '{it['product']}' -> "
+                              f"RM '{_tcand[0]['product']}' ({len(_tcand)} batch(es))")
         # ── Credit each batch to this line PER PACK SIZE ──
         # Same product planned in two packs must not share the same units
         # (Alaize 15 ml vs 200 ml double-counted), but one bulk batch may
@@ -1734,6 +1771,62 @@ def _build_plan_view():
             it['pct'] = min(100.0, (it['filled'] / _upq * 100) if _upq else 0)
             it.setdefault('pack_notes', []).append(
                 f'{_added} flavour batch(es) not named by any specific line are counted here')
+
+    # ── Last month's orders finished this month (Director, 28 Oct 2026) ──
+    # "if oxcoril is filled in oct it automatically counted in oct month":
+    # window work on batches that belong to the PREVIOUS month's orders (RM
+    # dispensed or filling started before the window) and that no line of
+    # this plan claims gets its own labelled row, so the plan table's totals
+    # match the month's real output. planned stays 0 — these rows carry no
+    # quantity in THIS month's plan document, only the work itself.
+    _prev3_fin = (PLAN_WINDOW_FROM - timedelta(days=1)).strftime('%b').upper()
+    _fin_grp = {}
+    for b in rmw:
+        if b['key'] in used_keys:
+            continue
+        _ffd = FILL_DATES.get(b['key'])
+        if not (b['date'] < PLAN_WINDOW_FROM
+                or (_ffd and _ffd['first'] < PLAN_WINDOW_FROM)):
+            continue                      # not last month's order
+        qty = _batch_totals_window(b['key'], PLAN_WINDOW_FROM)
+        if not any(v > 0 for v in qty.values()):
+            continue                      # no work this month — nothing to show
+        used_keys.add(b['key'])
+        _upd, _udd = PACK_DATES.get(b['key']), DISP_DATES.get(b['key'])
+        _g = _fin_grp.setdefault(_pcanon(b['product']), {
+            'product': b['product'], 'party': b['customer'] or '',
+            'pack': b.get('pack') or '', 'batches': []})
+        _g['batches'].append({
+            '_slice': None, '_by_pack': None,
+            'batch': b['batch'], 'rm_date': b['date'], 'rm_customer': b['customer'],
+            'rm_product': b['product'], 'size': b['size'],
+            'rm_missing': b.get('rm_missing', False), **qty,
+            'status': (_jmap_umb.get(b['key']) or {}).get('status')
+                      or 'RM dispensed — no production yet',
+            'f_first': _ffd and _ffd['first'], 'f_last': _ffd and _ffd['last'],
+            'p_first': _upd and _upd['first'], 'p_last': _upd and _upd['last'],
+            'd_first': _udd and _udd['first'], 'd_last': _udd and _udd['last'],
+        })
+    for _g in _fin_grp.values():
+        _g['batches'].sort(key=lambda x: x['rm_date'])
+        _f = sum(x['filled'] for x in _g['batches'])
+        _p = sum(x['packed'] for x in _g['batches'])
+        _d = sum(x['dispatched'] for x in _g['batches'])
+        _st, _sr = (('🟠 Dispatching', 5) if _d > 0 else
+                    ('🟡 Packed', 4) if _p > 0 else ('🔵 Filling', 3))
+        items.append({
+            'finishing': True, 'product': _g['product'], 'party_canon': _g['party'],
+            'display_party': _g['party'], 'party_differs': False, 'rm_customers': [],
+            'pack': (_g['pack'] + ' ml' if re.fullmatch(r'[\d.]+', str(_g['pack'])) else _g['pack']),
+            'ptype': '', 'cat': plan_category(_g['product'], _g['pack']),
+            'planned_units': 0, 'filled': _f, 'packed': _p, 'dispatched': _d,
+            'pct': 0, 'batches': _g['batches'], 'status': _st, 'srank': _sr,
+            'priority': None, 'flag': '', 'month': _prev3_fin,
+            'rm_status': '', 'rm_date': None, 'rm_batch': '',
+            'prev_units': 0, 'extra_units': 0, 'mixed_carton': False,
+            'lots': 1, 'carry_months': None, 'carry_units': 0, 'updated_by': '',
+            'linked_by': 'last month\'s order — work done this month',
+        })
 
     # ── Dispensing schedule ──────────────────────────────────────────────
     # Anything the Plant Head / store gave a target date to is an instruction:
@@ -2560,11 +2653,13 @@ def _plan_block(view):
         # Where this line comes from (Director, 9 Oct 2026): last month's
         # balance carried over, a new order for this month, or both.
         _src, _srctag = '', ''
-        if _has_split:
+        _tag = lambda txt, bgc, fgc: (f' <span style="background:{bgc};color:{fgc};border-radius:3px;'
+                                      f'padding:1px 6px;font-size:10px;font-weight:800;white-space:nowrap">{txt}</span>')
+        if it.get('finishing'):
+            _src, _srctag = 'fin', _tag(f'⏳ {_PREV3} ORDER — FINISHING', '#E0F7FA', '#006064')
+        elif _has_split:
             _pu = min(float(it.get('prev_units') or 0), float(it['planned_units'] or 0))
             _nu = float(it['planned_units'] or 0) - _pu
-            _tag = lambda txt, bgc, fgc: (f' <span style="background:{bgc};color:{fgc};border-radius:3px;'
-                                          f'padding:1px 6px;font-size:10px;font-weight:800;white-space:nowrap">{txt}</span>')
             if float(it.get('extra_units') or 0) >= float(it['planned_units'] or 0) > 0:
                 _src, _srctag = 'extra', _tag('➕ OUTSIDE PLAN', '#EDE7F6', '#4527A0')
             elif _pu > 0 and _nu > 0:
@@ -2589,7 +2684,7 @@ def _plan_block(view):
                  f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}{_srctag}</td>'
                  f'<td class="td-name" style="color:#546E7A">{it.get("display_party") or "—"}{pflag}</td>'
                  f'<td class="td-name" style="color:#37474F">{it.get("pack") or "—"}</td>'
-                 f'<td class="td-num" style="font-weight:700">{n(it["planned_units"])}</td>'
+                 f'<td class="td-num" style="font-weight:700">{"—" if it.get("finishing") else n(it["planned_units"])}</td>'
                  f'<td class="td-num" style="color:{C_SEC}">{n(it["filled"]) if it["filled"] else "—"}</td>'
                  f'<td class="td-num" style="color:{C_AMB}">{n(it["packed"]) if it["packed"] else "—"}</td>'
                  f'<td class="td-num" style="color:{C_ORG}">{n(it["dispatched"]) if it["dispatched"] else "—"}</td>'
@@ -2634,6 +2729,9 @@ def _plan_block(view):
         chips2 += ''.join(_chip(p, lbl) for p, lbl in
                           [(-6, f'THIS MONTH ({len(items) - _carried})'),
                            (-7, f'↩ CARRIED OVER ({_carried})')])
+    _nfin = sum(1 for x in items if x.get('finishing'))
+    if _nfin:
+        chips2 += _chip(-9, f'⏳ {_PREV3} ORDERS FINISHING ({_nfin})')
     # BY CATEGORY in the Director's five categories (pack type column), not
     # the old four — Flat and Stick Pack sachets run on different lines.
     _P5 = ['Bottle', 'Flat Sachet', 'Stick Pack Sachet', 'Ointment', 'External']
@@ -5471,6 +5569,7 @@ function _planApply(k) {{
     else if (p === -7) {{ const src = tr.getAttribute('data-src') || '';
       show = src ? (src === 'prev' || src === 'both') : (mon === 'JUL' || mon === 'JUN'); }}
     else if (p === -8) show = (tr.getAttribute('data-src') === 'extra');
+    else if (p === -9) show = (tr.getAttribute('data-src') === 'fin');
     if (show && typeof _planColPass === 'function') show = _planColPass(k, tr);
     const det = tr.nextElementSibling;
     if (show && st.q) {{
