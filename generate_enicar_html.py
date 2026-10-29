@@ -842,6 +842,7 @@ _PARTY_ALIAS_GROUPS = [
     ('pharmatrust',),                              # Pharmatrust Ltd ⇄ Pharmatrust Limited
     ('londonunited',),                             # London United Exports ⇄ London United Medimpex
     ('aurapharma', 'stanmar'),                     # Aura Pharmaceuticals ⇄ STANMARC ENTERPRISE (P2P)
+    ('lasohealthcare', 'vitacura'),                # LASO Healthcare ⇄ Vitacura (Director, 29 Oct 2026)
 ]
 
 def _party_group(name):
