@@ -2752,22 +2752,12 @@
         "units": 12000.0
       },
       "talovakenya|lasohealthcarepvtltd|60ml": {
-        "batch": "",
+        "batch": "VP-1124, VP-1129",
         "date": "",
         "pack": "60 ml",
         "party": "LASO HEALTHCARE PVT LTD",
         "priority": "1",
         "product": "Talova Kenya",
-        "status": "",
-        "units": 33000.0
-      },
-      "telovasyrup|vitacurapharmaceuticals|60ml": {
-        "batch": "",
-        "date": "",
-        "pack": "60 ml",
-        "party": "Vitacura Pharmaceuticals",
-        "priority": "2",
-        "product": "TELOVA SYRUP",
         "status": "",
         "units": 33000.0
       },
@@ -2973,6 +2963,6 @@
       }
     },
     "source": "sheet tab \"OCT PLAN\"",
-    "ts": "2026-10-28T06:05:38"
+    "ts": "2026-10-29T08:47:40"
   }
 }
