@@ -48,6 +48,7 @@
   "-|product|polygelsuspensionsachet|powerfil50orange": "2026-10-30",
   "-|product|polygelsuspensionsachet|princesheptinplussachets": "2026-10-29",
   "-|product|polygelsuspensionsachet|prodinesyrup": "2026-10-30",
+  "-|product|polygelsuspensionsachet|prodinforte": "2026-10-30",
   "-|product|polygelsuspensionsachet|qenzy": "2026-10-28",
   "-|product|polygelsuspensionsachet|redsunjelly": "2026-10-29",
   "-|product|polygelsuspensionsachet|redsunjellybananaflavour": "2026-10-29",
@@ -418,6 +419,14 @@
       "date": "2026-10-27",
       "product": "Catoxymag-N Suspension - Enicar",
       "qty": 3000.0,
+      "stage": "RM dispensed"
+    },
+    "EF-145": {
+      "batch": "EF-145",
+      "company": "FLAMINGO PHARMACEUTICALS LIMITED",
+      "date": "2026-10-29",
+      "product": "VIGORIX FORTE",
+      "qty": 7570.0,
       "stage": "RM dispensed"
     },
     "EL-2484": {
