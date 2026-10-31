@@ -1,14 +1,16 @@
 {
-  "BATCH|26CH0090|26CH0040": "2026-10-30",
   "BATCH|BS008|BS007": "2026-10-31",
   "BATCH|E26005|E-26004": "2026-10-30",
   "BATCH|EL2422|EL-2462": "2026-10-29",
+  "BATCH|EL2565|EL-2564": "2026-10-31",
+  "BATCH|EL2566|EL-2564": "2026-10-31",
+  "BATCH|EL2567|EL-2564": "2026-10-31",
   "BATCH|FA091|FA081": "2026-10-31",
-  "BATCH|FA095|FA085": "2026-10-29",
   "BATCH|L0947|L-0947": "2026-10-30",
   "BATCH|MUCE197|MUCE-195": "2026-10-30",
   "BATCH|T16005|T16003": "2026-10-31",
-  "BATCH|U159|U-158": "2026-10-29",
+  "BATCH|U152|U-150": "2026-10-31",
+  "BATCH|U153|U-150": "2026-10-31",
   "BATCH|U168|U-166": "2026-10-30",
   "BATCH|VP1124|VP-1129": "2026-10-31",
   "PARTY|-|bluemappharmachemp2p|up": "2026-10-29",
@@ -109,6 +111,7 @@
   "PARTY|FA092|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-31",
   "PARTY|FA093|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-29",
   "PARTY|FA094|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-29",
+  "PARTY|FA095|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-10-31",
   "PARTY|GE03049|galaxypharmaceuticalsltd|galaxypharma": "2026-10-30",
   "PARTY|GE04045|galaxypharmaceuticalsltd|galaxypharma": "2026-10-30",
   "PARTY|GE04294|galaxypharmaceuticalsltd|galaxypharma": "2026-10-30",
@@ -252,5 +255,6 @@
   "PRODUCT|SL05423|magascon|magasconmagaldratesimethiconeoralsuspensionusp": "2026-10-30",
   "PRODUCT|T16001|ibuprofenoralsuspensionbp100mg5mlumedica|ibuprofenoralsusp": "2026-10-29",
   "PRODUCT|T16002|azithromycinoralsuspensionumedica|azithromycin": "2026-10-29",
-  "PRODUCT|U-147|qenzy|": "2026-10-29"
+  "PRODUCT|U-147|qenzy|": "2026-10-29",
+  "PRODUCT|U-159|nocigel|nocigelsachet": "2026-10-31"
 }
