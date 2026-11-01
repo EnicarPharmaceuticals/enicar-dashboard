@@ -1304,7 +1304,12 @@ def _build_plan_view():
                         # Galaxy's C-Zole: plan says the pack, RM says "BG"
                         # (GE07050 filled 14,900 × 15 gm, 29 Oct — Director
                         # confirmed 1 Nov 2026 it is the plan's C Zole 15gm)
-                        frozenset(('czole15gm', 'czolebg'))]
+                        frozenset(('czole15gm', 'czolebg')),
+                        # 1 Nov 2026 audit: same party + pack + qty, licence
+                        # suffix / spelling kept them apart
+                        frozenset(('ronakmilkofmagnesia',
+                                   'ronaksmilkofmagnesiaenicarlicense')),
+                        frozenset(('vigorex', 'vigorixforte'))]
 
     def _brandkey(s):
         """Product name with a parenthetical flavour and a trailing strength
