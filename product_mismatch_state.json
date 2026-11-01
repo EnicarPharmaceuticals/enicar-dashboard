@@ -541,16 +541,6 @@
         "status": "",
         "units": 10000.0
       },
-      "250mg5ml|kamalinternational|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "KAMAL INTERNATIONAL",
-        "priority": "1",
-        "product": "250mg/5ml",
-        "status": "",
-        "units": 15000.0
-      },
       "abccoldsyrup|menzbek|100ml": {
         "batch": "",
         "date": "",
@@ -979,7 +969,7 @@
         "priority": "2",
         "product": "Bronk Syrup-PS",
         "status": "",
-        "units": 8000.0
+        "units": 0.0
       },
       "bronksyrup|lesantolaboratories|100ml": {
         "batch": "",
@@ -989,7 +979,7 @@
         "priority": "2",
         "product": "Bronk Syrup",
         "status": "",
-        "units": 11000.0
+        "units": 0.0
       },
       "bronkxsyrup|lesantolaboratories|100ml": {
         "batch": "",
@@ -1822,14 +1812,14 @@
         "units": 280000.0
       },
       "nystatinsuspension|tushupharma|60ml": {
-        "batch": "",
+        "batch": "ET-06346",
         "date": "",
         "pack": "60 ml",
         "party": "Tushu Pharma",
         "priority": "1",
         "product": "Nystatin Suspension",
         "status": "",
-        "units": 45000.0
+        "units": 0.0
       },
       "ornidox|aurapharmaceuticalspvtltdp2p|60ml": {
         "batch": "",
@@ -2499,7 +2489,7 @@
         "priority": "1",
         "product": "Ronak Milk of Magnesia",
         "status": "",
-        "units": 20000.0
+        "units": 0.0
       },
       "ronaksbcomplexpo003|ronakeximpvtltd|100ml": {
         "batch": "",
@@ -2671,6 +2661,16 @@
         "status": "",
         "units": 15000.0
       },
+      "selfcarepainfever250mg|kamalinternational|100ml": {
+        "batch": "EL-2528",
+        "date": "",
+        "pack": "100 ml",
+        "party": "KAMAL INTERNATIONAL",
+        "priority": "1",
+        "product": "Selfcare Pain & Fever 250 mg",
+        "status": "",
+        "units": 0.0
+      },
       "setflow|macleodspharmaceuticalslimitedp2p|200ml": {
         "batch": "",
         "date": "",
@@ -2692,24 +2692,24 @@
         "units": 15000.0
       },
       "smical|epionepharmaceuticalspvtltd|200ml": {
-        "batch": "",
+        "batch": "EL-2536",
         "date": "",
         "pack": "200 ml",
         "party": "Epione Pharmaceuticals Pvt Ltd",
         "priority": "1",
         "product": "SMICAL",
         "status": "",
-        "units": 5600.0
+        "units": 0.0
       },
       "smycalps|epionepharmaceuticalspvtltd|100ml": {
-        "batch": "",
+        "batch": "EL-2536",
         "date": "",
         "pack": "100 ml",
         "party": "Epione pharmaceuticals pvt ltd.",
         "priority": "1",
         "product": "Smycal (PS)",
         "status": "",
-        "units": 5000.0
+        "units": 0.0
       },
       "snowind|femidenthealthcare|100ml": {
         "batch": "",
@@ -2752,14 +2752,14 @@
         "units": 52500.0
       },
       "talovaghana|lasohealthcarepvtltd|100ml": {
-        "batch": "",
+        "batch": "VP-1124, VP-1129",
         "date": "",
         "pack": "100 ml",
         "party": "LASO HEALTHCARE PVT LTD",
         "priority": "1",
         "product": "Talova Ghana",
         "status": "",
-        "units": 12000.0
+        "units": 0.0
       },
       "talovakenya|lasohealthcarepvtltd|60ml": {
         "batch": "VP-1124, VP-1129",
@@ -2952,14 +2952,14 @@
         "units": 50000.0
       },
       "zerosickps|ipc|100ml": {
-        "batch": "",
+        "batch": "EL-2550",
         "date": "",
         "pack": "100 ml",
         "party": "IPC",
         "priority": "1",
         "product": "Zerosick PS",
         "status": "",
-        "units": 3000.0
+        "units": 0.0
       },
       "zerosick|ipc|200ml": {
         "batch": "",
@@ -2973,6 +2973,6 @@
       }
     },
     "source": "sheet tab \"OCT PLAN\"",
-    "ts": "2026-10-29T08:47:40"
+    "ts": "2026-11-01T07:56:57"
   }
 }
