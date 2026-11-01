@@ -1300,7 +1300,11 @@ def _build_plan_view():
                         frozenset(('picronbabycoldsyruppo006old2024',
                                    'picronbabycoldcoughfeversyrup')),
                         frozenset(('ronaksmultivitaminsyruppo002',
-                                   'ronakmultivitaminenicarlic'))]
+                                   'ronakmultivitaminenicarlic')),
+                        # Galaxy's C-Zole: plan says the pack, RM says "BG"
+                        # (GE07050 filled 14,900 × 15 gm, 29 Oct — Director
+                        # confirmed 1 Nov 2026 it is the plan's C Zole 15gm)
+                        frozenset(('czole15gm', 'czolebg'))]
 
     def _brandkey(s):
         """Product name with a parenthetical flavour and a trailing strength
@@ -1404,18 +1408,30 @@ def _build_plan_view():
                             print(f"    short-name link: plan '{it['product']}' -> "
                                   f"RM '{_cand[0]['product']}' ({len(_cand)} batch(es), "
                                   f"{it.get('party_canon') or ''})")
-            if not hits and (it.get('party_canon') or '').strip() and len(_me) >= 6:
+            if not hits and len(_me) >= 6:
                 # One or two letters wrong in the plan's spelling, same party
                 # → same product (Director, 28 Oct 2026). A name that merely
                 # EXTENDS the other (Zerosick / Zerosick PS) is a real
                 # variant, never a typo, so prefix relations are excluded.
+                # Same BRAND counts like same party (1 Nov 2026): the Redsun
+                # flavour lines "Avacado"/"Guvava" never matched Avocado/Guava
+                # batches because RM has no customer on those rows; the word
+                # "flavour" is ignored in the comparison.
+                _mef = _me.replace('flavour', '')
+                def _typo_ok(b):
+                    cb = _pcanon(b['product'])
+                    if cb == _me or cb.startswith(_me) or _me.startswith(cb):
+                        return False
+                    cbf = cb.replace('flavour', '')
+                    if len(cbf) < 6 or not _edit_le2(_mef, cbf):
+                        return False
+                    same_co = ((it.get('party_canon') or '').strip()
+                               and _same_party(it.get('party_canon') or '', b.get('customer') or ''))
+                    _bk_it = _brandkey(it['product'])
+                    same_brand = len(_bk_it) >= 5 and _bk_it == _brandkey(b['product'])
+                    return bool(same_co or same_brand)
                 _tcand = [b for b in rmw
-                          if _same_party(it.get('party_canon') or '', b.get('customer') or '')
-                          and len(_pcanon(b['product'])) >= 6
-                          and _pcanon(b['product']) != _me
-                          and not _pcanon(b['product']).startswith(_me)
-                          and not _me.startswith(_pcanon(b['product']))
-                          and _edit_le2(_me, _pcanon(b['product']))
+                          if _typo_ok(b)
                           and _pcanon(b['product']) not in _exact_plan_names]
                 if _tcand and len({_pcanon(b['product']) for b in _tcand}) == 1:
                     if not any(o is not it and prod_match(o['product'], _tcand[0]['product'])
