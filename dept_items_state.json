@@ -4,338 +4,308 @@
    "team": "Packing",
    "desc": "Naomi Triple Action Cream AA0004 — dispatched 66,240 vs filled 64,240: filling entries missing",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-gt-fill:EF013": {
    "team": "Packing",
    "desc": "Funbact-A EF013 — dispatched 65,700 vs filled 60,000: filling entries missing",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-gt-fill:ME-13577": {
    "team": "Packing",
    "desc": "Setflow Oral Solution ME-13577 — dispatched 49,650 vs filled 45,000: filling entries missing",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-gt-fill:ALE-144": {
    "team": "Packing",
    "desc": "Alaize ALE-144 — dispatched 99,000 vs filled 97,000: filling entries missing",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-only:CE-346514": {
    "team": "Exports",
    "desc": "Optiprim Suspension CE-346514 — dispatched 55,000 but no filling/packing/RM record: confirm the batch number printed on the goods",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-only:CE-347515": {
    "team": "Exports",
    "desc": "Optiprim Suspension CE-347515 — dispatched 55,000 but no filling/packing/RM record: confirm the batch number printed on the goods",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-only:GE13301": {
    "team": "Exports",
    "desc": "Nilworm Suspension GE13301 — dispatched 2,400 but no filling/packing/RM record: confirm the batch number printed on the goods",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:RE-081427": {
    "team": "Packing",
    "desc": "COTRIRONAK RE-081427 — packed 55,900 vs filled 50,500: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:NUTE-404": {
    "team": "Packing",
    "desc": "Nutrisang Tonic NUTE-404 — packed 16,000 vs filled 15,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:EF008": {
    "team": "Packing",
    "desc": "Funbact-A EF008 — packed 65,600 vs filled 65,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:EL-2439": {
    "team": "Packing",
    "desc": "Climax Nystatin Oral Suspension EL-2439 — packed 95,600 vs filled 95,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "rm-blank-batch:r194": {
    "team": "Stores",
    "desc": "RM Dispensing row 194 — Azcon: batch number is blank",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "rm-blank-batch:r217": {
    "team": "Stores",
    "desc": "RM Dispensing row 217 — VITASAPH: batch number is blank",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-half-row:r1059": {
    "team": "Packing",
    "desc": "Packing Log row 1059 — Ornid Ox susp.: no quantity entered — complete the row or delete it",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r288": {
    "team": "Production",
    "desc": "Production Log row 288 — TELOVA SYRUP batch VP-1129: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r310": {
    "team": "Production",
    "desc": "Production Log row 310 — Gavinique batch U-186: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r322": {
    "team": "Production",
    "desc": "Production Log row 322 — Bonaplex Syrup batch EL-2531: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:GE06321": {
    "team": "Packing",
    "desc": "FC-ZOLE SUSPENSION — filled/packed volume is 1.6× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:EL-2526": {
    "team": "Packing",
    "desc": "Prodine Syrup — filled/packed volume is 2.0× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-10-29",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:EL-2538": {
    "team": "Packing",
    "desc": "KLIRE ZOFU SUSPENSION — filled/packed volume is 2.4× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-10-29",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:EL-2538": {
    "team": "Packing",
    "desc": "KLIRE BLOOD TONIC EL-2538 — packed 17,170 vs filled 10,050: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-11-01",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:EL-2520": {
    "team": "Packing",
    "desc": "Prodin Forte — filled/packed volume is 1.2× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-11-01",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:26CH0088": {
    "team": "Packing",
    "desc": "Viscid — filled/packed volume is 1.2× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-11-01",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-gt-fill:EL-2524": {
    "team": "Packing",
    "desc": "Bricovit Forte EL-2524 — dispatched 28,000 vs filled 27,000: filling entries missing",
    "first_seen": "2026-11-03",
-   "last_seen": "2026-11-07"
-  },
-  "pack-gt-fill:FA086": {
-   "team": "Packing",
-   "desc": "Funbact FA086 — packed 12,000 vs filled 5,000: filling short, or part of the packing belongs to another batch",
-   "first_seen": "2026-11-03",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r363": {
    "team": "Production",
    "desc": "Production Log row 363 — Catoxymag-N Suspension - Enicar batch EL26005: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-04",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "disp-only:102314": {
    "team": "Exports",
    "desc": "Cypro B Plus 102314 — dispatched 44,000 but no filling/packing/RM record: confirm the batch number printed on the goods",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:FA087": {
    "team": "Packing",
    "desc": "Funbact FA087 — packed 19,700 vs filled 12,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:FA093": {
    "team": "Packing",
    "desc": "Funbact FA093 — packed 12,000 vs filled 6,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:FA093": {
    "team": "Packing",
    "desc": "Funbact — filled/packed volume is 2.0× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:FA087": {
    "team": "Packing",
    "desc": "Funbact — filled/packed volume is 1.6× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "po-missing:2026-11": {
    "team": "Exports",
-   "desc": "3 of 6 dispatch rows this month have no PO number — enter the PO with each dispatch entry",
+   "desc": "6 of 18 dispatch rows this month have no PO number — enter the PO with each dispatch entry",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r369": {
    "team": "Production",
    "desc": "Production Log row 369 — Gastica batch GE25325: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "never-filled:FE-021": {
    "team": "Packing",
    "desc": "Funbact-A FE-021 — packed/dispatched but no filling entry",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "pack-gt-fill:FA095": {
    "team": "Packing",
    "desc": "Funbact FA095 — packed 6,000 vs filled 2,400: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "yield:FA095": {
    "team": "Packing",
    "desc": "Funbact — filled/packed volume is 2.5× the RM bulk: check the batch numbers on the filling/packing rows",
    "first_seen": "2026-11-05",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "never-filled:TI6004": {
    "team": "Packing",
    "desc": "Albendazole Suspension 400 mg/10 TI6004 — packed/dispatched but no filling entry",
    "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "never-filled:EF021": {
    "team": "Packing",
    "desc": "Funbact-A EF021 — packed/dispatched but no filling entry",
    "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "never-filled:EF022": {
-   "team": "Packing",
-   "desc": "Funbact-A EF022 — packed/dispatched but no filling entry",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "never-filled:GE31334": {
    "team": "Packing",
    "desc": "FLUCOLDEX-E SUSPENSION GE31334 — packed/dispatched but no filling entry",
    "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "pack-half-row:r1756": {
-   "team": "Packing",
-   "desc": "Packing Log row 1756 — FLUCOLDEX-E SUSPENSION: no quantity entered — complete the row or delete it",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "never-filled:RE-321226": {
-   "team": "Packing",
-   "desc": "Ronanutra Forte RE-321226 — packed/dispatched but no filling entry",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "fill-half-row:r1622": {
    "team": "Packing",
    "desc": "Filling Log row 1622 — FLUCOLDEX-E SUSPENSION: no quantity entered — complete the row or delete it",
    "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "fill-half-row:r1624": {
-   "team": "Packing",
-   "desc": "Filling Log row 1624 — Ronanutra Forte: no quantity entered — complete the row or delete it",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "pack-half-row:r1759": {
-   "team": "Packing",
-   "desc": "Packing Log row 1759 — Albendazole Suspension 400 mg/10: no quantity entered — complete the row or delete it",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "fill-half-row:r1627": {
-   "team": "Packing",
-   "desc": "Filling Log row 1627 — Redsun Jelly (Orange Soda Flavou: no quantity entered — complete the row or delete it",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "fill-half-row:r1629": {
-   "team": "Packing",
-   "desc": "Filling Log row 1629 — Funbact-A: no quantity entered — complete the row or delete it",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
-  },
-  "fill-half-row:r1630": {
-   "team": "Packing",
-   "desc": "Filling Log row 1630 — Albendazole Suspension 400 mg/10: no quantity entered — complete the row or delete it",
-   "first_seen": "2026-11-06",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r335": {
    "team": "Production",
    "desc": "Production Log row 335 — Loratadine Oral Solution USP batch M-17308: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r357": {
    "team": "Production",
    "desc": "Production Log row 357 — LACTITOSS SOLUTION batch GE2334: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r372": {
    "team": "Production",
    "desc": "Production Log row 372 — Funbact-A batch FE021: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r375": {
    "team": "Production",
    "desc": "Production Log row 375 — Gastica batch GE263026: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r376": {
    "team": "Production",
    "desc": "Production Log row 376 — Albendazole Suspension 400 mg/10 batch EL-26005: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r378": {
    "team": "Production",
    "desc": "Production Log row 378 — Funbact-A batch FE022: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
   "prod-no-rm:r380": {
    "team": "Production",
    "desc": "Production Log row 380 — Albendazole Suspension 400 mg/10 batch EL-26005: no matching RM row — check the batch number against the BMR",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
   },
-  "prod-no-rm:r386": {
-   "team": "Production",
-   "desc": "Production Log row 386 — Alaize batch ALE-152: no matching RM row — check the batch number against the BMR",
+  "never-filled:EL-2660": {
+   "team": "Packing",
+   "desc": "AUROFER SYRUP EL-2660 — packed/dispatched but no filling entry",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-07"
+   "last_seen": "2026-11-08"
+  },
+  "never-filled:EL-2661": {
+   "team": "Packing",
+   "desc": "AUROFER SYRUP EL-2661 — packed/dispatched but no filling entry",
+   "first_seen": "2026-11-07",
+   "last_seen": "2026-11-08"
+  },
+  "pack-gt-fill:EF022": {
+   "team": "Packing",
+   "desc": "Funbact-A EF022 — packed 61,000 vs filled 36,600: filling short, or part of the packing belongs to another batch",
+   "first_seen": "2026-11-07",
+   "last_seen": "2026-11-08"
+  },
+  "pack-half-row:r1760": {
+   "team": "Packing",
+   "desc": "Packing Log row 1760 — Funbact: batch number is blank — complete the row or delete it",
+   "first_seen": "2026-11-07",
+   "last_seen": "2026-11-08"
+  },
+  "disp-gt-fill:FA086": {
+   "team": "Packing",
+   "desc": "Funbact FA086 — dispatched 12,000 vs filled 5,000: filling entries missing",
+   "first_seen": "2026-11-07",
+   "last_seen": "2026-11-08"
   }
  },
- "updated": "2026-11-07"
+ "updated": "2026-11-08"
 }
