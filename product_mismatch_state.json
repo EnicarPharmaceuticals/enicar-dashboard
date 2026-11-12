@@ -219,6 +219,7 @@
   "EF018|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-12",
   "EF019|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-10",
   "EF020|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-11",
+  "EF021|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-12",
   "EF022|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-12",
   "EF023|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-12",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-11-10",
@@ -257,6 +258,7 @@
   "EL-2505|party|unichemghanalimited|carethcorporation": "2026-11-11",
   "EL-2506|party|unichemghanalimited|carethcorporation": "2026-11-11",
   "EL-2530|party|unichemghanalimited|carethcorporation": "2026-11-11",
+  "EL-2531|party|unichemghanalimited|carethcorporation": "2026-11-12",
   "EL-2535|party|workcellsolutionsprivatelimited|workcellsolution": "2026-11-10",
   "EL-2536|product|smicalsuspension|smicalsusp": "2026-11-11",
   "EL-2549|party|ipchealthcarepvtltd|ipchealthcare": "2026-11-11",
@@ -292,7 +294,6 @@
   "FA096|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-12",
   "FA098|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-12",
   "FA099|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-11",
-  "FE021|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-11",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-11",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-11",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-11",
@@ -445,140 +446,18 @@
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-11-10",
   "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-11-10",
   "_offplan_alerted": {
-    "E-26004": {
-      "batch": "E-26004",
-      "company": "RAPTAKOS BRETT & CO LTD P2P",
-      "date": "2026-10-26",
-      "product": "Catoxymag-N Suspension - Enicar",
-      "qty": 3000.0,
-      "stage": "RM dispensed"
-    },
-    "E-26005": {
-      "batch": "E-26005",
-      "company": "RAPTAKOS BRETT & CO LTD P2P",
-      "date": "2026-10-27",
-      "product": "Catoxymag-N Suspension - Enicar",
-      "qty": 3000.0,
-      "stage": "RM dispensed"
-    },
-    "EF-145": {
-      "batch": "EF-145",
-      "company": "FLAMINGO PHARMACEUTICALS LIMITED",
-      "date": "2026-10-29",
-      "product": "VIGORIX FORTE",
-      "qty": 7570.0,
-      "stage": "RM dispensed"
-    },
-    "EL-2484": {
-      "batch": "EL-2484",
-      "company": "KAMAL INTERNATIONAL",
-      "date": "2026-10-03",
-      "product": "Chloramphenicol Palmitate Oral Suspension USP (Self Care)",
-      "qty": 1010.0,
-      "stage": "RM dispensed"
-    },
-    "EL-2526": {
-      "batch": "EL-2526",
-      "company": "DELIGHT PHARMACY LTD.",
-      "date": "2026-10-21",
-      "product": "Prodine Syrup",
-      "qty": 6060.0,
-      "stage": "RM dispensed"
-    },
-    "EL-2564": {
-      "batch": "EL-2564",
-      "company": "OM EXPORTS",
-      "date": "2026-10-26",
-      "product": "SUPADAY SYRUP",
-      "qty": 3000.0,
-      "stage": "RM dispensed"
-    },
-    "EL-2565": {
-      "batch": "EL-2565",
-      "company": "OM EXPORTS",
-      "date": "2026-10-26",
-      "product": "SUPADAY SYRUP",
-      "qty": 3000.0,
-      "stage": "RM dispensed"
-    },
-    "FE-0890": {
-      "batch": "FE-0890",
-      "company": "Femident Healthcare",
-      "date": "2026-10-16",
-      "product": "SNOWIN D",
-      "qty": 600.0,
-      "stage": "RM dispensed"
-    },
-    "FE-1291": {
-      "batch": "FE-1291",
-      "company": "Femident Healthcare",
-      "date": "2026-10-07",
-      "product": "1 Para MF Suspension",
-      "qty": 600.0,
-      "stage": "RM dispensed"
-    },
-    "FE-1383": {
-      "batch": "FE-1383",
-      "company": "Femident Healthcare",
-      "date": "2026-10-15",
-      "product": "PANTO PPI-MPS GEL",
-      "qty": 1500.0,
-      "stage": "RM dispensed"
-    },
-    "FE-2189": {
-      "batch": "FE-2189",
-      "company": "Femident Healthcare",
-      "date": "2026-10-13",
-      "product": "FEMIROSE TONIC",
-      "qty": 1500.0,
-      "stage": "RM dispensed"
-    },
-    "GE07050": {
-      "batch": "GE07050",
+    "GE31334": {
+      "batch": "GE31334",
       "company": "Galaxy Pharmaceuticals Ltd.",
-      "date": "2026-10-27",
-      "product": "C-ZOLE BG",
-      "qty": 230.0,
-      "stage": "RM dispensed"
-    },
-    "RE-191437": {
-      "batch": "RE-191437",
-      "company": "RONAK EXIM PVT LTD",
-      "date": "2026-10-26",
-      "product": "HB-RON",
-      "qty": 4040.0,
-      "stage": "RM dispensed"
-    },
-    "RE-321226": {
-      "batch": "RE-321226",
-      "company": "RONAK EXIM PVT LTD",
-      "date": "2026-10-26",
-      "product": "RONANUTRA FORTE",
-      "qty": 3150.0,
-      "stage": "RM dispensed"
-    },
-    "U-159": {
-      "batch": "U-159",
-      "company": "UNIQUE PHARMA.",
-      "date": "2026-10-26",
-      "product": "Nocigel",
-      "qty": 910.0,
+      "date": "2026-11-01",
+      "product": "FLUCOLDEX-E SUSPENSION",
+      "qty": 6060.0,
       "stage": "RM dispensed"
     }
   },
   "_offplan_digest_sent": "2026-10-31",
   "_plan_snapshot": {
     "fp": {
-      "1paramfsuspension|femidenthealthcare|60ml": {
-        "batch": "",
-        "date": "",
-        "pack": "60 ml",
-        "party": "Femident Healthcare",
-        "priority": "2",
-        "product": "1 Para MF Suspension",
-        "status": "",
-        "units": 10000.0
-      },
       "abccoldsyrup|menzbek|100ml": {
         "batch": "",
         "date": "",
@@ -644,7 +523,7 @@
         "date": "",
         "pack": "15 ml",
         "party": "SOCOMED PHARMA PVT. LTD",
-        "priority": "2",
+        "priority": "1",
         "product": "Abycid Sachet",
         "status": "",
         "units": 165000.0
@@ -654,18 +533,18 @@
         "date": "",
         "pack": "200 ml",
         "party": "SOCOMED PHARMA PVT. LTD",
-        "priority": "2",
+        "priority": "1",
         "product": "Abycid",
         "status": "",
         "units": 12000.0
       },
-      "acepronplus|bluemappharmachemp2p|200ml": {
+      "acypronplussyrup|bluemappharmachemp2p|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "BLUE MAP PHARMACHEM (P2P)",
-        "priority": "2",
-        "product": "Acepron Plus",
+        "priority": "1",
+        "product": "Acypron Plus Syrup",
         "status": "",
         "units": 22500.0
       },
@@ -674,7 +553,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Workcell Solution",
-        "priority": "2",
+        "priority": "1",
         "product": "Aidkof DX Plus",
         "status": "",
         "units": 15000.0
@@ -694,7 +573,7 @@
         "date": "",
         "pack": "15 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Alaize Sachet",
         "status": "",
         "units": 1170000.0
@@ -707,27 +586,17 @@
         "priority": "1",
         "product": "Albendazole Suspension 400 mg",
         "status": "",
-        "units": 640000.0
+        "units": 295500.0
       },
       "albentelsuspcongocont1|sapphirelifesciencepvtltdp2p|10ml": {
         "batch": "",
         "date": "",
         "pack": "10 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Albentel Susp congo Cont 1",
         "status": "",
         "units": 100000.0
-      },
-      "algateo|enicarpharmaceuticalpvtltd|20060ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200/60 ml",
-        "party": "Enicar Pharmaceutical Pvt Ltd",
-        "priority": "1",
-        "product": "Algate-O",
-        "status": "",
-        "units": 11000.0
       },
       "algateo|enicarpharmaceuticalpvtltd|200ml": {
         "batch": "",
@@ -737,7 +606,7 @@
         "priority": "1",
         "product": "Algate-O",
         "status": "",
-        "units": 12000.0
+        "units": 5217.0
       },
       "algateo|enicarpharmaceuticalpvtltd|60mlps": {
         "batch": "",
@@ -747,7 +616,7 @@
         "priority": "1",
         "product": "Algate-O",
         "status": "",
-        "units": 6000.0
+        "units": 3882.0
       },
       "algate|enicarpharmaceuticalpvtltd|200mlsalepack": {
         "batch": "",
@@ -824,7 +693,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "Workcell Solution",
-        "priority": "2",
+        "priority": "1",
         "product": "Ambroaid LS Syrup",
         "status": "",
         "units": 15000.0
@@ -838,36 +707,6 @@
         "product": "Ambroxol Syrup",
         "status": "",
         "units": 75000.0
-      },
-      "aminokliretonic|farmavision|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Farmavision",
-        "priority": "1",
-        "product": "Amino Klire Tonic",
-        "status": "",
-        "units": 10000.0
-      },
-      "amitonesyrup|blissgvspharmaltdp2p|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "BLISS GVS PHARMA LTD (P2P)",
-        "priority": "1",
-        "product": "Amitone Syrup",
-        "status": "",
-        "units": 10000.0
-      },
-      "amitonesyrup|blissgvspharmaltdp2p|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "BLISS GVS PHARMA LTD (P2P)",
-        "priority": "1",
-        "product": "Amitone Syrup",
-        "status": "",
-        "units": 35000.0
       },
       "aurofer|omexport|200ml": {
         "batch": "",
@@ -894,17 +733,17 @@
         "date": "",
         "pack": "200 ml",
         "party": "SOCOMED PHARMA PVT. LTD",
-        "priority": "2",
+        "priority": "1",
         "product": "Aziglobin",
         "status": "",
-        "units": 130000.0
+        "units": 100000.0
       },
       "bioforcetoniquecont1|sapphirelifesciencepvtltdp2p|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Bioforce Tonique Cont 1",
         "status": "",
         "units": 40000.0
@@ -934,7 +773,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "Torrent",
-        "priority": "2",
+        "priority": "1",
         "product": "Bizfer XT Syrup (New Carton)",
         "status": "",
         "units": 20000.0
@@ -944,7 +783,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "J B Chem",
-        "priority": "2",
+        "priority": "1",
         "product": "Bizfer XT Syrup PS old Carton(JBCHEM)",
         "status": "",
         "units": 105200.0
@@ -954,7 +793,7 @@
         "date": "",
         "pack": "100ml",
         "party": "BLISS GVS PHARMA LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Bliscal",
         "status": "",
         "units": 10000.0
@@ -969,26 +808,6 @@
         "status": "",
         "units": 10000.0
       },
-      "bonaplex|londonunitedexportsltd|250ml": {
-        "batch": "",
-        "date": "",
-        "pack": "250 ml",
-        "party": "London United Exports Ltd",
-        "priority": "2",
-        "product": "Bonaplex",
-        "status": "",
-        "units": 74000.0
-      },
-      "bricovitforte|delight|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Delight",
-        "priority": "1",
-        "product": "Bricovit Forte",
-        "status": "",
-        "units": 56000.0
-      },
       "bromovan|uniquepharma|100ml": {
         "batch": "",
         "date": "",
@@ -998,36 +817,6 @@
         "product": "Bromovan",
         "status": "",
         "units": 10000.0
-      },
-      "bronksyrupps|lesantolaboratories|50ml": {
-        "batch": "",
-        "date": "",
-        "pack": "50 ml",
-        "party": "Lesanto Laboratories",
-        "priority": "2",
-        "product": "Bronk Syrup-PS",
-        "status": "",
-        "units": 0.0
-      },
-      "bronksyrup|lesantolaboratories|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Lesanto Laboratories",
-        "priority": "2",
-        "product": "Bronk Syrup",
-        "status": "",
-        "units": 0.0
-      },
-      "bronkxsyrup|lesantolaboratories|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Lesanto Laboratories",
-        "priority": "2",
-        "product": "Bronk X Syrup",
-        "status": "",
-        "units": 26000.0
       },
       "carbocisteine5|tushupharmasarl|100ml": {
         "batch": "",
@@ -1047,7 +836,7 @@
         "priority": "1",
         "product": "Catoxymag kenya",
         "status": "",
-        "units": 27500.0
+        "units": 13750.0
       },
       "catoxymagzambia|raptakos|200ml": {
         "batch": "",
@@ -1057,7 +846,7 @@
         "priority": "1",
         "product": "Catoxymag Zambia",
         "status": "",
-        "units": 2500.0
+        "units": 1250.0
       },
       "cervoline|uniquepharma|30ml": {
         "batch": "",
@@ -1066,16 +855,6 @@
         "party": "Unique Pharma",
         "priority": "1",
         "product": "Cervoline",
-        "status": "",
-        "units": 10000.0
-      },
-      "chloramphenicolpalmitateoralsuspensionuspselfcare|kamalinternational|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "KAMAL INTERNATIONAL",
-        "priority": "1",
-        "product": "Chloramphenicol Palmitate Oral Suspension USP (Self Care)",
         "status": "",
         "units": 10000.0
       },
@@ -1104,20 +883,10 @@
         "date": "",
         "pack": "15 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Combavers Susp Cont 1",
         "status": "",
         "units": 100000.0
-      },
-      "corporil|corporsanomediaid|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Corporsano Mediaid",
-        "priority": "1",
-        "product": "Corporil",
-        "status": "",
-        "units": 30000.0
       },
       "cotrironaksuspensionpo16|ronakeximpvtltd|100ml": {
         "batch": "",
@@ -1129,25 +898,15 @@
         "status": "",
         "units": 50000.0
       },
-      "cotrironak|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Cotrironak",
-        "status": "",
-        "units": 30000.0
-      },
       "cremoaidplussfsyrup|workcellsolution|170ml": {
         "batch": "",
         "date": "",
         "pack": "170 ml",
         "party": "Workcell Solution",
-        "priority": "2",
+        "priority": "1",
         "product": "Cremoaid plus SF Syrup",
         "status": "",
-        "units": 26000.0
+        "units": 13000.0
       },
       "cyprobplus|galaxypharmaceuticalsltd|200ml": {
         "batch": "",
@@ -1157,24 +916,14 @@
         "priority": "1",
         "product": "Cypro B Plus",
         "status": "",
-        "units": 383000.0
-      },
-      "cyproplex|uniquepharma|15ml": {
-        "batch": "",
-        "date": "",
-        "pack": "15 ml",
-        "party": "UNIQUE PHARMA.",
-        "priority": "1",
-        "product": "Cyproplex",
-        "status": "",
-        "units": 50000.0
+        "units": 163850.0
       },
       "cyrampssp|systopiclaboratoriespvtltd|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "Systopic Laboratories Pvt. Ltd",
-        "priority": "2",
+        "priority": "1",
         "product": "Cyra MPS (SP)",
         "status": "",
         "units": 60000.0
@@ -1184,38 +933,28 @@
         "date": "",
         "pack": "200 ml",
         "party": "Systopic Laboratories Pvt. Ltd",
-        "priority": "2",
+        "priority": "1",
         "product": "Cyra MPS (SP)",
         "status": "",
         "units": 100000.0
-      },
-      "czole15gm|galaxypharmaceuticalsltd|15gm": {
-        "batch": "",
-        "date": "",
-        "pack": "15 gm",
-        "party": "Galaxy Pharmaceuticals Ltd.",
-        "priority": "1",
-        "product": "C Zole 15gm",
-        "status": "",
-        "units": 15000.0
       },
       "daslinnf|rpglifesciencesltd|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "RPG Life Sciences Ltd",
-        "priority": "2",
+        "priority": "1",
         "product": "Daslin NF",
         "status": "",
         "units": 25000.0
       },
-      "doulacsusp|galaxypharmaceuticalsltd|200ml": {
+      "duolac|galaxypharmaceuticalsltd|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "Galaxy Pharmaceuticals Ltd.",
         "priority": "1",
-        "product": "Doulac Susp",
+        "product": "DUOLAC",
         "status": "",
         "units": 10000.0
       },
@@ -1229,52 +968,12 @@
         "status": "",
         "units": 75000.0
       },
-      "energvittonic|enicarpharmaceuticalpvtltd|220ml": {
-        "batch": "",
-        "date": "",
-        "pack": "220 ml",
-        "party": "Enicar Pharmaceutical Pvt Ltd",
-        "priority": "2",
-        "product": "Energvit Tonic",
-        "status": "",
-        "units": 13636.0
-      },
-      "ezycofsyp|galaxypharmaceuticalsltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Galaxy Pharmaceuticals Ltd.",
-        "priority": "1",
-        "product": "Ezycof Syp",
-        "status": "",
-        "units": 30000.0
-      },
-      "fczolesuspension|galaxypharmaceuticalsltd|60ml": {
-        "batch": "",
-        "date": "",
-        "pack": "60 ml",
-        "party": "Galaxy Pharmaceuticals Ltd.",
-        "priority": "1",
-        "product": "FC-ZOLE SUSPENSION",
-        "status": "",
-        "units": 20000.0
-      },
-      "femirosetonic|femidenthealthcare|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Femident Healthcare",
-        "priority": "2",
-        "product": "FEMIROSE TONIC",
-        "status": "",
-        "units": 7500.0
-      },
       "ferrolex|londonunitedexportsltd|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "London United Exports Ltd",
-        "priority": "2",
+        "priority": "1",
         "product": "Ferrolex",
         "status": "",
         "units": 24000.0
@@ -1314,7 +1013,7 @@
         "date": "",
         "pack": "15 gm",
         "party": "BLISS GVS PHARMA LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Funbact A Cream",
         "status": "",
         "units": 600000.0
@@ -1327,7 +1026,7 @@
         "priority": "1",
         "product": "Funbact Antiseptic",
         "status": "",
-        "units": 70000.0
+        "units": 3500.0
       },
       "funbactantiseptic|blissgvspharmaltdp2p|1000ml": {
         "batch": "",
@@ -1347,7 +1046,7 @@
         "priority": "1",
         "product": "Funbact Antiseptic",
         "status": "",
-        "units": 40000.0
+        "units": 4100.0
       },
       "funbactantiseptic|blissgvspharmaltdp2p|250ml": {
         "batch": "",
@@ -1357,7 +1056,7 @@
         "priority": "1",
         "product": "Funbact Antiseptic",
         "status": "",
-        "units": 12000.0
+        "units": 9600.0
       },
       "funbactantiseptic|blissgvspharmaltdp2p|500ml": {
         "batch": "",
@@ -1374,7 +1073,7 @@
         "date": "",
         "pack": "10 ml",
         "party": "Axelia",
-        "priority": "2",
+        "priority": "1",
         "product": "Gasogel Suspention",
         "status": "",
         "units": 150000.0
@@ -1384,18 +1083,8 @@
         "date": "",
         "pack": "170 ml",
         "party": "Leeford Healthcare Limited",
-        "priority": "2",
-        "product": "Gasogest Suspention",
-        "status": "",
-        "units": 10000.0
-      },
-      "gasout|napoexportsprivatelimited|250ml": {
-        "batch": "",
-        "date": "",
-        "pack": "250 ml",
-        "party": "Napo Exports Private Limited",
         "priority": "1",
-        "product": "Gas Out",
+        "product": "Gasogest Suspention",
         "status": "",
         "units": 10000.0
       },
@@ -1404,20 +1093,20 @@
         "date": "",
         "pack": "200 ml",
         "party": "Leeford Healthcare Limited",
-        "priority": "2",
+        "priority": "1",
         "product": "Gasowel Plus Suspention",
         "status": "",
         "units": 30000.0
       },
-      "gavinique|uniquepharma|10ml": {
+      "gastica|galaxypharmaceuticalsltd|200ml": {
         "batch": "",
         "date": "",
-        "pack": "10 ml",
-        "party": "Unique Pharma",
+        "pack": "200 ml",
+        "party": "Galaxy Pharmaceuticals Ltd.",
         "priority": "1",
-        "product": "Gavinique",
+        "product": "Gastica",
         "status": "",
-        "units": 300000.0
+        "units": 20000.0
       },
       "gavisilsachet|uniquepharma|10ml": {
         "batch": "",
@@ -1429,35 +1118,15 @@
         "status": "",
         "units": 120000.0
       },
-      "gestica200ml|galaxypharmaceuticalsltd|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Galaxy Pharmaceuticals Ltd.",
-        "priority": "1",
-        "product": "Gestica 200ml",
-        "status": "",
-        "units": 20000.0
-      },
       "godapet|blissgvspharmaltdp2p|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "BLISS GVS PHARMA LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Godapet",
         "status": "",
         "units": 35000.0
-      },
-      "hbron|ronakeximpvtltd|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "RONAK EXIM PVT LTD",
-        "priority": "2",
-        "product": "HB-RON",
-        "status": "",
-        "units": 20200.0
       },
       "heelcream30gm|galaxypharmaceuticalsltd|30gm": {
         "batch": "",
@@ -1468,16 +1137,6 @@
         "product": "Heel Cream 30gm",
         "status": "",
         "units": 10000.0
-      },
-      "hemeronapluspo006|ronakeximpvtltd|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Hemerona Plus (PO-006)",
-        "status": "",
-        "units": 15000.0
       },
       "icotin30|ronakeximpvtltd|200ml": {
         "batch": "",
@@ -1504,30 +1163,10 @@
         "date": "",
         "pack": "5 gm",
         "party": "Shalina Healthcare Pvt. Ltd.",
-        "priority": "2",
+        "priority": "1",
         "product": "Kifaru 50 Mg",
         "status": "",
         "units": 100000.0
-      },
-      "kifarujelly100mg|shalinahealthcarepvtltdshalinalaboratoriespvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Shalina Healthcare Pvt. Ltd.(Shalina Laboratories Pvt. Ltd)",
-        "priority": "1",
-        "product": "Kifaru Jelly 100mg",
-        "status": "",
-        "units": 98000.0
-      },
-      "klirebloodtonic|farmavision|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Farmavision",
-        "priority": "1",
-        "product": "Klire Blood Tonic",
-        "status": "",
-        "units": 7500.0
       },
       "kliregel|farmavision|30gm": {
         "batch": "",
@@ -1539,26 +1178,6 @@
         "status": "",
         "units": 16000.0
       },
-      "klireibuprofensuspension|farmavision|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Farmavision",
-        "priority": "1",
-        "product": "Klire Ibuprofen Suspension",
-        "status": "",
-        "units": 20000.0
-      },
-      "klirezofususpension|farmavision|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Farmavision",
-        "priority": "1",
-        "product": "Klire Zofu suspension",
-        "status": "",
-        "units": 10000.0
-      },
       "lactitosssusp|galaxypharmaceuticalsltd|100ml": {
         "batch": "",
         "date": "",
@@ -1569,35 +1188,15 @@
         "status": "",
         "units": 50000.0
       },
-      "lexofen|londonunitedexportsltd|150ml": {
-        "batch": "",
-        "date": "",
-        "pack": "150 ml",
-        "party": "London United Exports Ltd",
-        "priority": "2",
-        "product": "Lexofen",
-        "status": "",
-        "units": 40000.0
-      },
-      "livogeniron|proctergamblehealthlimited|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Procter & Gamble Health Limited",
-        "priority": "2",
-        "product": "Livogen Iron",
-        "status": "",
-        "units": 49000.0
-      },
       "loratadineoralsolutionusp|medicoremediesltdp2p|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "MEDICO REMEDIES LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Loratadine Oral Solution USP",
         "status": "",
-        "units": 836000.0
+        "units": 552500.0
       },
       "lysodolgel30gm|galaxypharmaceuticalsltd|30gm": {
         "batch": "",
@@ -1608,16 +1207,6 @@
         "product": "Lysodol Gel 30gm",
         "status": "",
         "units": 15000.0
-      },
-      "mactotaldrops|macleodspharmaceuticalslimitedp2p|15ml": {
-        "batch": "",
-        "date": "",
-        "pack": "15 ml",
-        "party": "Macleods Pharmaceuticals Limited (P2P)",
-        "priority": "1",
-        "product": "Mactotal Drops",
-        "status": "",
-        "units": 100000.0
       },
       "magdoxantacid|menzbek|200ml": {
         "batch": "",
@@ -1634,17 +1223,17 @@
         "date": "",
         "pack": "30 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Mebox Susp Congo Cont 2",
         "status": "",
-        "units": 50000.0
+        "units": 3200.0
       },
       "megafinereplacement|aurapharmaceuticalspvtltdp2p|15ml": {
         "batch": "",
         "date": "",
         "pack": "15 ml",
         "party": "AURA PHARMACEUTICALS PVT. LTD(P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Megafine (Replacement)",
         "status": "",
         "units": 100000.0
@@ -1654,7 +1243,7 @@
         "date": "",
         "pack": "200 ml",
         "party": "SOCOMED PHARMA PVT. LTD",
-        "priority": "2",
+        "priority": "1",
         "product": "Megavit",
         "status": "",
         "units": 7500.0
@@ -1674,37 +1263,17 @@
         "date": "",
         "pack": "200 ml",
         "party": "LASO HEALTHCARE PVT LTD",
-        "priority": "2",
+        "priority": "1",
         "product": "Metcolin",
         "status": "",
         "units": 11500.0
-      },
-      "metron|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "RONAK EXIM PVT LTD",
-        "priority": "1",
-        "product": "Metron",
-        "status": "",
-        "units": 50000.0
-      },
-      "monlc|uniquepharma|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "UNIQUE PHARMA.",
-        "priority": "1",
-        "product": "Mon Lc",
-        "status": "",
-        "units": 10000.0
       },
       "mucorilexpectorantcont2|sapphirelifesciencepvtltdp2p|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Mucoril Expectorant Cont 2",
         "status": "",
         "units": 45000.0
@@ -1714,7 +1283,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Mucoril Expectorant",
         "status": "",
         "units": 30000.0
@@ -1739,16 +1308,6 @@
         "status": "",
         "units": 7500.0
       },
-      "mycomincream15gm|galaxypharmaceuticalsltd|15gm": {
-        "batch": "",
-        "date": "",
-        "pack": "15 gm",
-        "party": "Galaxy Pharmaceuticals Ltd.",
-        "priority": "1",
-        "product": "Mycomin Cream 15gm",
-        "status": "",
-        "units": 10000.0
-      },
       "mzcalsusp|galaxypharmaceuticalsltd|200ml": {
         "batch": "",
         "date": "",
@@ -1758,16 +1317,6 @@
         "product": "Mz Cal Susp",
         "status": "",
         "units": 10000.0
-      },
-      "naomitripleactioncream|ronakeximpvtltd|15gm": {
-        "batch": "",
-        "date": "",
-        "pack": "15 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Naomi Triple Action Cream",
-        "status": "",
-        "units": 1000000.0
       },
       "newcoxgel|galaxypharmaceuticalsltd|50gm": {
         "batch": "",
@@ -1794,50 +1343,40 @@
         "date": "",
         "pack": "200 ml",
         "party": "LASO HEALTHCARE PVT LTD",
-        "priority": "2",
+        "priority": "1",
         "product": "Ninzacal",
         "status": "",
         "units": 10000.0
-      },
-      "nista|uniquepharma|30ml": {
-        "batch": "",
-        "date": "",
-        "pack": "30 ml",
-        "party": "UNIQUE PHARMA.",
-        "priority": "1",
-        "product": "Nista",
-        "status": "",
-        "units": 50000.0
       },
       "nocigel|uniquepharma|15ml": {
         "batch": "",
         "date": "",
         "pack": "15 ml",
         "party": "UNIQUE PHARMA.",
-        "priority": "2",
+        "priority": "1",
         "product": "Nocigel",
         "status": "",
-        "units": 60667.0
+        "units": 21667.0
       },
       "nutrisangtoniquecont2|sapphirelifesciencepvtltdp2p|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Nutrisang Tonique Cont 2",
         "status": "",
-        "units": 30000.0
+        "units": 16925.0
       },
       "nutrisangtonique|sapphirelifesciencepvtltdp2p|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "SAPPHIRE LIFESCIENCE PVT LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Nutrisang Tonique",
         "status": "",
-        "units": 30000.0
+        "units": 16925.0
       },
       "nystatinoralsuspensionusp|omexport|30ml": {
         "batch": "",
@@ -1849,115 +1388,15 @@
         "status": "",
         "units": 280000.0
       },
-      "nystatinsuspension|tushupharma|60ml": {
-        "batch": "ET-06346",
-        "date": "",
-        "pack": "60 ml",
-        "party": "Tushu Pharma",
-        "priority": "1",
-        "product": "Nystatin Suspension",
-        "status": "",
-        "units": 0.0
-      },
       "ornidox|aurapharmaceuticalspvtltdp2p|60ml": {
         "batch": "",
         "date": "",
         "pack": "60 ml",
         "party": "AURA PHARMACEUTICALS PVT. LTD(P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Ornid ox",
         "status": "",
         "units": 25000.0
-      },
-      "ostopolybion|proctergamblehealthlimited|300ml": {
-        "batch": "",
-        "date": "",
-        "pack": "300 ml",
-        "party": "Procter & Gamble Health Limited",
-        "priority": "2",
-        "product": "Osto Polybion",
-        "status": "",
-        "units": 32667.0
-      },
-      "pantoppimpsgel|femidenthealthcare|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Femident Healthcare",
-        "priority": "2",
-        "product": "PANTO PPI-MPS GEL",
-        "status": "",
-        "units": 7500.0
-      },
-      "picronbabycoldsyruppo002|ronakeximpvtltd|60ml": {
-        "batch": "",
-        "date": "",
-        "pack": "60 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Picron Baby Cold Syrup (PO-002)",
-        "status": "",
-        "units": 40000.0
-      },
-      "picronbabycoldsyruppo006old2024|ronakeximpvtltd|60ml": {
-        "batch": "",
-        "date": "",
-        "pack": "60 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Picron Baby Cold Syrup (PO-006 old 2024)",
-        "status": "",
-        "units": 42000.0
-      },
-      "picronbabycold|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Picron Baby Cold",
-        "status": "",
-        "units": 30000.0
-      },
-      "polybionactive|proctergamblehealthlimited|150ml": {
-        "batch": "",
-        "date": "",
-        "pack": "150 ml",
-        "party": "Procter & Gamble Health Limited",
-        "priority": "2",
-        "product": "Polybion Active",
-        "status": "",
-        "units": 33003.0
-      },
-      "polybionactive|proctergamblehealthlimited|300ml": {
-        "batch": "",
-        "date": "",
-        "pack": "300 ml",
-        "party": "Procter & Gamble Health Limited",
-        "priority": "2",
-        "product": "Polybion Active",
-        "status": "",
-        "units": 33068.0
-      },
-      "polybionlc|proctergamblehealthlimited|150ml": {
-        "batch": "",
-        "date": "",
-        "pack": "150 ml",
-        "party": "Procter & Gamble Health Limited",
-        "priority": "2",
-        "product": "Polybion Lc",
-        "status": "",
-        "units": 66007.0
-      },
-      "polybionlc|proctergamblehealthlimited|300ml": {
-        "batch": "",
-        "date": "",
-        "pack": "300 ml",
-        "party": "Procter & Gamble Health Limited",
-        "priority": "2",
-        "product": "Polybion Lc",
-        "status": "",
-        "units": 32667.0
       },
       "polygelsuspension|shalinahealthcarepvtltd|120ml": {
         "batch": "",
@@ -1984,47 +1423,17 @@
         "date": "",
         "pack": "125 ml",
         "party": "BLISS GVS PHARMA LTD (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Povidone",
         "status": "",
         "units": 23000.0
-      },
-      "powerfil50mint|vardhmanexportsp2p|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "VARDHMAN EXPORTS (P2P)",
-        "priority": "1",
-        "product": "Powerfil 50 Mint",
-        "status": "",
-        "units": 47000.0
-      },
-      "powerfil50orange|vardhmanexportsp2p|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "VARDHMAN EXPORTS (P2P)",
-        "priority": "1",
-        "product": "Powerfil 50 orange",
-        "status": "",
-        "units": 85000.0
-      },
-      "princesheptinplus|socomedpharmapvtltd|15ml": {
-        "batch": "",
-        "date": "",
-        "pack": "15 ml",
-        "party": "SOCOMED PHARMA PVT. LTD",
-        "priority": "1",
-        "product": "Princes Heptin Plus",
-        "status": "",
-        "units": 150000.0
       },
       "princesheptinplus|socomedpharmapvtltd|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "SOCOMED PHARMA PVT. LTD",
-        "priority": "2",
+        "priority": "1",
         "product": "Princes Heptin Plus",
         "status": "",
         "units": 35000.0
@@ -2034,50 +1443,20 @@
         "date": "",
         "pack": "100 ml",
         "party": "Lesanto Laboratories",
-        "priority": "2",
+        "priority": "1",
         "product": "Procal Syrup",
         "status": "",
-        "units": 17500.0
+        "units": 7500.0
       },
       "procalsyrup|lesantolaboratories|200ml": {
         "batch": "",
         "date": "",
         "pack": "200 ml",
         "party": "Lesanto Laboratories",
-        "priority": "2",
+        "priority": "1",
         "product": "Procal Syrup",
         "status": "",
-        "units": 36250.0
-      },
-      "prodexforte|delight|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Delight",
-        "priority": "1",
-        "product": "Prodex Forte",
-        "status": "",
-        "units": 56000.0
-      },
-      "prodinforte|delight|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Delight",
-        "priority": "1",
-        "product": "Prodin Forte",
-        "status": "",
-        "units": 56000.0
-      },
-      "prodinsyrup|delight|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Delight",
-        "priority": "1",
-        "product": "Prodin Syrup",
-        "status": "",
-        "units": 30000.0
+        "units": 11250.0
       },
       "promilase|stanmarcenterprisep2p|150ml": {
         "batch": "",
@@ -2089,16 +1468,6 @@
         "status": "",
         "units": 8000.0
       },
-      "proolax|prismbiopharma|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Prism biopharma",
-        "priority": "2",
-        "product": "Proolax",
-        "status": "",
-        "units": 15000.0
-      },
       "qamino|uniquepharma|200ml": {
         "batch": "",
         "date": "",
@@ -2107,7 +1476,7 @@
         "priority": "1",
         "product": "Q-Amino",
         "status": "",
-        "units": 50000.0
+        "units": 20000.0
       },
       "qniron|ronakeximpvtltd|100ml": {
         "batch": "",
@@ -2119,16 +1488,6 @@
         "status": "",
         "units": 15000.0
       },
-      "quinironpo12|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Quiniron (PO-12)",
-        "status": "",
-        "units": 10000.0
-      },
       "quinironsuspensiontp43|ronakeximpvtltd|100ml": {
         "batch": "",
         "date": "",
@@ -2137,7 +1496,7 @@
         "priority": "1",
         "product": "Quiniron Suspension TP43",
         "status": "",
-        "units": 15000.0
+        "units": 9000.0
       },
       "redsunjellyalmond|ronakeximpvtltd|5gm": {
         "batch": "",
@@ -2179,26 +1538,6 @@
         "status": "",
         "units": 160000.0
       },
-      "redsunjellyavacado|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Avacado)",
-        "status": "",
-        "units": 160000.0
-      },
-      "redsunjellybanana|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "RONAK EXIM PVT LTD",
-        "priority": "1",
-        "product": "Redsun Jelly (Banana)",
-        "status": "",
-        "units": 61000.0
-      },
       "redsunjellyblackberry|ronakeximpvtltd|5gm": {
         "batch": "",
         "date": "",
@@ -2239,16 +1578,6 @@
         "status": "",
         "units": 160000.0
       },
-      "redsunjellycherry|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Cherry)",
-        "status": "",
-        "units": 160000.0
-      },
       "redsunjellycocktail|ronakeximpvtltd|5gm": {
         "batch": "",
         "date": "",
@@ -2279,16 +1608,6 @@
         "status": "",
         "units": 160000.0
       },
-      "redsunjellycoola|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Coola)",
-        "status": "",
-        "units": 160000.0
-      },
       "redsunjellydragonfruit|ronakeximpvtltd|5gm": {
         "batch": "",
         "date": "",
@@ -2296,36 +1615,6 @@
         "party": "Ronak Exim pvt Ltd",
         "priority": "1",
         "product": "Redsun Jelly (Dragon Fruit)",
-        "status": "",
-        "units": 160000.0
-      },
-      "redsunjellyginger|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Ginger)",
-        "status": "",
-        "units": 160000.0
-      },
-      "redsunjellygrapes|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Grapes)",
-        "status": "",
-        "units": 160000.0
-      },
-      "redsunjellyguvava|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Guvava)",
         "status": "",
         "units": 160000.0
       },
@@ -2344,30 +1633,10 @@
         "date": "",
         "pack": "5 gm",
         "party": "Ronak Exim pvt Ltd.",
-        "priority": "2",
+        "priority": "1",
         "product": "Redsun Jelly in 42 Flavour",
         "status": "",
-        "units": 5040000.0
-      },
-      "redsunjellykiwi|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Kiwi)",
-        "status": "",
-        "units": 160000.0
-      },
-      "redsunjellylemon|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Lemon)",
-        "status": "",
-        "units": 160000.0
+        "units": 4677000.0
       },
       "redsunjellylychee|ronakeximpvtltd|5gm": {
         "batch": "",
@@ -2376,16 +1645,6 @@
         "party": "Ronak Exim pvt Ltd",
         "priority": "1",
         "product": "Redsun Jelly (Lychee)",
-        "status": "",
-        "units": 160000.0
-      },
-      "redsunjellymelon|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (Melon)",
         "status": "",
         "units": 160000.0
       },
@@ -2406,16 +1665,6 @@
         "party": "Ronak Exim pvt Ltd",
         "priority": "1",
         "product": "Redsun Jelly (Mix Fruit)",
-        "status": "",
-        "units": 160000.0
-      },
-      "redsunjellymouthfresh|ronakeximpvtltd|5gm": {
-        "batch": "",
-        "date": "",
-        "pack": "5 gm",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Redsun Jelly (mouth fresh)",
         "status": "",
         "units": 160000.0
       },
@@ -2509,26 +1758,6 @@
         "status": "",
         "units": 160000.0
       },
-      "ronadolsuspensionpo017|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Ronadol Suspension (PO-017)",
-        "status": "",
-        "units": 30000.0
-      },
-      "ronakmilkofmagnesia|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Ronak Milk of Magnesia",
-        "status": "",
-        "units": 0.0
-      },
       "ronaksbcomplexpo003|ronakeximpvtltd|100ml": {
         "batch": "",
         "date": "",
@@ -2549,16 +1778,6 @@
         "status": "",
         "units": 6000.0
       },
-      "ronaksmultivitaminsyruppo002|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Ronak's Multivitamin Syrup (PO-002)",
-        "status": "",
-        "units": 20000.0
-      },
       "ronaktonesyrupll53|ronakeximpvtltd|60ml": {
         "batch": "",
         "date": "",
@@ -2577,7 +1796,7 @@
         "priority": "1",
         "product": "Ronametro Suspension (TP42)",
         "status": "",
-        "units": 80000.0
+        "units": 29500.0
       },
       "ronanutraforte|ronakeximpvtltd|200ml": {
         "batch": "",
@@ -2599,26 +1818,6 @@
         "status": "",
         "units": 12000.0
       },
-      "roncetsyruppo013|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Roncet Syrup (PO-013)",
-        "status": "",
-        "units": 10000.0
-      },
-      "ronfitcoldforte|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Ronfit cold forte",
-        "status": "",
-        "units": 30000.0
-      },
       "ronfitcoldw|ronakeximpvtltd|100ml": {
         "batch": "",
         "date": "",
@@ -2628,16 +1827,6 @@
         "product": "Ronfit cold w",
         "status": "",
         "units": 30000.0
-      },
-      "ronproz|ronakeximpvtltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "RONAK EXIM PVT LTD",
-        "priority": "1",
-        "product": "Ronproz",
-        "status": "",
-        "units": 20000.0
       },
       "ronvitdropsll4650|ronakeximpvtltd|60ml": {
         "batch": "",
@@ -2658,16 +1847,6 @@
         "product": "Ronvit Drops LL47",
         "status": "",
         "units": 50000.0
-      },
-      "ronvitextrapo010|ronakeximpvtltd|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Ronak Exim pvt Ltd",
-        "priority": "1",
-        "product": "Ronvit Extra (PO-010)",
-        "status": "",
-        "units": 15000.0
       },
       "ronvitfortesyruppo013|ronakeximpvtltd|200ml": {
         "batch": "",
@@ -2699,65 +1878,15 @@
         "status": "",
         "units": 15000.0
       },
-      "selfcarepainfever250mg|kamalinternational|100ml": {
-        "batch": "EL-2528",
-        "date": "",
-        "pack": "100 ml",
-        "party": "KAMAL INTERNATIONAL",
-        "priority": "1",
-        "product": "Selfcare Pain & Fever 250 mg",
-        "status": "",
-        "units": 0.0
-      },
-      "setflow|macleodspharmaceuticalslimitedp2p|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Macleods Pharmaceuticals Limited (P2P)",
-        "priority": "1",
-        "product": "Set flow",
-        "status": "",
-        "units": 22150.0
-      },
       "shuphacid|leefordhealthcarelimited|100ml": {
         "batch": "",
         "date": "",
         "pack": "100 ml",
         "party": "Leeford Healthcare Limited",
-        "priority": "2",
+        "priority": "1",
         "product": "Shuphacid",
         "status": "",
         "units": 15000.0
-      },
-      "smical|epionepharmaceuticalspvtltd|200ml": {
-        "batch": "EL-2536",
-        "date": "",
-        "pack": "200 ml",
-        "party": "Epione Pharmaceuticals Pvt Ltd",
-        "priority": "1",
-        "product": "SMICAL",
-        "status": "",
-        "units": 0.0
-      },
-      "smycalps|epionepharmaceuticalspvtltd|100ml": {
-        "batch": "EL-2536",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Epione pharmaceuticals pvt ltd.",
-        "priority": "1",
-        "product": "Smycal (PS)",
-        "status": "",
-        "units": 0.0
-      },
-      "snowind|femidenthealthcare|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Femident Healthcare",
-        "priority": "2",
-        "product": "SNOWIN D",
-        "status": "",
-        "units": 6000.0
       },
       "sourtoux|uniquepharma|120ml": {
         "batch": "",
@@ -2774,7 +1903,7 @@
         "date": "",
         "pack": "100 ml",
         "party": "VARDHMAN EXPORTS (P2P)",
-        "priority": "2",
+        "priority": "1",
         "product": "Stomache",
         "status": "",
         "units": 40000.0
@@ -2787,37 +1916,7 @@
         "priority": "1",
         "product": "SUPADAY SYRUP",
         "status": "",
-        "units": 52500.0
-      },
-      "talovaghana|lasohealthcarepvtltd|100ml": {
-        "batch": "VP-1124, VP-1129",
-        "date": "",
-        "pack": "100 ml",
-        "party": "LASO HEALTHCARE PVT LTD",
-        "priority": "1",
-        "product": "Talova Ghana",
-        "status": "",
-        "units": 0.0
-      },
-      "talovakenya|lasohealthcarepvtltd|60ml": {
-        "batch": "VP-1124, VP-1129",
-        "date": "",
-        "pack": "60 ml",
-        "party": "LASO HEALTHCARE PVT LTD",
-        "priority": "1",
-        "product": "Talova Kenya",
-        "status": "",
-        "units": 33000.0
-      },
-      "terbibactcream15gm|galaxypharmaceuticalsltd|15gm": {
-        "batch": "",
-        "date": "",
-        "pack": "15 gm",
-        "party": "Galaxy Pharmaceuticals Ltd.",
-        "priority": "1",
-        "product": "Terbibact Cream 15gm",
-        "status": "",
-        "units": 40000.0
+        "units": 37500.0
       },
       "tinahitlotion|galaxypharmaceuticalsltd|30gm": {
         "batch": "",
@@ -2844,40 +1943,10 @@
         "date": "",
         "pack": "220 ml",
         "party": "RPG Life Sciences Ltd",
-        "priority": "2",
+        "priority": "1",
         "product": "Tricaine AR",
         "status": "",
         "units": 16400.0
-      },
-      "tuspelcoughsyrup2lots|indocoremediesltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "INDOCO REMEDIES LTD.",
-        "priority": "1",
-        "product": "Tuspel Cough Syrup (2 lots)",
-        "status": "",
-        "units": 15750.0
-      },
-      "tuspelcoughsyrup4lots|indocoremediesltd|60ml": {
-        "batch": "",
-        "date": "",
-        "pack": "60 ml",
-        "party": "INDOCO REMEDIES LTD.",
-        "priority": "1",
-        "product": "Tuspel Cough Syrup (4 lots)",
-        "status": "",
-        "units": 23315.0
-      },
-      "tuspresscough|indocoremediesltd|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "INDOCO REMEDIES LTD.",
-        "priority": "1",
-        "product": "Tuspress cough",
-        "status": "",
-        "units": 14653.0
       },
       "uniforce|uniquepharma|200ml": {
         "batch": "",
@@ -2899,36 +1968,6 @@
         "status": "",
         "units": 70000.0
       },
-      "vardameghoralsolution|amegh|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "Amegh",
-        "priority": "2",
-        "product": "Vardamegh oral solution",
-        "status": "",
-        "units": 15000.0
-      },
-      "vardavit|vardhmanexportsp2p|100ml": {
-        "batch": "",
-        "date": "",
-        "pack": "100 ml",
-        "party": "VARDHMAN EXPORTS (P2P)",
-        "priority": "1",
-        "product": "Vardavit",
-        "status": "",
-        "units": 20000.0
-      },
-      "vardsbloodtonic|vardhmanexportsp2p|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "VARDHMAN EXPORTS (P2P)",
-        "priority": "1",
-        "product": "Vards Blood Tonic",
-        "status": "",
-        "units": 15000.0
-      },
       "vigorex|flamingopharmaceuticalslimited|300ml": {
         "batch": "",
         "date": "",
@@ -2937,24 +1976,24 @@
         "priority": "1",
         "product": "Vigorex",
         "status": "",
-        "units": 25000.0
+        "units": 10000.0
       },
-      "viscidsachet|indocoremediesltd|15ml": {
-        "batch": "",
+      "viscid|indocoremediesltd|15ml": {
+        "batch": "26CH0091, 26CH0092, 26CH0093, 26CH0094",
         "date": "",
         "pack": "15 ml",
         "party": "INDOCO REMEDIES LTD.",
-        "priority": "1",
-        "product": "Viscid Sachet",
+        "priority": "2",
+        "product": "Viscid",
         "status": "",
-        "units": 600000.0
+        "units": 400000.0
       },
       "vitaforcesyrup|londonunitedexportsltd|250ml": {
         "batch": "",
         "date": "",
         "pack": "250 ml",
         "party": "London United Exports Ltd",
-        "priority": "2",
+        "priority": "1",
         "product": "Vitaforce Syrup",
         "status": "",
         "units": 34000.0
@@ -2969,48 +2008,18 @@
         "status": "",
         "units": 40000.0
       },
-      "worminixsachet|uniquepharma|10ml": {
-        "batch": "",
-        "date": "",
-        "pack": "10 ml",
-        "party": "UNIQUE PHARMA.",
-        "priority": "1",
-        "product": "Worminix sachet",
-        "status": "",
-        "units": 150000.0
-      },
       "zalbendsuspention|cariescoexports|20ml": {
         "batch": "",
         "date": "",
         "pack": "20 ml",
         "party": "Cariesco Exports",
-        "priority": "2",
+        "priority": "1",
         "product": "Zalbend Suspention",
         "status": "",
         "units": 50000.0
-      },
-      "zerosickps|ipc|100ml": {
-        "batch": "EL-2550",
-        "date": "",
-        "pack": "100 ml",
-        "party": "IPC",
-        "priority": "1",
-        "product": "Zerosick PS",
-        "status": "",
-        "units": 0.0
-      },
-      "zerosick|ipc|200ml": {
-        "batch": "",
-        "date": "",
-        "pack": "200 ml",
-        "party": "IPC",
-        "priority": "1",
-        "product": "Zerosick",
-        "status": "",
-        "units": 20000.0
       }
     },
-    "source": "sheet tab \"OCT PLAN\"",
-    "ts": "2026-11-01T07:56:57"
+    "source": "sheet tab \"NOV PLAN\"",
+    "ts": "2026-11-12T09:28:43"
   }
 }
