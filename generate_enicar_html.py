@@ -4303,7 +4303,7 @@ def _dept_open_items():
         cp, cb = _col(r, 'NAME OF THE PRODUCT'), _col(r, 'BATCH NUMBER')
         for i in range(1, len(r)):
             prod, bat = _s(r.iat[i, cp]), _s(r.iat[i, cb])
-            if prod and not bat:
+            if prod and bat in ('', '-'):
                 add('Stores', f'rm-blank-batch:r{i+4}',
                     f"RM Dispensing row {i+4} — {prod[:32]}: batch number is blank")
     except Exception as _e:
@@ -4317,7 +4317,7 @@ def _dept_open_items():
                 continue
             prod, bat, qty = _s(r.iat[i, cp]), _s(r.iat[i, cb]), _s(r.iat[i, cq])
             chk = _s(r.iat[i, cc]) if cc is not None else ''
-            if prod and qty and not bat:
+            if prod and qty and bat in ('', '-'):
                 add('Production', f'prod-blank-batch:r{i+4}',
                     f"Production Log row {i+4} — {prod[:32]} ({qty}): batch number is blank")
             elif bat and chk.startswith('⚠'):
