@@ -2161,6 +2161,34 @@ PLAN_SOURCE = PLAN_VIEWS[PLAN_MONTHS[0][0]]['source']
 PLAN_SUMMARY = PLAN_VIEWS[PLAN_MONTHS[0][0]]['summary']
 PLAN_OFF = PLAN_VIEWS[PLAN_MONTHS[0][0]]['off']
 
+# Work filled in the CURRENT plan month that no line of its view credits
+# vanishes between the plan card and the monthly summary (Viscid, 12 Nov
+# 2026: 4,00,000 units slipped this way — the off-plan alarm was silenced
+# because the brand also had a previous-month dispense). Say it loudly.
+try:
+    _uc_credit = {}
+    for _it in PLAN_ITEMS:
+        for _b in _it['batches']:
+            _k2 = _bkey(_b['batch'])
+            _uc_credit[_k2] = _uc_credit.get(_k2, 0.0) + float(_b['filled'] or 0)
+    _uc_fill, _uc_name = {}, {}
+    for _, _r in fill_df.iterrows():
+        _d2 = _r.get('Date')
+        if _d2 is None or _d2 < PLAN_WINDOW_FROM or pd.isna(_r.get('Batch')):
+            continue
+        _k2 = _bkey(_r['Batch'])
+        _uc_fill[_k2] = _uc_fill.get(_k2, 0.0) + float(_r.get('Qty') or 0)
+        _uc_name[_k2] = str(_r.get('Product') or '')
+    _uc_gap = {k: v - _uc_credit.get(k, 0.0) for k, v in _uc_fill.items()
+               if v - _uc_credit.get(k, 0.0) > 500}
+    if sum(_uc_gap.values()) > 25000:
+        _tops = sorted(_uc_gap, key=_uc_gap.get, reverse=True)[:4]
+        _self_check(f"{sum(_uc_gap.values()):,.0f} units filled this month are on NO plan line "
+                    f"({'; '.join(f'{_uc_name[k][:24]} {k} {_uc_gap[k]:,.0f}' for k in _tops)}) — "
+                    f"add or link their plan rows")
+except Exception as _uce:
+    print(f'  (uncredited-work check skipped: {_uce})')
+
 # ══════════════════════════════════════════════════════════════════════════════
 # NAME CONSISTENCY  —  same batch, different product name across logs
 # ──────────────────────────────────────────────────────────────────────────────
@@ -2677,6 +2705,8 @@ def _plan_block(view):
         _src, _srctag = '', ''
         _tag = lambda txt, bgc, fgc: (f' <span style="background:{bgc};color:{fgc};border-radius:3px;'
                                       f'padding:1px 6px;font-size:10px;font-weight:800;white-space:nowrap">{txt}</span>')
+        _vq = (_tag('❓ VERMA SIR', '#FFF8E1', '#B71C1C')
+               if 'verma sir please confirm' in str(it.get('remark') or '').lower() else '')
         if it.get('finishing'):
             _src, _srctag = 'fin', _tag(f'⏳ {_PREV3} ORDER — FINISHING', '#E0F7FA', '#006064')
         elif _has_split:
@@ -2703,7 +2733,7 @@ def _plan_block(view):
                  f'data-ptype="{html_escape(str(it.get("ptype") or ""))}" '
                  f'onclick="togglePlan(\'{K}\',{i})">'
                  f'<td class="td-num" style="font-weight:700;color:{C_PRI}">{prio}</td>'
-                 f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}{_srctag}</td>'
+                 f'<td class="td-name">{_mchip}{it["product"]}{lots} {badge}{_carry}{_srctag}{_vq}</td>'
                  f'<td class="td-name" style="color:#546E7A">{it.get("display_party") or "—"}{pflag}</td>'
                  f'<td class="td-name" style="color:#37474F">{it.get("pack") or "—"}</td>'
                  f'<td class="td-num" style="font-weight:700">{"—" if it.get("finishing") else n(it["planned_units"])}</td>'
@@ -4301,9 +4331,13 @@ def _dept_open_items():
            # the June blanks must stay visible until they are filled)
         r = _raw('➕ RM Dispensing Log')
         cp, cb = _col(r, 'NAME OF THE PRODUCT'), _col(r, 'BATCH NUMBER')
+        cdt = _col(r, 'DISPENSING DATE')
         for i in range(1, len(r)):
             prod, bat = _s(r.iat[i, cp]), _s(r.iat[i, cb])
-            if prod and bat in ('', '-'):
+            if prod and (bat == '' or (bat == '-' and _recent(r.iat[i, cdt], 60))):
+                # '-' is the store's old placeholder — only a recent dash is
+                # a missing number worth chasing (12 Nov 2026: 17 historical
+                # dash rows vs 5 fresh ones)
                 add('Stores', f'rm-blank-batch:r{i+4}',
                     f"RM Dispensing row {i+4} — {prod[:32]}: batch number is blank")
     except Exception as _e:
