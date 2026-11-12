@@ -4342,6 +4342,26 @@ def _dept_open_items():
                     f"RM Dispensing row {i+4} — {prod[:32]}: batch number is blank")
     except Exception as _e:
         print(f'  (scoreboard RM scan skipped: {_e})')
+    try:   # the SAME batch number on two RM dispense rows (Bonaplex EL-2530 and
+           # Redsun RE-131349 both happened within three weeks) — the second row
+           # is usually the next batch with the number copied. Recent rows only.
+        r = _raw('➕ RM Dispensing Log')
+        cp, cb = _col(r, 'NAME OF THE PRODUCT'), _col(r, 'BATCH NUMBER')
+        cdt = _col(r, 'DISPENSING DATE')
+        _first = {}
+        for i in range(1, len(r)):
+            bat = _s(r.iat[i, cb])
+            if not bat or bat == '-':
+                continue
+            if bat in _first:
+                if _recent(r.iat[i, cdt], 60):
+                    add('Stores', f'rm-dup-batch:{bat}:r{i+4}',
+                        f"RM rows {_first[bat]} and {i+4} both say batch {bat} "
+                        f"({_s(r.iat[i, cp])[:28]}) — the later row needs its real batch number")
+            else:
+                _first[bat] = i + 4
+    except Exception as _e:
+        print(f'  (scoreboard RM dup scan skipped: {_e})')
     try:   # Production: blank batch, or ⚠ CHECK (batch has no RM row)
         r = _raw('➕ Production Log')
         cd, cp = _col(r, 'Date'), _col(r, 'Product Name')
