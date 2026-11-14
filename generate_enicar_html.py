@@ -4287,7 +4287,16 @@ function planColClear(k) {
 # the same items so a team can self-check between reminders.
 # Approved practices are NOT items: full batch size on every lot row (tank
 # availability) and domestic dispatch waits are normal business.
-_DEPT_EXCLUDE_KEYS = {'tlb261004'}   # Sucralog placebo trial (Director, 27 Oct 2026)
+# Keys are CANONICAL batch forms: uppercase, A-Z/0-9 only (hyphens, slashes,
+# spaces stripped) — the comparison canonicalises the same way.
+_DEPT_EXCLUDE_KEYS = {
+    'TLB261004',    # Sucralog placebo trial (Director, 27 Oct 2026)
+    # pre-tracking opening stock — filled before the logs began, dispatch is
+    # the only record and that is correct (Director, 14 Nov 2026):
+    'CE346514',     # Optiprim Suspension 55,000
+    'CE347515',     # Optiprim Suspension 55,000
+    'GE13301',      # Nilworm Suspension 2,400
+}
 
 def _dept_open_items():
     items, seen = [], set()
@@ -4301,7 +4310,8 @@ def _dept_open_items():
     # 1. Batch Journey inconsistencies (activity in the last 90 days)
     for e in BATCH_JOURNEY:
         k = _bkey(e['batch'])
-        if k in _DEPT_EXCLUDE_KEYS or e['rank'] == 4 or e.get('auto_cleared'):
+        kx = _re_bj.sub(r'[^A-Z0-9]', '', k)   # canonical form for the exclude set
+        if kx in _DEPT_EXCLUDE_KEYS or e['rank'] == 4 or e.get('auto_cleared'):
             continue
         if e['last'] and (today - e['last']).days > 90:
             continue
