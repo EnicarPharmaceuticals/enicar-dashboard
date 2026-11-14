@@ -688,6 +688,12 @@ for _k, _rows in _mfg_by_batch.items():
                'start': min(r['Date'] for r in _rows),
                'done': _done, 'open': bool(_open)}
 
+_RM_TOPUPS = []   # RM rows with batch '' or '-': ADDITIONAL top-up bulk for an
+                  # existing batch. Store + Director confirmed 14 Nov 2026: when
+                  # an earlier batch has a quantity problem, extra bulk is
+                  # dispensed to fix it and gets NO batch number of its own.
+                  # These rows are intentional, not forgetfulness.
+
 def _rm_info():
     """Batch key → RM dispensing record (earliest date, customer, product, batch size)."""
     info = {}
@@ -699,6 +705,13 @@ def _rm_info():
     for _, r in rm_all.iterrows():
         b = r.get('BATCH NUMBER')
         if pd.isna(b) or not str(b).strip() or str(b).strip() == '-':
+            _p = r.get('NAME OF THE PRODUCT')
+            if pd.notna(_p) and str(_p).strip():
+                _d = pd.to_datetime(r.get('DISPENSING DATE'), errors='coerce')
+                _ts = pd.to_numeric(str(r.get('BATCH SIZE')).replace(',', ''), errors='coerce')
+                _RM_TOPUPS.append({'pkey': re.sub(r'[^a-z0-9]', '', str(_p).lower()),
+                                   'date': _d.date() if pd.notna(_d) else None,
+                                   'size': 0.0 if pd.isna(_ts) else float(_ts)})
             continue
         k = _bkey(b)
         d = pd.to_datetime(r.get('DISPENSING DATE'), errors='coerce')
@@ -749,6 +762,22 @@ def _yield_warns():
         if rmv <= 0 or e['last'] < recent:
             continue
         worst = max(e['fv'], e['pv'])
+        if worst > rmv * 1.15 + 5:
+            # 14 Nov 2026: credit ADDITIONAL top-up bulk (RM rows with batch
+            # '-'/blank) of the same product dispensed within 45 days of this
+            # batch — the store tops up a problem batch with extra bulk that
+            # carries no batch number, so the plain ratio over-reads (Prodine
+            # EL-2526 showed ×1.99 until its 6,060 L '-' row was credited).
+            pk = re.sub(r'[^a-z0-9]', '', e['product'].lower())
+            rd = (RM_INFO.get(k) or {}).get('date')
+            tv = sum(t['size'] for t in _RM_TOPUPS if pk and t['pkey']
+                     and (t['pkey'].startswith(pk) or pk.startswith(t['pkey']))
+                     and (rd is None or t['date'] is None
+                          # a top-up always FOLLOWS its parent batch's dispense
+                          # (it fixes a problem found later) — never credit a
+                          # top-up that predates the batch
+                          or 0 <= (t['date'] - rd).days <= 45))
+            rmv += tv
         if worst > rmv * 1.15 + 5:
             out.append({'batch': k, 'product': e['product'][:34], 'rm': rmv,
                         'fv': e['fv'], 'pv': e['pv'], 'ratio': worst / rmv})
@@ -4327,41 +4356,49 @@ def _dept_open_items():
         dt = pd.to_datetime(v, dayfirst=True, errors='coerce')
         return pd.notna(dt) and (today - dt.date() if hasattr(dt, 'date') else today - dt).days <= days
 
-    try:   # RM Dispensing: product without a batch number → Stores (no date gate:
-           # the June blanks must stay visible until they are filled)
+    try:   # RM Dispensing: product without a batch number → Stores.
+           # 14 Nov 2026 (store answered, Director confirmed): a blank/'-' batch
+           # is usually ADDITIONAL top-up bulk for an existing batch — a quantity
+           # problem in the earlier batch is fixed with extra bulk that gets no
+           # number of its own. Only flag a recent blank with NO same-product
+           # numbered batch in the prior 45 days; the seven rows the store
+           # answered for on 12 Nov are closed outright.
+        _TOPUP_CLOSED = {848, 862, 840, 772, 897, 194, 217}
         r = _raw('➕ RM Dispensing Log')
         cp, cb = _col(r, 'NAME OF THE PRODUCT'), _col(r, 'BATCH NUMBER')
         cdt = _col(r, 'DISPENSING DATE')
+        def _has_parent(prod, when):
+            dt = pd.to_datetime(when, dayfirst=True, errors='coerce')
+            pk = _canon(prod)
+            for v in RM_INFO.values():
+                vp = _canon(v.get('product') or '')
+                if not vp or not (vp.startswith(pk) or pk.startswith(vp)):
+                    continue
+                if v.get('date') is None or pd.isna(dt):
+                    return True
+                if 0 <= (dt.date() - v['date']).days <= 45:
+                    return True
+            return False
         for i in range(1, len(r)):
             prod, bat = _s(r.iat[i, cp]), _s(r.iat[i, cb])
-            if prod and (bat == '' or (bat == '-' and _recent(r.iat[i, cdt], 60))):
-                # '-' is the store's old placeholder — only a recent dash is
-                # a missing number worth chasing (12 Nov 2026: 17 historical
-                # dash rows vs 5 fresh ones)
-                add('Stores', f'rm-blank-batch:r{i+4}',
-                    f"RM Dispensing row {i+4} — {prod[:32]}: batch number is blank")
+            if not prod or bat not in ('', '-'):
+                continue
+            if (i + 4) in _TOPUP_CLOSED:
+                continue
+            if not _recent(r.iat[i, cdt], 60):
+                continue   # old rows are history
+            if _has_parent(prod, r.iat[i, cdt]):
+                continue   # top-up pattern — intentional, no number exists
+            add('Stores', f'rm-blank-batch:r{i+4}',
+                f"RM Dispensing row {i+4} — {prod[:32]}: batch number is blank and "
+                f"no recent batch of this product exists to top up — please confirm")
     except Exception as _e:
         print(f'  (scoreboard RM scan skipped: {_e})')
-    try:   # the SAME batch number on two RM dispense rows (Bonaplex EL-2530 and
-           # Redsun RE-131349 both happened within three weeks) — the second row
-           # is usually the next batch with the number copied. Recent rows only.
-        r = _raw('➕ RM Dispensing Log')
-        cp, cb = _col(r, 'NAME OF THE PRODUCT'), _col(r, 'BATCH NUMBER')
-        cdt = _col(r, 'DISPENSING DATE')
-        _first = {}
-        for i in range(1, len(r)):
-            bat = _s(r.iat[i, cb])
-            if not bat or bat == '-':
-                continue
-            if bat in _first:
-                if _recent(r.iat[i, cdt], 60):
-                    add('Stores', f'rm-dup-batch:{bat}:r{i+4}',
-                        f"RM rows {_first[bat]} and {i+4} both say batch {bat} "
-                        f"({_s(r.iat[i, cp])[:28]}) — the later row needs its real batch number")
-            else:
-                _first[bat] = i + 4
-    except Exception as _e:
-        print(f'  (scoreboard RM dup scan skipped: {_e})')
+    # NOTE (14 Nov 2026): do NOT re-add an rm-dup-batch detector. The same batch
+    # number on two RM rows is the store's legitimate top-up practice (extra bulk
+    # against an existing batch to fix a quantity problem) — RE-131349, MUCE-196,
+    # EL-2517 etc. were all this, not copy errors. A genuinely wrong copied
+    # number surfaces through the production-log ⚠ CHECK instead.
     try:   # Production: blank batch, or ⚠ CHECK (batch has no RM row)
         r = _raw('➕ Production Log')
         cd, cp = _col(r, 'Date'), _col(r, 'Product Name')
