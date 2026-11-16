@@ -4461,12 +4461,18 @@ def _dept_open_items():
     try:   # Dispatch rows this month without a PO number → one aggregate item
         r = _raw('➕ Dispatch Log')
         cd, cp, cpo = _col(r, 'Date'), _col(r, 'Product Name'), _col(r, 'PO number')
+        cpt = _col(r, 'Party Name')
         miss = tot = 0
         for i in range(1, len(r)):
             dt = pd.to_datetime(r.iat[i, cd], dayfirst=True, errors='coerce')
             if pd.isna(dt) or dt.year != today.year or dt.month != today.month:
                 continue
             if not _s(r.iat[i, cp]):
+                continue
+            # P&G loan-licence (LLU) dispatches carry no customer PO — 0 of 41
+            # LLU rows Sep-Nov 2026 ever had one, so they were 100% of the
+            # 'missing PO' count (16 Nov 2026 audit). Exclude them.
+            if cpt is not None and '(llu)' in _s(r.iat[i, cpt]).lower():
                 continue
             tot += 1
             if not _s(r.iat[i, cpo]):
