@@ -4,92 +4,98 @@
    "team": "Packing",
    "desc": "Funbact-A EF008 — packed 65,600 vs filled 65,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "pack-gt-fill:EL-2439": {
    "team": "Packing",
    "desc": "Climax Nystatin Oral Suspension EL-2439 — packed 95,600 vs filled 95,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "pack-half-row:r1059": {
    "team": "Packing",
    "desc": "Packing Log row 1059 — Ornid Ox susp.: no quantity entered — complete the row or delete it",
    "first_seen": "2026-10-27",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "disp-gt-fill:EL-2524": {
    "team": "Packing",
    "desc": "Bricovit Forte EL-2524 — dispatched 28,000 vs filled 27,000: filling entries missing",
    "first_seen": "2026-11-03",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "pack-half-row:r1760": {
    "team": "Packing",
    "desc": "Packing Log row 1760 — Funbact: batch number is blank — complete the row or delete it",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "disp-gt-fill:FA086": {
    "team": "Packing",
    "desc": "Funbact FA086 — dispatched 12,000 vs filled 5,000: filling entries missing",
    "first_seen": "2026-11-07",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "never-filled:EF024": {
    "team": "Packing",
    "desc": "Funbact-A EF024 — packed/dispatched but no filling entry",
    "first_seen": "2026-11-14",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "pack-gt-fill:EF023": {
    "team": "Packing",
    "desc": "Funbact-A EF023 — packed 66,000 vs filled 31,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-11-14",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "pack-gt-fill:EF021": {
    "team": "Packing",
    "desc": "Funbact-A EF021 — packed 76,600 vs filled 66,666: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-11-14",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "disp-gt-fill:EF013": {
    "team": "Packing",
    "desc": "Funbact-A EF013 — dispatched 65,700 vs filled 60,000: filling entries missing",
    "first_seen": "2026-11-16",
-   "last_seen": "2026-11-17"
-  },
-  "pack-half-row:r1804": {
-   "team": "Packing",
-   "desc": "Packing Log row 1804 — POLYBION ACTIVE 300 ML: no quantity entered — complete the row or delete it",
-   "first_seen": "2026-11-16",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "never-filled:E2497": {
    "team": "Packing",
    "desc": "Climax Nystatin Oral Suspension E2497 — packed/dispatched but no filling entry",
    "first_seen": "2026-11-16",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "prod-blank-batch:r405": {
    "team": "Production",
    "desc": "Production Log row 405 — Loratadine Oral Solution USP (2500): batch number is blank",
    "first_seen": "2026-11-16",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "pack-half-row:r1809": {
    "team": "Packing",
    "desc": "Packing Log row 1809 — MYCOMIN: batch number is blank — complete the row or delete it",
    "first_seen": "2026-11-16",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
   },
   "pack-gt-fill:M-21308": {
    "team": "Packing",
    "desc": "Loratadine Oral Solution USP M-21308 — packed 106,400 vs filled 100,000: filling short, or part of the packing belongs to another batch",
    "first_seen": "2026-11-16",
-   "last_seen": "2026-11-17"
+   "last_seen": "2026-11-18"
+  },
+  "yield:EL-2499": {
+   "team": "Packing",
+   "desc": "Climax Nystatin Oral Suspension — filled/packed volume is 1.8× the RM bulk: check the batch numbers on the filling/packing rows",
+   "first_seen": "2026-11-17",
+   "last_seen": "2026-11-18"
+  },
+  "pack-gt-fill:EL-2499": {
+   "team": "Packing",
+   "desc": "Climax Nystatin Oral Suspension EL-2499 — packed 33,000 vs filled 31,000: filling short, or part of the packing belongs to another batch",
+   "first_seen": "2026-11-17",
+   "last_seen": "2026-11-18"
   }
  },
- "updated": "2026-11-17"
+ "updated": "2026-11-18"
 }
