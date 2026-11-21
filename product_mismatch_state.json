@@ -229,6 +229,9 @@
   "EF022|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-21",
   "EF023|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-21",
   "EF025|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-20",
+  "EF026|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-21",
+  "EF027|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-21",
+  "EF028|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-21",
   "EL-2397|product|cremoaidplussf|cremoaidplus": "2026-11-19",
   "EL-2413|party|yelloworangepharmacy|pharmatrustltd": "2026-11-19",
   "EL-2414|party|yelloworangepharmacy|pharmatrustltd": "2026-11-19",
@@ -303,6 +306,7 @@
   "FA098|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-21",
   "FA099|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-20",
   "FA101|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-20",
+  "FA102|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-21",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-20",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-20",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-20",
@@ -442,6 +446,22 @@
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-11-19",
   "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-11-19",
   "_offplan_alerted": {
+    "EL-2585": {
+      "batch": "EL-2585",
+      "company": "Leeford Healthcare Limited",
+      "date": "2026-11-21",
+      "product": "Suphacid",
+      "qty": 5000.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2586": {
+      "batch": "EL-2586",
+      "company": "Leeford Healthcare Limited",
+      "date": "2026-11-21",
+      "product": "Suphacid",
+      "qty": 5000.0,
+      "stage": "RM dispensed"
+    },
     "GE21323": {
       "batch": "GE21323",
       "company": "",
