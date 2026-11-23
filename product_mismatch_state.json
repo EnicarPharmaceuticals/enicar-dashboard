@@ -477,6 +477,14 @@
       "product": "FLUCOLDEX-E SUSPENSION",
       "qty": 6060.0,
       "stage": "RM dispensed"
+    },
+    "LL-0212": {
+      "batch": "LL-0212",
+      "company": "Lesanto Laboratories",
+      "date": "2026-11-23",
+      "product": "Lacitron",
+      "qty": 1500.0,
+      "stage": "RM dispensed"
     }
   },
   "_offplan_digest_sent": "2026-11-15",
