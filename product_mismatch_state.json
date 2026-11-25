@@ -447,6 +447,30 @@
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-11-25",
   "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-11-25",
   "_offplan_alerted": {
+    "CNJ020": {
+      "batch": "CNJ020",
+      "company": "BLISS GVS PHARMA LTD(LL)",
+      "date": "2026-11-25",
+      "product": "COMIT-100",
+      "qty": 405.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2583": {
+      "batch": "EL-2583",
+      "company": "M/S. PHARMATEC PRIVATE LTD",
+      "date": "2026-11-25",
+      "product": "Promethazine Oral Solution BP",
+      "qty": 4540.0,
+      "stage": "RM dispensed"
+    },
+    "EL-2584": {
+      "batch": "EL-2584",
+      "company": "M/S. PHARMATEC PRIVATE LTD",
+      "date": "2026-11-25",
+      "product": "Chlorpheniramine Maleate Oral Solution USP (Sri Lanka)",
+      "qty": 3030.0,
+      "stage": "RM dispensed"
+    },
     "EL-2585": {
       "batch": "EL-2585",
       "company": "Leeford Healthcare Limited",
@@ -477,6 +501,22 @@
       "date": "2026-11-01",
       "product": "FLUCOLDEX-E SUSPENSION",
       "qty": 6060.0,
+      "stage": "RM dispensed"
+    },
+    "GP-120871": {
+      "batch": "GP-120871",
+      "company": "Jagsonpal Pharmaceuticals Ltd",
+      "date": "2026-11-25",
+      "product": "Sudin-D Cough Syrup",
+      "qty": 3000.0,
+      "stage": "RM dispensed"
+    },
+    "GP-25870": {
+      "batch": "GP-25870",
+      "company": "Jagsonpal Pharmaceuticals Ltd",
+      "date": "2026-11-25",
+      "product": "SUDIN KID",
+      "qty": 1500.0,
       "stage": "RM dispensed"
     },
     "LL-0212": {
