@@ -91,8 +91,8 @@
   "4000|party|bc|up": "2026-11-25",
   "46000|party|bc|pc": "2026-11-25",
   "46000|product|15gm|10ml": "2026-11-25",
-  "50000|party|bc|up": "2026-11-26",
-  "50000|product|15gm|10ml": "2026-11-26",
+  "50000|party|up|bc": "2026-11-26",
+  "50000|product|10ml|15gm": "2026-11-26",
   "54000|party|up|uf": "2026-11-24",
   "56000|product|15gm|10ml": "2026-11-25",
   "60000|party|up|bc": "2026-11-25",
@@ -308,6 +308,7 @@
   "FA099|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-26",
   "FA101|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-26",
   "FA102|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-24",
+  "FA104|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-26",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-26",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-26",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-26",
@@ -516,6 +517,14 @@
       "company": "Jagsonpal Pharmaceuticals Ltd",
       "date": "2026-11-25",
       "product": "SUDIN KID",
+      "qty": 1500.0,
+      "stage": "RM dispensed"
+    },
+    "LL-0211": {
+      "batch": "LL-0211",
+      "company": "Lesanto Laboratories",
+      "date": "2026-11-26",
+      "product": "Bronk Syrup",
       "qty": 1500.0,
       "stage": "RM dispensed"
     },
@@ -1471,6 +1480,16 @@
         "status": "",
         "units": 25000.0
       },
+      "ostopolybion|proctergamblehealthlimited|300ml": {
+        "batch": "",
+        "date": "",
+        "pack": "300 ml",
+        "party": "Procter & Gamble Health Limited",
+        "priority": "2",
+        "product": "Osto Polybion",
+        "status": "",
+        "units": 33333.0
+      },
       "polybionactive|proctergamblehealthlimited|300ml": {
         "batch": "",
         "date": "",
@@ -1480,6 +1499,36 @@
         "product": "Polybion Active",
         "status": "",
         "units": 83335.0
+      },
+      "polybionlc|proctergamblehealthlimited|150ml": {
+        "batch": "",
+        "date": "",
+        "pack": "150 ml",
+        "party": "Procter & Gamble Health Limited",
+        "priority": "2",
+        "product": "Polybion Lc",
+        "status": "",
+        "units": 66667.0
+      },
+      "polybionlc|proctergamblehealthlimited|300ml": {
+        "batch": "",
+        "date": "",
+        "pack": "300 ml",
+        "party": "Procter & Gamble Health Limited",
+        "priority": "2",
+        "product": "Polybion Lc",
+        "status": "",
+        "units": 66666.0
+      },
+      "polybionlc|proctergamblehealthlimited|400ml": {
+        "batch": "",
+        "date": "",
+        "pack": "400 ml",
+        "party": "Procter & Gamble Health Limited",
+        "priority": "2",
+        "product": "Polybion Lc",
+        "status": "",
+        "units": 25000.0
       },
       "polygelsuspension|shalinahealthcarepvtltd|120ml": {
         "batch": "",
@@ -2062,14 +2111,14 @@
         "units": 10000.0
       },
       "viscid|indocoremediesltd|15ml": {
-        "batch": "26CH0091, 26CH0092, 26CH0093, 26CH0094",
+        "batch": "26CH0091, 26CH0092, 26CH0093, 26CH0094, 26CH0095, 26CH0096, 26CH0097, 26CH0098, 26CH0099, 26CH0100",
         "date": "",
         "pack": "15 ml",
         "party": "INDOCO REMEDIES LTD.",
         "priority": "2",
         "product": "Viscid",
         "status": "",
-        "units": 400000.0
+        "units": 1000000.0
       },
       "vitaforcesyrup|londonunitedexportsltd|250ml": {
         "batch": "",
@@ -2103,6 +2152,6 @@
       }
     },
     "source": "sheet tab \"NOV PLAN\"",
-    "ts": "2026-11-14T12:32:16"
+    "ts": "2026-11-26T15:50:06"
   }
 }
