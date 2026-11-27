@@ -177,6 +177,14 @@
   "6291C85002|party|proctergamblehealthlimited|proctergamblehealthlimitedllu": "2026-11-27",
   "6291C85002|product|ostopolybion300ml|ostopolybion": "2026-11-27",
   "6292C85001|party|proctergamblehealthlimited|indocoremediesltd": "2026-11-26",
+  "6309C85001|party|proctergamblehealthlimited|proctergamblehealthlimitedllu": "2026-11-27",
+  "6309C85001|product|polybionactive300ml|polybionactive": "2026-11-27",
+  "6317C85001|party|proctergamblehealthlimited|proctergamblehealthlimitedllu": "2026-11-27",
+  "6317C85001|product|polybionactive300ml|polybionactive": "2026-11-27",
+  "6318C85001|party|proctergamblehealthlimited|proctergamblehealthlimitedllu": "2026-11-27",
+  "6318C85001|product|polybionlc300ml|polybionlc": "2026-11-27",
+  "6322C85001|party|proctergamblehealthlimited|proctergamblehealthlimitedllu": "2026-11-27",
+  "6322C85001|product|polybionlc400ml|polybionlc": "2026-11-27",
   "650007|product|polygelsuspension|polygelsuspensionsachet": "2026-11-26",
   "6560010|party|shalinahealthcarepvtltd|shalinalaboratoriespvtltd": "2026-11-27",
   "66240|party|bc|uf": "2026-11-26",
@@ -307,7 +315,10 @@
   "FA099|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-26",
   "FA101|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-26",
   "FA102|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-27",
+  "FA103|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-27",
   "FA104|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-26",
+  "FA105|party|blissgvspharmaltdll|blissgvspharmaltdp2p": "2026-11-27",
+  "FA106|party|blissgvspharmaltdll|bluemappharmachemp2p": "2026-11-27",
   "GE03049|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-26",
   "GE04045|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-26",
   "GE04294|party|galaxypharmaceuticalsltd|galaxypharma": "2026-11-26",
@@ -446,6 +457,7 @@
   "VM-16726|party|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-11-26",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-11-25",
   "XSBE26003|party|jbchemicalpharmaceuticalsltd|torrent": "2026-11-27",
+  "XSBE26003|party|jbchemicalpharmaceuticalsltd|torrentpharmaceuticalslimited": "2026-11-27",
   "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-11-25",
   "_offplan_alerted": {
     "CNJ020": {
@@ -486,6 +498,30 @@
       "date": "2026-11-21",
       "product": "Suphacid",
       "qty": 5000.0,
+      "stage": "RM dispensed"
+    },
+    "EPT006": {
+      "batch": "EPT006",
+      "company": "BLISS GVS PHARMA LTD(LL)",
+      "date": "2026-11-27",
+      "product": "Poved",
+      "qty": 600.0,
+      "stage": "RM dispensed"
+    },
+    "EPT007": {
+      "batch": "EPT007",
+      "company": "BLISS GVS PHARMA LTD(LL)",
+      "date": "2026-11-27",
+      "product": "Poved",
+      "qty": 600.0,
+      "stage": "RM dispensed"
+    },
+    "EPT008": {
+      "batch": "EPT008",
+      "company": "BLISS GVS PHARMA LTD(LL)",
+      "date": "2026-11-27",
+      "product": "Poved",
+      "qty": 600.0,
       "stage": "RM dispensed"
     },
     "GE21323": {
