@@ -59,6 +59,8 @@
   "-|product|polygelsuspensionsachet|telovasyrup": "2026-11-25",
   "-|product|polygelsuspensionsachet|unicaine": "2026-11-25",
   "-|product|polygelsuspensionsachet|viscid": "2026-11-25",
+  "0|party|inductionqty6000zeroed27nov2026inductionstagenotpackingonlylabelingcountsdirector27nov2026|inductionqty2400zeroed27nov2026inductionstagenotpackingonlylabelingcountsdirector27nov2026": "2026-11-27",
+  "0|product|100ml|250ml": "2026-11-27",
   "10000|party|bc|up": "2026-11-27",
   "10000|product|15gm|100": "2026-11-27",
   "12000|party|up|bc": "2026-11-25",
@@ -74,8 +76,6 @@
   "21000|product|10ml|15gm": "2026-11-27",
   "24000|party|up|bc": "2026-11-25",
   "24000|product|15gm|5gm": "2026-11-27",
-  "2400|party|up|induction": "2026-11-26",
-  "2400|product|120ml|250ml": "2026-11-26",
   "25000|product|100ml|10ml": "2026-11-26",
   "26CH0084|party|indocoremediesltd|ronakeximpvtltd": "2026-11-25",
   "28240|party|bc|up": "2026-11-26",
@@ -97,7 +97,6 @@
   "56000|product|15gm|10ml": "2026-11-25",
   "60000|party|up|bc": "2026-11-25",
   "6000|party|up|bc": "2026-11-27",
-  "6000|party|up|induction": "2026-11-27",
   "6000|party|up|labeling": "2026-11-27",
   "6000|product|15gm|100ml": "2026-11-27",
   "6000|product|15gm|10ml": "2026-11-26",
@@ -446,6 +445,7 @@
   "VM-16725|party|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-11-26",
   "VM-16726|party|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-11-26",
   "VP-0427|party|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-11-25",
+  "XSBE26003|party|jbchemicalpharmaceuticalsltd|torrent": "2026-11-27",
   "ZN-001|party|msnelpalifesciencesinc|sapphirelifesciencepvtltdp2p": "2026-11-25",
   "_offplan_alerted": {
     "CNJ020": {
@@ -2111,14 +2111,14 @@
         "units": 10000.0
       },
       "viscid|indocoremediesltd|15ml": {
-        "batch": "26CH0091, 26CH0092, 26CH0093, 26CH0094, 26CH0095, 26CH0096, 26CH0097, 26CH0098, 26CH0099, 26CH0100",
+        "batch": "26CH0091, 26CH0092, 26CH0093, 26CH0094, 26CH0095, 26CH0096, 26CH0097, 26CH0098, 26CH0099, 26CH0100, 26CH0101, 26CH0102",
         "date": "",
         "pack": "15 ml",
         "party": "INDOCO REMEDIES LTD.",
         "priority": "2",
         "product": "Viscid",
         "status": "",
-        "units": 1000000.0
+        "units": 1200000.0
       },
       "vitaforcesyrup|londonunitedexportsltd|250ml": {
         "batch": "",
@@ -2152,6 +2152,6 @@
       }
     },
     "source": "sheet tab \"NOV PLAN\"",
-    "ts": "2026-11-26T15:50:06"
+    "ts": "2026-11-27T08:57:45"
   }
 }

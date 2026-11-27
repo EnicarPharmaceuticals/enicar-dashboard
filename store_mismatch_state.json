@@ -1,5 +1,4 @@
 {
-  "BATCH|26CH0101|26CH0100": "2026-11-25",
   "BATCH|26CH0102|26CH0100": "2026-11-26",
   "BATCH|ALE159|ALE-139": "2026-11-27",
   "BATCH|ALE160|ALE-140": "2026-11-26",
@@ -21,7 +20,6 @@
   "BATCH|MXLE86|MXLE-84": "2026-11-26",
   "BATCH|NUTE406|NUTE-400": "2026-11-26",
   "BATCH|NUTE407|NUTE-400": "2026-11-26",
-  "BATCH|XBE26003|XSBE26003": "2026-11-27",
   "PARTY|-|bluemappharmachemp2p|up": "2026-11-25",
   "PARTY|-|delightpharmacyltd|up": "2026-11-26",
   "PARTY|-|enicarpharmaceuticalpvtltd|up": "2026-11-25",
@@ -190,6 +188,7 @@
   "PARTY|VM-16725|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-11-26",
   "PARTY|VM-16726|vardhmanexportsp2p|vigorlaboratoriesvardhaman": "2026-11-26",
   "PARTY|VP-0427|vitacurapharmaceuticals|lasohealthcarepvtltd": "2026-11-25",
+  "PARTY|XSBE26003|jbchemicalpharmaceuticalsltd|torrent": "2026-11-27",
   "PRODUCT|-|abee400|200ml": "2026-11-25",
   "PRODUCT|-|aurofersyrup|200ml": "2026-11-26",
   "PRODUCT|-|climaxnystatinoralsuspension|200ml": "2026-11-25",
