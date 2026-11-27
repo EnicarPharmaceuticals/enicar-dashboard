@@ -4432,8 +4432,13 @@ def _dept_open_items():
         r = _raw('➕ Packing Log')
         cd, cp, cb = _col(r, 'Date'), _col(r, 'Product Name'), _col(r, 'Batch No')
         cqs = _cols_all(r, 'Carton', 'Sleeve', 'Naked')
+        crm = _col(r, 'Remarks')
         for i in range(1, len(r)):
             if not _recent(r.iat[i, cd]):
+                continue
+            # a deliberately zeroed row (duplicate / induction stage — the
+            # remark records the original qty and why) is resolved, not blank
+            if crm is not None and 'zeroed' in _s(r.iat[i, crm]).lower():
                 continue
             prod, bat = _s(r.iat[i, cp]), _s(r.iat[i, cb])
             has_qty = any(_s(r.iat[i, c]) not in ('', '0', '0.0') for c in cqs)
